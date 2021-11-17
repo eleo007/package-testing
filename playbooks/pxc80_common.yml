@@ -99,8 +99,8 @@
   - name: check righs and ips
     command: "{{ item }}"
     with_items:
-      - ls -l /var/log/user.log
-      - ls -l /var/run/
+      - ls -l /etc/mysql/my.cnf
+      - ls -l /var/run/mysqld
       - hostname -I
       - ping -c 2 192.168.70.61
     register: files_result
