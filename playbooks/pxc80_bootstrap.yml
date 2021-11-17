@@ -101,6 +101,13 @@
   - name: bootstrap cluster on CentOS
     command: systemctl start mysql@bootstrap.service
 
+  - name: tail error log 
+    command: tail -n80 /var/log/mysql/error.log
+    register: tail_output
+
+  - name: output last rows of error log in case of fail
+    debug: var=tail_output
+
   # set root password on centos
   - name: set root password on centos
     command: /package-testing/setpass_57.sh
