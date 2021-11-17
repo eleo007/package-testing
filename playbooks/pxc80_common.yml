@@ -71,9 +71,6 @@
       - percona-xtrabackup-80
     when: ansible_os_family == "RedHat"
 
-  - name: stop mysql service
-    service: name=mysql state=stopped
-
   - name: copy PXC config on centos 7
     template: src=../templates/my_rpm_80.j2 
               dest=/etc/my.cnf
@@ -108,6 +105,15 @@
 
   - name: output last rows of error log in case of fail
     debug: var=tail_output
+    when: "'failed' in command_result.msg"
+
+  - name: tail syslog in case of fail
+    command: tail -n80 /var/log/syslog
+    register: sys_tail_output
+    when: "'failed' in command_result.msg"
+
+  - name: output last rows of error log in case of fail
+    debug: var=sys_tail_output
     when: "'failed' in command_result.msg"
 
   - name: check journalctl
