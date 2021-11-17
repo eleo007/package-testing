@@ -71,6 +71,9 @@
       - percona-xtrabackup-80
     when: ansible_os_family == "RedHat"
 
+  - name: stop mysql service
+    service: name=mysql state=stopped
+
   - name: copy PXC config on centos 7
     template: src=../templates/my_rpm_80.j2 
               dest=/etc/my.cnf
