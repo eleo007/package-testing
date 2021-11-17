@@ -51,6 +51,15 @@
     - 192.168.70.61
     when: ansible_os_family == "RedHat"
 
+  - name: check righs and ips
+    command: "{{ item }}"
+    with_items:
+      - ls -l /etc/mysql/my.cnf
+      - ls -l /var/run/mysqld
+      - update-alternatives --get-selections
+    register: files_result
+    ignore_errors: yes
+
   - name: install PXC 8 deb packages
     apt:
       name: "{{ packages }}"
@@ -62,6 +71,15 @@
       - percona-toolkit
       - percona-xtrabackup-80
     when: ansible_os_family == "Debian"
+
+  - name: check righs and ips
+    command: "{{ item }}"
+    with_items:
+      - ls -l /etc/mysql/my.cnf
+      - ls -l /var/run/mysqld
+      - update-alternatives --get-selections
+    register: files_result
+    ignore_errors: yes
 
   - name: install PXC 8 rpm packages
     yum:
@@ -103,6 +121,7 @@
       - ls -l /var/run/mysqld
       - hostname -I
       - ping -c 2 192.168.70.61
+      - update-alternatives --get-selections
     register: files_result
     ignore_errors: yes
 
