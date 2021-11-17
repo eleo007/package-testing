@@ -101,16 +101,16 @@
   - name: tail error log in case of fail
     command: tail -n80 /var/log/mysql/error.log
     register: tail_output
-    when: "'failed' in command_result.stderr"
+    when: "'failed' in command_result.msg"
 
   - name: output last rows of error log in case of fail
     debug: var=tail_output
-    when: "'failed' in command_result.stderr"
+    when: "'failed' in command_result.msg"
 
   - name: fail playbook execution if start mysql service failed
     fail:
       msg: fail playbook after log rows were gathered
-    when: "'failed' in command_result.stderr"
+    when: "'failed' in command_result.msg"
 
   - name: register PXC version
     shell: mysqld --version
