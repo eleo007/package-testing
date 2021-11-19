@@ -56,8 +56,8 @@
       packages:
       - percona-xtradb-cluster-full
       - percona-xtradb-cluster-source
-      - percona-toolkit
-      - percona-xtrabackup-80
+#      - percona-toolkit
+#      - percona-xtrabackup-80
     when: ansible_os_family == "Debian"
 
   - name: check righs and ips
