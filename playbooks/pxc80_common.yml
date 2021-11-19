@@ -48,17 +48,32 @@
     - 192.168.70.61
     when: ansible_os_family == "RedHat"
 
+  - name: check righs and ips
+    command: "{{ item }}"
+    with_items:
+      - ls -l /etc/mysql/my.cnf
+      - ls -l /var/run/mysqld
+      - update-alternatives --get-selections
+    register: files_result
+    ignore_errors: yes
+
   - name: install PXC 8 deb packages
     apt:
       name: "{{ packages }}"
       update_cache: yes
     vars:
       packages:
-      - percona-xtradb-cluster-full
-      - percona-xtradb-cluster-source
-      - percona-toolkit
-      - percona-xtrabackup-80
+      - percona-xtradb-cluster
     when: ansible_os_family == "Debian"
+
+  - name: check righs and ips
+    command: "{{ item }}"
+    with_items:
+      - ls -l /etc/mysql/my.cnf
+      - ls -l /var/run/mysqld
+      - update-alternatives --get-selections
+    register: files_result
+    ignore_errors: yes
 
   - name: install PXC 8 rpm packages
     yum:
@@ -93,8 +108,79 @@
       src: ../support-files/certs/
       dest: /etc/mysql/certs/
 
+  - name: check righs and ips
+    command: "{{ item }}"
+    with_items:
+      - ls -l /etc/mysql/my.cnf
+      - ls -l /var/run/mysqld
+      - hostname -I
+      - ping -c 2 192.168.70.61
+      - update-alternatives --get-selections
+    register: files_result
+    ignore_errors: yes
+
+  - name: output last rows of error log in case of fail
+    debug: var=files_result
+
   - name: start mysql service
     service: name=mysql state=started
+    register: command_result
+    ignore_errors: yes
+
+  - name: tail error log in case of fail
+    command: tail -n80 /var/log/mysql/error.log
+    register: tail_output
+    when: "'failed' in command_result.msg"
+
+  - name: output last rows of error log in case of fail
+    debug: var=tail_output
+    when: "'failed' in command_result.msg"
+
+  - name: tail syslog in case of fail
+    command: tail -n80 /var/log/syslog
+    register: sys_tail_output
+    when: "'failed' in command_result.msg"
+
+  - name: output last rows of error log in case of fail
+    debug: var=sys_tail_output
+    when: "'failed' in command_result.msg"
+
+  - name: check journalctl
+    shell: journalctl -xe|tail -n 100
+    register: journal_output
+    when: "'failed' in command_result.msg"
+
+  - name: output journal in case of fail
+    debug: var=journal_output
+    when: "'failed' in command_result.msg"
+
+  - name: cat config file
+    command: cat /etc/mysql/my.cnf
+    register: cat_output
+    when: "'failed' in command_result.msg"
+
+  - name: output my.cnf in case of fail
+    debug: var=cat_output
+    when: "'failed' in command_result.msg"
+
+  - name: check systemctl status
+    command: systemctl status mysql.service
+    register: systemctl_output
+    when: "'failed' in command_result.msg"
+
+  - name: output systemctl status in case of fail
+    debug: var=systemctl_output
+    when: "'failed' in command_result.msg"
+
+  - name: pause playbook if failed
+    pause:
+      minutes:30
+    when: "'failed' in command_result.msg"
+
+  - name: fail playbook execution if start mysql service failed
+    fail:
+      msg: fail playbook after log rows were gathered
+    when: "'failed' in command_result.msg"
 
   - name: register PXC version
     shell: mysqld --version
