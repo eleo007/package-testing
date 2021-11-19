@@ -172,10 +172,10 @@
     debug: var=systemctl_output
     when: "'failed' in command_result.msg"
 
-  - name: pause playbook if failed
-    pause:
-      minutes:30
-    when: "'failed' in command_result.msg"
+#  - name: pause playbook if failed
+#    pause:
+#      minutes:30
+#    when: "'failed' in command_result.msg"
 
   - name: fail playbook execution if start mysql service failed
     fail:
