@@ -134,11 +134,6 @@
   - name: output results of check righs and ips start/fail of the server
     debug: var=files_result_3
 
-  - name: fail playbook execution if start mysql service failed
-    fail:
-      msg: fail playbook after log rows were gathered
-    when: "'failed' in command_result.msg"
-
   - name: register PXC version
     shell: mysqld --version
     register: pxc_version
