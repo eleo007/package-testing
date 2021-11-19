@@ -54,8 +54,8 @@
       update_cache: yes
     vars:
       packages:
-      - percona-toolkit
-      - percona-xtrabackup-80
+#      - percona-toolkit
+#      - percona-xtrabackup-80
       - percona-xtradb-cluster-full
       - percona-xtradb-cluster-source
     when: ansible_os_family == "Debian"
