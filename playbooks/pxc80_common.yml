@@ -56,9 +56,13 @@
       packages:
       - percona-xtradb-cluster-full
       - percona-xtradb-cluster-source
-#      - percona-toolkit
-#      - percona-xtrabackup-80
+      - percona-toolkit
+      - percona-xtrabackup-80
+    register: packages_install
     when: ansible_os_family == "Debian"
+
+  - name: debug packages install track
+    debug: var=packages_install
 
   - name: check righs and ips
     command: "{{ item }}"
