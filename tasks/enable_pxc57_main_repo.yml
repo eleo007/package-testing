@@ -18,11 +18,11 @@
     when: ansible_os_family == "RedHat" 
 
   - name: enable main repo
-    command: percona-release enable original release
+    command: percona-release enable-only original release
     when: lookup('env', 'pxc57_repo') == "original"
 
   - name: enable main repo
-    command: percona-release enable pxc-57 release
+    command: percona-release enable-only pxc-57 release
     when: lookup('env', 'pxc57_repo') == "pxc57" or lookup('env', 'install_repo') == ""
 
   - name: enable pxb24 repo
