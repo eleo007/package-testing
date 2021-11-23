@@ -23,11 +23,11 @@
 
   - name: enable main repo
     command: percona-release enable-only pxc-57 release
-    when: lookup('env', 'pxc57_repo') == "pxc57" or lookup('env', 'install_repo') == ""
+    when: lookup('env', 'pxc57_repo') == "pxc57" or lookup('env', 'pxc57_repo') == ""
 
   - name: enable pxb24 repo
     command: percona-release enable pxb-24 release
-    when: lookup('env', 'pxc57_repo') == "pxc57" or lookup('env', 'install_repo') == ""
+    when: lookup('env', 'pxc57_repo') == "pxc57" or lookup('env', 'pxc57_repo') == ""
 
   - name: check enabled repos
     command: percona-release show
