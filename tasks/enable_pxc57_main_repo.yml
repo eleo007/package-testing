@@ -15,13 +15,26 @@
   - name: add the main Percona yum repos for centos 6 and 7
 #   yum: name=https://repo.percona.com/yum/testing/latest/RPMS/noarch/percona-release-1.0-21.noarch.rpm
     yum: name=https://repo.percona.com/yum/percona-release-latest.noarch.rpm
-    when: ansible_os_family == "RedHat"
+    when: ansible_os_family == "RedHat" 
 
   - name: enable main repo
     command: percona-release enable original release
-#
-#  - name: enable pxb24 repo
-#    command: percona-release enable pxb-24 release
+    when: lookup('env', 'pxc57_repo') == "original"
+
+  - name: enable main repo
+    command: percona-release enable pxc-57 release
+    when: lookup('env', 'pxc57_repo') == "pxc57" or lookup('env', 'install_repo') == ""
+
+  - name: enable pxb24 repo
+    command: percona-release enable pxb-24 release
+    when: lookup('env', 'pxc57_repo') == "pxc57" or lookup('env', 'install_repo') == ""
+
+  - name: check enabled repos
+    command: percona-release show
+    register: pr_show
+
+  - name: verify percona-release show
+    debug: var=pr_show
 
   - name: clean and update yum cache
     shell: |

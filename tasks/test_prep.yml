@@ -136,7 +136,7 @@
     with_items:
     - rm -rf /package-testing
     - rm -f master.zip
-    - wget --no-check-certificate -O master.zip https://github.com/Percona-QA/package-testing/archive/master.zip
+    - wget --no-check-certificate -O master.zip https://eleo007/Percona-QA/package-testing/archive/PXC-3828_use_original_and_pxc_re.zip 
     - unzip master.zip
     - rm -f master.zip
     - mv package-testing-master /package-testing
@@ -146,7 +146,7 @@
     command: "{{ item }}"
     with_items:
     - rm -f master.zip
-    - wget --no-check-certificate -O master.zip https://github.com/sstephenson/bats/archive/master.zip
+    - wget --no-check-certificate -O master.zip https://github.com/sstephenson/bats/archive/PXC-3828_use_original_and_pxc_re.zip
     - unzip master.zip
     - rm -f master.zip
     - bats-master/install.sh /usr/local

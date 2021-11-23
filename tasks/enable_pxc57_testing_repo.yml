@@ -18,13 +18,19 @@
 
   - name: change the default repo to testing
     command: percona-release enable-only original testing
+    when: lookup('env', 'pxc57_repo') == "original"
+
+  - name: change the default repo to testing
+    command: percona-release enable-only pxc-57 testing
+    when: lookup('env', 'pxc57_repo') == "pxc57" or lookup('env', 'install_repo') == ""
 
   - name: enable original release repo for qpress dependancy for RHEL
     command: percona-release enable original release
-    when: ansible_os_family == "RedHat"
+    when: (ansible_os_family == "RedHat") and (lookup('env', 'pxc57_repo') == "pxc57" or lookup('env', 'install_repo') == "")
 
   - name: enable pxb24 repo
     command: percona-release enable pxb-24 release
+    when: lookup('env', 'pxc57_repo') == "pxc57" or lookup('env', 'install_repo') == ""
 
   - name: clean and update yum cache
     shell: |
