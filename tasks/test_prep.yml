@@ -136,17 +136,17 @@
     with_items:
     - rm -rf /package-testing
     - rm -f master.zip
-    - wget --no-check-certificate -O master.zip https://eleo007/Percona-QA/package-testing/archive/PXC-3828_use_original_and_pxc_re.zip 
+    - wget --no-check-certificate -O master.zip https://github.com/eleo007/package-testing/archive/PXC-3828_use_original_and_pxc_re.zip 
     - unzip master.zip
     - rm -f master.zip
-    - mv package-testing-master /package-testing
+    - mv package-testing-PXC-3828_use_original_and_pxc_re package-testing
     when: lookup('env', 'USE_LOCAL_PKG_TEST') == "" or lookup('env', 'USE_LOCAL_PKG_TEST') == "0"
 
   - name: install latest bats from github
     command: "{{ item }}"
     with_items:
     - rm -f master.zip
-    - wget --no-check-certificate -O master.zip https://github.com/sstephenson/bats/archive/PXC-3828_use_original_and_pxc_re.zip
+    - wget --no-check-certificate -O master.zip https://github.com/sstephenson/bats/archive/master.zip
     - unzip master.zip
     - rm -f master.zip
     - bats-master/install.sh /usr/local
