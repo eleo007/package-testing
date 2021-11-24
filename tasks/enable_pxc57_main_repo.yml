@@ -17,17 +17,21 @@
     yum: name=https://repo.percona.com/yum/percona-release-latest.noarch.rpm
     when: ansible_os_family == "RedHat" 
 
-  - name: enable main repo
+  - name: enable original main repo
     command: percona-release enable original release
-    when: lookup('env', 'pxc57_repo') == "original"
+    when: lookup('env', 'pxc57repo') == "original"
+
+  - name: enable pxc-57 main repo
+    command: percona-release enable-only pxc-57 release
+    when: lookup('env', 'pxc57repo') == "pxc57"
 
   - name: enable main repo
     command: percona-release enable pxc-57 release
-    when: lookup('env', 'pxc57_repo') == "pxc57" or lookup('env', 'pxc57_repo') == ""
+    when: lookup('env', 'pxc57repo') == ""
 
   - name: enable pxb24 repo
     command: percona-release enable pxb-24 release
-    when: lookup('env', 'pxc57_repo') == "pxc57" or lookup('env', 'pxc57_repo') == ""
+    when: lookup('env', 'pxc57repo') == "pxc57" or lookup('env', 'pxc57repo') == ""
 
   - name: check enabled repos
     command: percona-release show
