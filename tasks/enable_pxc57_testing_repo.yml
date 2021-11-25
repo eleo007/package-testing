@@ -32,13 +32,6 @@
     command: percona-release enable pxb-24 release
     when: lookup('env', 'pxc57repo') == "pxc57" or lookup('env', 'pxc57repo') == ""
 
-  - name: check enabled repos
-    command: percona-release show
-    register: pr_show
-
-  - name: verify percona-release show
-    debug: var=pr_show
-
   - name: clean and update yum cache
     shell: |
       yum clean all
