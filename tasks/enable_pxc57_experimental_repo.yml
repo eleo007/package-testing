@@ -30,6 +30,13 @@
     command: percona-release enable original experimental
     when: lookup('env', 'pxc57repo') == "original"
 
+  - name: check enabled repos
+    command: percona-release show
+    register: pr_show
+
+  - name: verify percona-release show
+    debug: var=pr_show
+
   - name: clean and update yum cache
     shell: |
       yum clean all
