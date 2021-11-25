@@ -26,7 +26,7 @@
     command: percona-release enable tools experimental
     when: lookup('env', 'pxc57repo') == "pxc57" or lookup('env', 'pxc57repo') == ""
 
-   - name: enable original experimental repo
+  - name: enable original experimental repo
     command: percona-release enable original experimental
     when: lookup('env', 'pxc57repo') == "original"
 
