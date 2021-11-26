@@ -17,6 +17,14 @@
   - name: Get additional info
     debug:
       var: ansible_facts.distribution_release
+  
+  - name: get ansible version
+    command: ansible --version
+    register: ans_ver
+
+  - name: output vansible version
+    debug:
+      var: ans_ver
 
   - name: include tasks for test env setup
     include_tasks: ../tasks/test_prep.yml
