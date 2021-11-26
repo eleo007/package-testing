@@ -32,16 +32,6 @@
   - name: include tasks for pt installation
     include_tasks: ../tasks/install_pt.yml
 
-#  - name: Gather the package facts
-#    ansible.builtin.package_facts:
-#      manager: auto
-#    when: ansible_distribution_release != "buster"
-#
-#  - name: Check whether a package called percona-toolkit is installed
-#    ansible.builtin.debug:
-#      msg: "{{ ansible_facts.packages['percona-toolkit'] }} versions of percona-toolkit is installed!"
-#    when: (ansible_distribution_release != "buster") and ("'percona-toolkit' in ansible_facts.packages")
-
 # remove till the PT-1959 is fixed
 #  - name: check that pt version is correct
 #    command: /package-testing/version_check.sh pt
@@ -60,6 +50,9 @@
 
   - name: include tasks for enabling test repo
     include_tasks: ../tasks/enable_only_tools_testing_repo.yml
+
+  - name: include tasks for pt installation
+    include_tasks: ../tasks/install_pt.yml
 
   - name: check enabled repos
     command: percona-release show
