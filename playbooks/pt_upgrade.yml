@@ -50,6 +50,11 @@
 
   - name: include tasks for enabling test repo
     include_tasks: ../tasks/enable_only_tools_testing_repo.yml
+    when: lookup('env', 'install_repo') != "experimental"
+
+  - name: include tasks for enabling experimental repo
+    include_tasks: ../tasks/enable_only_tools_experimental_repo.yml
+    when: lookup('env', 'install_repo') == "experimental"
 
   - name: include tasks for pt installation
     include_tasks: ../tasks/install_pt.yml

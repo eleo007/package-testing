@@ -24,6 +24,10 @@
     include: ../tasks/enable_only_tools_main_repo.yml
     when: lookup('env', 'install_repo') == "main"
 
+  - name: include tasks for enabling experimental repo
+    include_tasks: ../tasks/enable_only_tools_experimental_repo.yml
+    when: lookup('env', 'install_repo') == "experimental"
+
   - name: check enabled repos
     command: percona-release show
     register: repo_list
