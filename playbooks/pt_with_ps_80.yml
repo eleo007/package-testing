@@ -1,0 +1,69 @@
+---
+# This playbook does following:
+#   enables Percona testing repository
+#   installs latest version of Percona-Toolkit
+#   installs latest version of PS-57
+
+- hosts: all
+  become: true
+  become_method: sudo
+
+  tasks:
+  - name: include tasks for test env setup
+    include_tasks: ../tasks/test_prep.yml
+
+  - name: include tasks for enabling ps80 main repo
+    include: ../tasks/enable_ps8_main_repo.yml
+
+  - name: install ps80 packages
+    include: ../tasks/install_ps80.yml
+
+  - name: include tasks for enabling test repo
+    include_tasks: ../tasks/enable_only_tools_testing_repo.yml
+    when: lookup('env', 'install_repo') == "testing" or lookup('env', 'install_repo') == ""
+
+  - name: include tasks for enabling main repo
+    include: ../tasks/enable_only_tools_main_repo.yml
+    when: lookup('env', 'install_repo') == "main"
+
+  - name: include tasks for enabling experimental repo
+    include_tasks: ../tasks/enable_only_tools_experimental_repo.yml
+    when: lookup('env', 'install_repo') == "experimental"
+
+  - name: check enabled repos
+    command: percona-release show
+    register: repo_list
+
+  - name: output repos list
+    debug:
+      var: repo_list
+
+  - name: include tasks for pt installation
+    include_tasks: ../tasks/install_pt.yml
+
+  - name: list installed percona packages
+    shell: apt list --installed|grep -i percona
+    register: packages_list
+    when: ansible_os_family == "Debian"
+
+  - name: output percona installed packages list
+    debug:
+      var: packages_list
+    when: ansible_os_family == "Debian"
+
+  - name: list installed percona packages
+    shell: yum list installed|grep -i percona
+    register: packages_list
+    when: ansible_os_family == "RedHat"
+
+  - name: output percona installed packages list
+    debug:
+      var: packages_list
+    when: ansible_os_family == "RedHat"
+
+# remove till the PT-1959 is fixed
+#  - name: check that pt version is correct
+#    command: /package-testing/version_check.sh pt
+
+  - name: remove pt packages
+    include: ../tasks/remove_pt.yml
