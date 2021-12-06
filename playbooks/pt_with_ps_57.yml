@@ -41,6 +41,26 @@
   - name: include tasks for pt installation
     include_tasks: ../tasks/install_pt.yml
 
+  - name: list installed percona packages
+    command: apt list --installed|grep -i percona
+    register: packages_list
+    when: ansible_os_family == "Debian"
+
+  - name: output percona installed packages list
+    debug:
+      var: packages_list
+    when: ansible_os_family == "Debian"
+
+  - name: list installed percona packages
+    command: yum list installed|grep -i percona
+    register: packages_list
+    when: ansible_os_family == "RedHat"
+
+  - name: output percona installed packages list
+    debug:
+      var: packages_list
+    when: ansible_os_family == "RedHat"
+
 # remove till the PT-1959 is fixed
 #  - name: check that pt version is correct
 #    command: /package-testing/version_check.sh pt
