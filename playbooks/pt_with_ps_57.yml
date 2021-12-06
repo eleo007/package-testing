@@ -42,7 +42,7 @@
     include_tasks: ../tasks/install_pt.yml
 
   - name: list installed percona packages
-    command: apt list --installed|grep -i percona
+    shell: apt list --installed|grep -i percona
     register: packages_list
     when: ansible_os_family == "Debian"
 
@@ -52,7 +52,7 @@
     when: ansible_os_family == "Debian"
 
   - name: list installed percona packages
-    command: yum list installed|grep -i percona
+    shell: yum list installed|grep -i percona
     register: packages_list
     when: ansible_os_family == "RedHat"
 
