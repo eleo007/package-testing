@@ -12,11 +12,21 @@
   - name: include tasks for test env setup
     include_tasks: ../tasks/test_prep.yml
 
+  - name: include tasks for enabling ps57 main repo
+    include: ../tasks/enable_main_repo.yml
+    when: lookup('env', 'install_with') == "ps57" 
+
+  - name: install ps57 packages
+    include: ../tasks/install_ps57.yml
+    when: lookup('env', 'install_with') == "ps57" 
+
   - name: include tasks for enabling ps80 main repo
     include: ../tasks/enable_ps8_main_repo.yml
+    when: lookup('env', 'install_with') == "ps80" 
 
   - name: install ps80 packages
     include: ../tasks/install_ps80.yml
+    when: lookup('env', 'install_with') == "ps80" 
 
   - name: include tasks for enabling test repo
     include_tasks: ../tasks/enable_only_tools_testing_repo.yml
