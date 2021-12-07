@@ -1,0 +1,27 @@
+  - name: install MySQL Community deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+    vars:
+      packages:
+      - mysql-community-server
+    when: ansible_os_family == "Debian"
+
+  - name: install MySQL Community packages in centos6/7
+    yum:
+      name: "{{ packages }}"
+      state: present
+    vars:
+      packages:
+      - mysql-community-server
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version <= "7"
+
+  - name: install MySQL Community packages in rhel/centos 8
+    yum:
+      name: "{{ packages }}"
+      state: present
+    vars:
+      packages:
+      - python3-libselinux
+      - mysql-community-server
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
