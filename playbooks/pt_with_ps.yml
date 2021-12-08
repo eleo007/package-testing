@@ -28,6 +28,22 @@
     include_tasks: ../tasks/install_ps80.yml
     when: lookup('env', 'install_with') == "ps80"
 
+  - name: include tasks for enabling pxc 57 repo
+    include_tasks: ../tasks/enable_pxc57_main_repo.yml
+    when: lookup('env', 'install_with') == "pxc57"
+
+  - name: include tasks for installing pxc 57 packages
+    include_tasks: ../tasks/install_pxc57.yml
+    when: lookup('env', 'install_with') == "pxc57"
+
+  - name: include tasks for enabling pxc 80 repo
+    include_tasks: ../tasks/enable_pxc80_main_repo.yml
+    when: lookup('env', 'install_with') == "pxc80"
+
+  - name: include tasks for installing pxc 80 packages
+    include_tasks: ../tasks/install_pxc80.yml
+    when: lookup('env', 'install_with') == "pxc80"
+
   - name: include tasks for enabling upstream 57 repo
     include_tasks: ../tasks/enable_upstream57_repo.yml
     when: lookup('env', 'install_with') == "upstream57"
@@ -44,15 +60,15 @@
     include_tasks: ../tasks/install_upstream80.yml
     when: lookup('env', 'install_with') == "upstream80"
 
-  - name: include tasks for enabling test repo
+  - name: include tasks for enabling tools test repo
     include_tasks: ../tasks/enable_only_tools_testing_repo.yml
     when: lookup('env', 'install_repo') == "testing" or lookup('env', 'install_repo') == ""
 
-  - name: include tasks for enabling main repo
+  - name: include tasks for enabling tools main repo
     include_tasks: ../tasks/enable_only_tools_main_repo.yml
     when: lookup('env', 'install_repo') == "main"
 
-  - name: include tasks for enabling experimental repo
+  - name: include tasks for enabling tools experimental repo
     include_tasks: ../tasks/enable_only_tools_experimental_repo.yml
     when: lookup('env', 'install_repo') == "experimental"
 
