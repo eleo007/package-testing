@@ -60,6 +60,28 @@
     include_tasks: ../tasks/install_upstream80.yml
     when: lookup('env', 'install_with') == "upstream80"
 
+#testpsmdb_test
+  - name: include tasks for enabling psmdb 44 repo
+    include_tasks: ../tasks/enable_psmdb_repo.yml
+    vars:
+      psmdb_repo: "psmdb-44 release"
+    when: lookup('env', 'install_with') == "psmdb44"
+
+  - name: include tasks for installing psmdb 44 packages
+    include_tasks: ../tasks/install_psmdb.yml
+    when: lookup('env', 'install_with') == "psmdb44"
+
+  - name: include tasks for enabling psmdb 50 repo
+    include_tasks: ../tasks/enable_psmdb_repo.yml
+    vars:
+      psmdb_repo: "psmdb-50 release"
+    when: lookup('env', 'install_with') == "psmdb50"
+
+  - name: include tasks for installing psmdb 50 packages
+    include_tasks: ../tasks/install_psmdb.yml
+    when: lookup('env', 'install_with') == "psmdb50"
+#testpsmdb_test
+
   - name: include tasks for enabling tools test repo
     include_tasks: ../tasks/enable_only_tools_testing_repo.yml
     when: lookup('env', 'install_repo') == "testing" or lookup('env', 'install_repo') == ""
