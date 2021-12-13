@@ -26,8 +26,6 @@
 
   - name: include tasks for installing ps80 packages
     include_tasks: ../tasks/install_ps80.yml
-    vars:
-      packages: "percona-server-server"
     when: lookup('env', 'install_with') == "ps80"
 
   - name: include tasks for enabling pxc 57 repo
@@ -71,8 +69,6 @@
 
   - name: include tasks for installing psmdb 44 packages
     include_tasks: ../tasks/install_psmdb.yml
-    vars:
-      packages: percona-server-mongodb
     when: lookup('env', 'install_with') == "psmdb44"
 
   - name: include tasks for enabling psmdb 50 repo
@@ -83,8 +79,6 @@
 
   - name: include tasks for installing psmdb 50 packages
     include_tasks: ../tasks/install_psmdb.yml
-    vars:
-      packages: percona-server-mongodb
     when: lookup('env', 'install_with') == "psmdb50"
 #testpsmdb_test
 
