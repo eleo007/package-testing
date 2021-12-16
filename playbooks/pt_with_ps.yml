@@ -26,6 +26,8 @@
 
   - name: include tasks for installing ps80 packages
     include_tasks: ../tasks/install_ps80.yml
+    vars:
+      packages: percona-server-server
     when: lookup('env', 'install_with') == "ps80"
 
   - name: include tasks for enabling pxc 57 repo
@@ -60,7 +62,6 @@
     include_tasks: ../tasks/install_upstream80.yml
     when: lookup('env', 'install_with') == "upstream80"
 
-#testpsmdb_test
   - name: include tasks for enabling psmdb 44 repo
     include_tasks: ../tasks/enable_psmdb_repo.yml
     vars:
@@ -79,8 +80,9 @@
 
   - name: include tasks for installing psmdb 50 packages
     include_tasks: ../tasks/install_psmdb.yml
+    vars:
+      packages: percona-server-mongodb
     when: lookup('env', 'install_with') == "psmdb50"
-#testpsmdb_test
 
   - name: include tasks for enabling tools test repo
     include_tasks: ../tasks/enable_only_tools_testing_repo.yml
@@ -129,5 +131,99 @@
 #  - name: check that pt version is correct
 #    command: /package-testing/version_check.sh pt
 
-  - name: remove pt packages
-    include: ../tasks/remove_pt.yml
+#test bootstrap preparation pxc 57***
+
+  - debug: 
+      var: ansible_all_ipv4_addresses
+    when: lookup('env', 'install_with') is match("pxc(57|80)$")
+  
+  - set_fact:
+      man_ip: "{{ item }}"
+    with_items: "{{ ansible_all_ipv4_addresses }}"
+    # when: "item.startswith('192.168')" - Uncomment before prod
+    when: "item.startswith('10.0') and lookup('env', 'install_with') is match('pxc(57|80)$')"
+  
+  - debug: 
+      var: man_ip
+    when: lookup('env', 'install_with') is match("pxc(57|80)$")
+
+  - name: stop mysql service with service command
+    service: 
+      name: mysql
+      state: stopped
+    when: lookup('env', 'install_with') == "pxc57"
+
+  - name: copy pxc config on centos 6
+    template: src=../templates/my_rpm.j2 dest=/etc/my.cnf
+    when: lookup('env', 'install_with') == "pxc57" and ansible_os_family == "RedHat" and ansible_distribution_major_version == "6" 
+
+  - name: copy pxc config on centos 7
+    template: src=../templates/my_rpm_7.j2 dest=/etc/my.cnf
+    when: lookup('env', 'install_with') == "pxc57" and ansible_os_family == "RedHat" and ansible_distribution_major_version >= "7"
+
+  - name: configure PXC on debian/ubuntu
+    template: src=../templates/my.j2
+              dest=/etc/mysql/my.cnf
+              mode=0640 owner=mysql group=root
+    when: lookup('env', 'install_with') == "pxc57" and ansible_os_family == "Debian" 
+
+  # bootstrap the cluster
+  - name: bootstrap cluster on RHEL6
+    command: /etc/init.d/mysql bootstrap-pxc
+    when: lookup('env', 'install_with') == "pxc57" and ansible_os_family == "RedHat" and ansible_distribution_major_version == "6"
+
+  - name: bootstrap cluster on RHEL7
+    command: systemctl start mysql@bootstrap.service
+    when: lookup('env', 'install_with') == "pxc57" and ansible_os_family == "RedHat" and ansible_distribution_major_version >= "7"
+
+  - name: run the bootstrap service on debian/ubuntu
+    command: service mysql bootstrap-pxc
+    when: lookup('env', 'install_with') == "pxc57" and ansible_os_family == "Debian"
+
+#test bootstrap preparation pxc 57***
+
+  - name: start mysql service
+    service: 
+      name: mysql
+      state: started
+    when: lookup('env', 'install_with') is match("(ps|upstream)(57|80)$")
+
+  # set root password on centos
+  - name: set root password on centos
+    command: /package-testing/setpass_57.sh
+    when: lookup('env', 'install_with') is match('(pxc|ps)57$') and ansible_os_family == "RedHat"
+
+  - name: copy .my.cnf with credentials on centos
+    template: src=../templates/my_57.j2
+              dest=/root/.my.cnf
+              mode=0640 owner=root group=root
+    when: lookup('env', 'install_with') is match('(pxc|ps)57$') and ansible_os_family == "RedHat"
+#test bootstrap preparation 
+
+  - name: start mongod service
+    service: 
+      name: mongod
+      state: started
+    when: "'psmdb' in lookup('env', 'install_with')"
+
+  - name: run pt-mysql-summary
+    command: sudo pt-mysql-summary
+    register: pt_output
+    when: "'psmdb' not in lookup('env', 'install_with')"
+
+  - name: check pt output
+    debug:
+      var: pt_output
+    when: "'psmdb' not in lookup('env', 'install_with')"
+
+  - name: run pt-mongo-summary
+    command: sudo pt-mongodb-summary
+    register: pt_output
+    when: "'psmdb' in lookup('env', 'install_with')"
+
+  - name: check pt output
+    debug:
+      var: pt_output
+
+#  - name: remove pt packages
+#    include: ../tasks/remove_pt.yml
