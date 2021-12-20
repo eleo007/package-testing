@@ -188,7 +188,13 @@
     service: 
       name: mysql
       state: started
-    when: lookup('env', 'install_with') is match("(ps|upstream)(57|80)$")
+    when: lookup('env', 'install_with') is match("(ps|upstream)(57|80)$") and ansible_os_family == "Debian"
+
+  - name: start mysql service
+    service: 
+      name: mysqld
+      state: started
+    when: lookup('env', 'install_with') is match("(ps|upstream)(57|80)$") and ansible_os_family == "RedHat"
 
   # set root password on centos
   - name: set root password on centos
