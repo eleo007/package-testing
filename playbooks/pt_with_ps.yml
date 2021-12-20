@@ -143,7 +143,7 @@
       man_ip: "{{ item }}"
     with_items: "{{ ansible_all_ipv4_addresses }}"
     # when: "item.startswith('192.168')" - Uncomment before prod
-    when: "item.startswith('192.168') and lookup('env', 'install_with') is match('pxc(57|80)$')"
+    when: "item.startswith('10.') and lookup('env', 'install_with') is match('pxc(57|80)$')"
   
   - debug: 
       var: man_ip
@@ -185,7 +185,9 @@
 
   # bootstrap the cluster
   - name: bootstrap cluster on RHEL7
-    command: systemctl start mysql@bootstrap.service
+    systemd:
+      name: mysql@bootstrap.service
+      state: started
     when: lookup('env', 'install_with') is match("pxc80") or (lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat" )
 
   - name: run the bootstrap service on debian/ubuntu
@@ -204,7 +206,13 @@
     systemd: 
       name: mysql
       state: started
-    when: lookup('env', 'install_with') is match("(ps|upstream)(57|80)$") and ansible_os_family == "RedHat"
+    when: lookup('env', 'install_with') is match("ps(57|80)$") and ansible_os_family == "RedHat"
+
+  - name: start mysqld service on CentOS for upstream
+    systemd: 
+      name: mysqld
+      state: started
+    when: lookup('env', 'install_with') is match("upstream(57|80)$") and ansible_os_family == "RedHat"
 
   # set root password on centos
   - name: set root password on centos
