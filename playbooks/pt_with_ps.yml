@@ -70,6 +70,8 @@
 
   - name: include tasks for installing psmdb 44 packages
     include_tasks: ../tasks/install_psmdb.yml
+    vars:
+      packages: percona-server-mongod
     when: lookup('env', 'install_with') == "psmdb44"
 
   - name: include tasks for enabling psmdb 50 repo
