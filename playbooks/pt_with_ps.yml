@@ -141,7 +141,7 @@
       man_ip: "{{ item }}"
     with_items: "{{ ansible_all_ipv4_addresses }}"
     # when: "item.startswith('192.168')" - Uncomment before prod
-    when: "item.startswith('10.0') and lookup('env', 'install_with') is match('pxc(57|80)$')"
+    when: "item.startswith('192.168') and lookup('env', 'install_with') is match('pxc(57|80)$')"
   
   - debug: 
       var: man_ip
