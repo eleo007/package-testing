@@ -185,9 +185,10 @@
 
   # bootstrap the cluster
   - name: bootstrap cluster on RHEL7
-    systemd:
-      name: mysql@bootstrap.service
-      state: started
+    command: systemctl start mysql@bootstrap.service
+#    systemd:
+#      name: mysql@bootstrap.service
+#      state: started
     when: lookup('env', 'install_with') is match("pxc80") or (lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat" )
 
   - name: run the bootstrap service on debian/ubuntu
