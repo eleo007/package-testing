@@ -30,6 +30,10 @@
       packages: percona-server-server
     when: lookup('env', 'install_with') == "ps80"
 
+  - name: disable selinux
+    selinux: state=disabled
+    when: ansible_os_family == "RedHat"
+
   - name: include tasks for enabling pxc 57 repo
     include_tasks: ../tasks/enable_pxc57_main_repo.yml
     when: lookup('env', 'install_with') == "pxc57"
