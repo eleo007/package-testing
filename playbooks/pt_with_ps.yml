@@ -189,11 +189,11 @@
 #    systemd:
 #      name: mysql@bootstrap.service
 #      state: started
-    when: lookup('env', 'install_with') is match("pxc80") or (lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat" )
+    when: lookup('env', 'install_with') is match("pxc80") #or (lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat" )
 
   - name: run the bootstrap service on debian/ubuntu
     command: service mysql bootstrap-pxc
-    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "Debian"
+    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "Debian" or (lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat" )
 
 #test bootstrap preparation pxc 57***
 
