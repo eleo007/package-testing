@@ -32,7 +32,7 @@
 
   - name: disable selinux
     selinux: state=disabled
-    when: ansible_os_family == "RedHat"
+    when: ansible_os_family == "RedHat" and lookup('env', 'install_with') == "pxc57"
 
   - name: include tasks for enabling pxc 57 repo
     include_tasks: ../tasks/enable_pxc57_main_repo.yml
@@ -153,20 +153,17 @@
       var: man_ip
     when: lookup('env', 'install_with') is match("pxc(57|80)$")
 
-  - name: install python mysql rpm packages for CentOS 8
-    yum:
-      name: "{{ packages }}"
-      state: latest
-    vars:
-      packages:
-      - python3-PyMySQL
-    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8" and lookup('env', 'install_with') == "pxc57"
+  # - name: install python mysql rpm packages for CentOS 8
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #   vars:
+  #     packages:
+  #     - python3-PyMySQL
+  #   when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8" and lookup('env', 'install_with') == "pxc57"
 
   - name: stop mysql service with service command
     command: service mysql stop
-    # service: 
-    #   name: mysql
-    #   state: stopped
     when: lookup('env', 'install_with') is match("pxc(57|80)$")
 
   - name: copy pxc config on centos 7
@@ -199,80 +196,80 @@
 
   # bootstrap the cluster
   - name: bootstrap cluster on RHEL7
-    command: systemctl start mysql@bootstrap.service
-#    systemd:
-#      name: mysql@bootstrap.service
-#      state: started
+#    command: systemctl start mysql@bootstrap.service
+   systemd:
+     name: mysql@bootstrap.service
+     state: started
     when: lookup('env', 'install_with') is match("pxc80") or (lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat" )
-####check error log
-    ignore_errors: yes
+# ####check error log
+#     ignore_errors: yes
 
-  - name: check error.log
-    command: cat /var/log/mysqld.log
-    register: error_log
-    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+#   - name: check error.log
+#     command: cat /var/log/mysqld.log
+#     register: error_log
+#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
 
-  - name: check error.log output
-    debug: 
-      var: error_log
-    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+#   - name: check error.log output
+#     debug: 
+#       var: error_log
+#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
 
-  - name: check cnf file
-    command: cat /etc/my.cnf
-    register: cnf_file
-    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+#   - name: check cnf file
+#     command: cat /etc/my.cnf
+#     register: cnf_file
+#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
 
-  - name: check cnf output
-    debug: 
-      var: cnf_file
-    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+#   - name: check cnf output
+#     debug: 
+#       var: cnf_file
+#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
 
-  - name: check cnf file path
-    command: ls -l /etc/my.cnf
-    register: cnf_file_path
-    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+#   - name: check cnf file path
+#     command: ls -l /etc/my.cnf
+#     register: cnf_file_path
+#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
 
-  - name: check cnf file path
-    debug: 
-      var: cnf_file_path
-    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+#   - name: check cnf file path
+#     debug: 
+#       var: cnf_file_path
+#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
 
-  - name: check log file path
-    command: ls -l /var/log/mysqld.log
-    register: log_path
-    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+#   - name: check log file path
+#     command: ls -l /var/log/mysqld.log
+#     register: log_path
+#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
 
-  - name: check log file path
-    debug: 
-      var: log_path
-    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+#   - name: check log file path
+#     debug: 
+#       var: log_path
+#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
 
-  - name: check alternatives
-    command: alternatives --list
-    register: alternatives
-    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+#   - name: check alternatives
+#     command: alternatives --list
+#     register: alternatives
+#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
 
-  - name: check alternatives
-    debug: 
-      var: alternatives
-    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+#   - name: check alternatives
+#     debug: 
+#       var: alternatives
+#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
 
-  - name: check bootstrap status
-    command: systemctl status mysql@bootstrap.service
-    register: bootstrap_status
-    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
-    ignore_errors: yes
+#   - name: check bootstrap status
+#     command: systemctl status mysql@bootstrap.service
+#     register: bootstrap_status
+#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+#     ignore_errors: yes
 
-  - name: check bootstrap status
-    debug: 
-      var: bootstrap_status
-    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+#   - name: check bootstrap status
+#     debug: 
+#       var: bootstrap_status
+#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
 
-  - name: Fail task execution
-    fail:
-      msg: The bootstrap failed
-    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
-####check error log
+#   - name: Fail task execution
+#     fail:
+#       msg: The bootstrap failed
+#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+# ####check error log
 
   - name: run the bootstrap service on debian/ubuntu
     command: service mysql bootstrap-pxc
