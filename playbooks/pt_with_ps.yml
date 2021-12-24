@@ -150,9 +150,10 @@
     when: lookup('env', 'install_with') is match("pxc(57|80)$")
 
   - name: stop mysql service with service command
-    service: 
-      name: mysql
-      state: stopped
+    command: service mysql stop
+    # service: 
+    #   name: mysql
+    #   state: stopped
     when: lookup('env', 'install_with') is match("pxc(57|80)$")
 
   - name: copy pxc config on centos 7
@@ -201,6 +202,46 @@
   - name: check error.log output
     debug: 
       var: error_log
+    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+
+  - name: check cnf file
+    command: cat /etc/my.cnf
+    register: cnf_file
+    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+
+  - name: check cnf output
+    debug: 
+      var: cnf_file
+    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+
+  - name: check cnf file path
+    command: ls -l /etc/my.cnf
+    register: cnf_file_path
+    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+
+  - name: check cnf file path
+    debug: 
+      var: cnf_file_path
+    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+
+  - name: check alternatives
+    command: alternatives --list
+    register: alternatives
+    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+
+  - name: check alternatives
+    debug: 
+      var: alternatives
+    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+
+  - name: check bootstrap status
+    command: systemctl status mysql@bootstrap.service
+    register: bootstrap_status
+    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+
+  - name: check bootstrap status
+    debug: 
+      var: bootstrap_status
     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
 
   - name: Fail task execution
