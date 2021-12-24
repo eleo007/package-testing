@@ -224,6 +224,16 @@
       var: cnf_file_path
     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
 
+  - name: check log file path
+    command: ls -l /var/log/mysqld.log
+    register: log_path
+    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+
+  - name: check log file path
+    debug: 
+      var: log_path
+    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+
   - name: check alternatives
     command: alternatives --list
     register: alternatives
@@ -238,6 +248,7 @@
     command: systemctl status mysql@bootstrap.service
     register: bootstrap_status
     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
+    ignore_errors: yes
 
   - name: check bootstrap status
     debug: 
