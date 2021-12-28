@@ -11,21 +11,28 @@
   vars:
 #      client: "{{ lookup('env', 'install_repo') }}"
       client: "{{ lookup('env', 'client_to_test') }}"
+      repo_name: "{{ lookup('env', 'repo_name') }}"
 
   tasks:
   - name: include tasks for test env setup
     include_tasks: ../tasks/test_prep.yml
 
-  - name: include tasks for enabling test repo
-    include_tasks: ../tasks/enable_only_tools_testing_repo.yml
+  - name: include tasks for enabling "repo_name" test repo
+    include_tasks: ../tasks/enable_only_testing_repo_for_pt.yml
+    # vars:
+    #   - repo_name: tools
     when: lookup('env', 'install_repo') == "testing" or lookup('env', 'install_repo') == ""
 
   - name: include tasks for enabling main repo
-    include: ../tasks/enable_only_tools_main_repo.yml
+    include: ../tasks/enable_only_main_repo_for_pt.yml
+    # vars:
+    #   - repo_name: tools
     when: lookup('env', 'install_repo') == "main"
 
   - name: include tasks for enabling experimental repo
-    include_tasks: ../tasks/enable_only_tools_experimental_repo.yml
+    include_tasks: ../tasks/enable_only_experimental_repo_for_pt.yml
+    # vars:
+    #   - repo_name: tools
     when: lookup('env', 'install_repo') == "experimental"
 
   - name: check enabled repos

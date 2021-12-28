@@ -11,8 +11,8 @@
     yum: name=https://repo.percona.com/yum/percona-release-latest.noarch.rpm
     when: ansible_os_family == "RedHat"
 
-  - name: enable tools testing repo
-    command: percona-release enable-only tools testing
+  - name: enable {{repo_name}} testing repo
+    command: percona-release enable-only {{repo_name}} testing
 
   - name: clean and update yum cache
     shell: |

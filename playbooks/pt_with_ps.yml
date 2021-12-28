@@ -7,6 +7,8 @@
 - hosts: all
   become: true
   become_method: sudo
+  vars:
+    repo_name: "{{ lookup('env', 'repo_name') }}"
 
   tasks:
   - name: include tasks for test env setup
@@ -90,16 +92,16 @@
       packages: percona-server-mongodb
     when: lookup('env', 'install_with') == "psmdb50"
 
-  - name: include tasks for enabling tools test repo
-    include_tasks: ../tasks/enable_only_tools_testing_repo.yml
+  - name: include tasks for enabling "{{repo_name}}" test repo
+    include_tasks: ../tasks/enable_only_testing_repo_for_pt.yml
     when: lookup('env', 'install_repo') == "testing" or lookup('env', 'install_repo') == ""
 
-  - name: include tasks for enabling tools main repo
-    include_tasks: ../tasks/enable_only_tools_main_repo.yml
+  - name: include tasks for enabling  "{{repo_name}}"  main repo
+    include_tasks: ../tasks/enable_only_main_repo_for_pt.yml
     when: lookup('env', 'install_repo') == "main"
 
-  - name: include tasks for enabling tools experimental repo
-    include_tasks: ../tasks/enable_only_tools_experimental_repo.yml
+  - name: include tasks for enabling  "{{repo_name}}" experimental repo
+    include_tasks: ../tasks/enable_only_experimental_repo_for_pt.yml
     when: lookup('env', 'install_repo') == "experimental"
 
   - name: check enabled repos
