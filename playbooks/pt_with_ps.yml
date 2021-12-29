@@ -36,62 +36,6 @@
     selinux: state=disabled
     when: ansible_os_family == "RedHat" and lookup('env', 'install_with') == "pxc57"
 
-  - name: include tasks for enabling pxc 57 repo
-    include_tasks: ../tasks/enable_pxc57_main_repo.yml
-    when: lookup('env', 'install_with') == "pxc57"
-
-  - name: include tasks for installing pxc 57 packages
-    include_tasks: ../tasks/install_pxc57.yml
-    when: lookup('env', 'install_with') == "pxc57"
-
-  - name: include tasks for enabling pxc 80 repo
-    include_tasks: ../tasks/enable_pxc80_main_repo.yml
-    when: lookup('env', 'install_with') == "pxc80"
-
-  - name: include tasks for installing pxc 80 packages
-    include_tasks: ../tasks/install_pxc80.yml
-    when: lookup('env', 'install_with') == "pxc80"
-
-  - name: include tasks for enabling upstream 57 repo
-    include_tasks: ../tasks/enable_upstream57_repo.yml
-    when: lookup('env', 'install_with') == "upstream57"
-
-  - name: include tasks for installing upstream 57 packages
-    include_tasks: ../tasks/install_upstream57.yml
-    when: lookup('env', 'install_with') == "upstream57"
-
-  - name: include tasks for enabling upstream 80 repo
-    include_tasks: ../tasks/enable_upstream80_repo.yml
-    when: lookup('env', 'install_with') == "upstream80"
-
-  - name: include tasks for installing upstream 80 packages
-    include_tasks: ../tasks/install_upstream80.yml
-    when: lookup('env', 'install_with') == "upstream80"
-
-  - name: include tasks for enabling psmdb 44 repo
-    include_tasks: ../tasks/enable_psmdb_repo.yml
-    vars:
-      psmdb_repo: "psmdb-44 release"
-    when: lookup('env', 'install_with') == "psmdb44"
-
-  - name: include tasks for installing psmdb 44 packages
-    include_tasks: ../tasks/install_psmdb.yml
-    vars:
-      packages: percona-server-mongodb
-    when: lookup('env', 'install_with') == "psmdb44"
-
-  - name: include tasks for enabling psmdb 50 repo
-    include_tasks: ../tasks/enable_psmdb_repo.yml
-    vars:
-      psmdb_repo: "psmdb-50 release"
-    when: lookup('env', 'install_with') == "psmdb50"
-
-  - name: include tasks for installing psmdb 50 packages
-    include_tasks: ../tasks/install_psmdb.yml
-    vars:
-      packages: percona-server-mongodb
-    when: lookup('env', 'install_with') == "psmdb50"
-
   - name: include tasks for enabling "{{repo_name}}" test repo
     include_tasks: ../tasks/enable_only_testing_repo_for_pt.yml
     when: lookup('env', 'install_repo') == "testing" or lookup('env', 'install_repo') == ""
@@ -104,180 +48,15 @@
     include_tasks: ../tasks/enable_only_experimental_repo_for_pt.yml
     when: lookup('env', 'install_repo') == "experimental"
 
-  - name: check enabled repos
-    command: percona-release show
-    register: repo_list
-
-  - name: output repos list
-    debug:
-      var: repo_list.stdout_lines
-
   - name: include tasks for pt installation
     include_tasks: ../tasks/install_pt.yml
-
-  - name: list installed percona packages
-    shell: apt list --installed|egrep -i "percona|mysql"
-    register: packages_list
-    when: ansible_os_family == "Debian"
-
-  - name: output percona installed packages list
-    debug:
-      var: packages_list.stdout_lines
-    when: ansible_os_family == "Debian"
-
-  - name: list installed percona packages
-    shell: yum list installed|egrep -i "percona|mysql"
-    register: packages_list
-    when: ansible_os_family == "RedHat"
-
-  - name: output percona installed packages list
-    debug:
-      var: packages_list.stdout_lines
-    when: ansible_os_family == "RedHat"
 
 # remove till the PT-1959 is fixed
 #  - name: check that pt version is correct
 #    command: /package-testing/version_check.sh pt
 
-#test bootstrap preparation pxc 57***
-
-  - debug: 
-      var: ansible_all_ipv4_addresses
-    when: lookup('env', 'install_with') is match("pxc(57|80)$")
-  
-  - set_fact:
-      man_ip: "{{ item }}"
-    with_items: "{{ ansible_all_ipv4_addresses }}"
-    # when: "item.startswith('192.168')" - Uncomment before prod
-    when: "item.startswith('10.') and lookup('env', 'install_with') is match('pxc(57|80)$')"
-  
-  - debug: 
-      var: man_ip
-    when: lookup('env', 'install_with') is match("pxc(57|80)$")
-
-  # - name: install python mysql rpm packages for CentOS 8
-  #   yum:
-  #     name: "{{ packages }}"
-  #     state: latest
-  #   vars:
-  #     packages:
-  #     - python3-PyMySQL
-  #   when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8" and lookup('env', 'install_with') == "pxc57"
-
-  - name: stop mysql service with service command
-    command: service mysql stop
-    when: lookup('env', 'install_with') is match("pxc(57|80)$")
-
-  - name: copy pxc config on centos 7
-    template: src=../templates/my_rpm_7.j2 dest=/etc/my.cnf
-    when: lookup('env', 'install_with') == "pxc57" and ansible_os_family == "RedHat" and ansible_distribution_major_version >= "7"
-
-  - name: configure PXC on debian/ubuntu
-    template: src=../templates/my.j2
-              dest=/etc/mysql/my.cnf
-              mode=0640 owner=mysql group=root
-    when: lookup('env', 'install_with') == "pxc57" and ansible_os_family == "Debian" 
-
-##### PXC80 bootstrap****
-  - name: copy pxc config on centos
-    template: src=../templates/my_rpm_80.j2 dest=/etc/my.cnf
-    when: lookup('env', 'install_with') == "pxc80" and ansible_os_family == "RedHat"
-
-  - name: copy pxc certs
-    copy:
-      src: ../support-files/certs/
-      dest: /etc/mysql/certs/
-    when: lookup('env', 'install_with') == "pxc80" 
-
-  - name: configure PXC on debian/ubuntu
-    template: src=../templates/my_8.j2
-              dest=/etc/mysql/my.cnf
-              mode=0640 owner=mysql group=root
-    when: lookup('env', 'install_with') == "pxc80" and ansible_os_family == "Debian"
-######
 
   # bootstrap the cluster
-  - name: bootstrap cluster on RHEL7
-#    command: systemctl start mysql@bootstrap.service
-    systemd:
-      name: mysql@bootstrap.service
-      state: started
-    when: lookup('env', 'install_with') is match("pxc80") or (lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat" )
-# ####check error log
-#     ignore_errors: yes
-
-#   - name: check error.log
-#     command: cat /var/log/mysqld.log
-#     register: error_log
-#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
-
-#   - name: check error.log output
-#     debug: 
-#       var: error_log
-#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
-
-#   - name: check cnf file
-#     command: cat /etc/my.cnf
-#     register: cnf_file
-#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
-
-#   - name: check cnf output
-#     debug: 
-#       var: cnf_file
-#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
-
-#   - name: check cnf file path
-#     command: ls -l /etc/my.cnf
-#     register: cnf_file_path
-#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
-
-#   - name: check cnf file path
-#     debug: 
-#       var: cnf_file_path
-#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
-
-#   - name: check log file path
-#     command: ls -l /var/log/mysqld.log
-#     register: log_path
-#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
-
-#   - name: check log file path
-#     debug: 
-#       var: log_path
-#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
-
-#   - name: check alternatives
-#     command: alternatives --list
-#     register: alternatives
-#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
-
-#   - name: check alternatives
-#     debug: 
-#       var: alternatives
-#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
-
-#   - name: check bootstrap status
-#     command: systemctl status mysql@bootstrap.service
-#     register: bootstrap_status
-#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
-#     ignore_errors: yes
-
-#   - name: check bootstrap status
-#     debug: 
-#       var: bootstrap_status
-#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
-
-#   - name: Fail task execution
-#     fail:
-#       msg: The bootstrap failed
-#     when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "RedHat"
-# ####check error log
-
-  - name: run the bootstrap service on debian/ubuntu
-    command: service mysql bootstrap-pxc
-    when: lookup('env', 'install_with') is match("pxc57") and ansible_os_family == "Debian"
-
-#test bootstrap preparation pxc 57***
 
   - name: start mysql service
     service: 
@@ -320,19 +99,10 @@
     register: pt_output
     when: "'psmdb' not in lookup('env', 'install_with')"
 
-  - name: check pt output
-    debug:
-      var: pt_output
-    when: "'psmdb' not in lookup('env', 'install_with')"
-
   - name: run pt-mongo-summary
     command: sudo pt-mongodb-summary
     register: pt_output
     when: "'psmdb' in lookup('env', 'install_with')"
-
-  - name: check pt output
-    debug:
-      var: pt_output
 
 #  - name: remove pt packages
 #    include: ../tasks/remove_pt.yml

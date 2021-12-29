@@ -1,0 +1,172 @@
+---
+# This playbook does following:
+#   enables Percona tools repository
+#   installs latest version of Percona-Toolkit (pt)
+#   installs latest version of MySQL server 80 (upstream 80)
+#   starts MySQL server and runs pt-mysql-summary tool
+
+- hosts: all
+  become: true
+  become_method: sudo
+  vars:
+    repo_name: "{{ lookup('env', 'repo_name') }}"
+
+  tasks:
+  - name: include tasks for test env setup
+    include_tasks: ../tasks/test_prep.yml
+
+# Enable MySQL repo and install MySQL package
+  - name: Install MySQL apt repository package
+    apt:
+      deb: https://dev.mysql.com/get/mysql-apt-config_0.8.12-1_all.deb
+    when: ansible_os_family == "Debian"
+
+  - name: Install MySQL RHEL 7 yum repository package
+    yum: name=https://dev.mysql.com/get/mysql80-community-release-el7-1.noarch.rpm state=present
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
+
+  - name: Import key for mysql-repo
+    rpm_key:
+      state: present
+      key: http://repo.mysql.com/RPM-GPG-KEY-mysql
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
+
+  - name: Install MySQL RHEL 8 yum repository package
+    yum: name=https://dev.mysql.com/get/mysql80-community-release-el8-1.noarch.rpm state=present
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
+
+  - name: setup epel 7 repo
+    yum: name=https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm state=present
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
+
+  - name: setup epel 8 repo
+    yum: name=https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm state=present
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
+
+  - name: disable the mysql module on RHEL/CentOS 8
+    command: /usr/bin/dnf module disable mysql -y
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
+
+  - name: install MySQL Community deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+    vars:
+      packages:
+      - mysql-community-server
+    when: ansible_os_family == "Debian"
+
+  - name: install MySQL Community packages in centos6/7
+    yum:
+      name: "{{ packages }}"
+      state: present
+    vars:
+      packages:
+      - mysql-community-server
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version <= "7"
+
+  - name: install MySQL Community packages in rhel/centos 8
+    yum:
+      name: "{{ packages }}"
+      state: present
+    vars:
+      packages:
+      - python3-libselinux
+      - mysql-community-server
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
+
+# Start mysql service
+  - name: start mysql service on debian
+    service: 
+      name: mysql
+      state: started
+    when: ansible_os_family == "Debian"
+
+  - name: start mysqld service on CentOS
+    systemd: 
+      name: mysqld
+      state: started
+    when: ansible_os_family == "RedHat"
+
+# On Centos mysql is started with random root password. Change myssql root password and create cnf with new client password on centos.
+  - name: set root password on centos
+    command: /package-testing/setpass_57.sh
+    when: ansible_os_family == "RedHat"
+
+  - name: copy .my.cnf with credentials on centos
+    template: src=../templates/my_57.j2
+              dest=/root/.my.cnf
+              mode=0640 owner=root group=root
+    when: ansible_os_family == "RedHat"
+
+# Enable only tools repo to install pt
+  - name: include tasks for enabling tools testing repo
+    include_tasks: ../tasks/enable_only_testing_repo_for_pt.yml
+    vars:
+      repo_name: tools
+    when: lookup('env', 'install_repo') == "testing" or lookup('env', 'install_repo') == ""
+
+  - name: include tasks for enabling tools main repo
+    include_tasks: ../tasks/enable_only_main_repo_for_pt.yml
+    vars:
+      repo_name: tools
+    when: lookup('env', 'install_repo') == "main"
+
+  - name: include tasks for enabling  tools experimental repo
+    include_tasks: ../tasks/enable_only_experimental_repo_for_pt.yml
+    vars:
+      repo_name: tools
+    when: lookup('env', 'install_repo') == "experimental"
+
+# Install pt and run tool
+  - name: include tasks for pt installation
+    include_tasks: ../tasks/install_pt.yml
+
+#DEBUG check repos
+  - name: check enabled repos
+    command: percona-release show
+    register: repo_list
+
+  - name: output repos list
+    debug:
+      var: repo_list.stdout_lines
+  #DEBUG check repos
+
+#DEBUG list percona packages
+  - name: list installed percona packages
+    shell: apt list --installed|egrep -i "percona|mysql"
+    register: packages_list
+    when: ansible_os_family == "Debian"
+
+  - name: output percona installed packages list
+    debug:
+      var: packages_list.stdout_lines
+    when: ansible_os_family == "Debian"
+
+  - name: list installed percona packages
+    shell: yum list installed|egrep -i "percona|mysql"
+    register: packages_list
+    when: ansible_os_family == "RedHat"
+
+  - name: output percona installed packages list
+    debug:
+      var: packages_list.stdout_lines
+    when: ansible_os_family == "RedHat"
+  #DEBUG list percona packages
+
+#   remove till the PT-1959 is fixed
+#  - name: check that pt version is correct
+#    command: /package-testing/version_check.sh pt
+
+  - name: run pt-mysql-summary
+    command: pt-mysql-summary
+    register: pt_output
+
+#DEBUG pt output
+  - name: check pt output
+    debug:
+      var: pt_output
+  #DEBUG pt output
+
+#  - name: remove pt packages
+#    include: ../tasks/remove_pt.yml

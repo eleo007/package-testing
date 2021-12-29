@@ -1,0 +1,160 @@
+---
+# This playbook does following:
+#   enables Percona tools repository
+#   installs latest version of Percona-Toolkit (pt)
+#   installs latest version of Percona-XtraDB-Cluster-80 (pxc80)
+#   bootstraps one node of pxc80 and runs pt-mysql-summary tool
+
+- hosts: all
+  become: true
+  become_method: sudo
+  vars:
+    repo_name: "{{ lookup('env', 'repo_name') }}"
+
+  tasks:
+  - name: include tasks for test env setup
+    include_tasks: ../tasks/test_prep.yml
+
+# Enable pxc main repo and install pxc packages
+  - name: include tasks for enabling pxc 80 repo
+    include_tasks: ../tasks/enable_pxc80_main_repo.yml
+
+  - name: install PXC 8 deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+    vars:
+      packages:
+      - percona-xtradb-cluster-full
+    when: ansible_os_family == "Debian"
+
+  - name: install PXC 8 rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+    vars:
+      packages:
+      - percona-xtradb-cluster-full
+    when: ansible_os_family == "RedHat"
+
+# Define node IP for PXC config  
+  - debug: 
+      var: ansible_all_ipv4_addresses
+
+  - set_fact:
+      man_ip: "{{ item }}"
+    with_items: "{{ ansible_all_ipv4_addresses }}"
+    when: "item.startswith('10.')"
+  
+  - name: output IP used to bootstrap pxc node
+    debug: 
+      var: man_ip
+
+# Stop mysql service and bootstrap pxc node
+  - name: stop mysql service with service command
+    command: service mysql stop
+
+  - name: copy pxc config on centos
+    template: src=../templates/my_rpm_80.j2 
+              dest=/etc/my.cnf
+    when: ansible_os_family == "RedHat"
+
+  - name: copy pxc config on debian/ubuntu
+    template: src=../templates/my_8.j2
+              dest=/etc/mysql/my.cnf
+              mode=0640 owner=mysql group=root
+    when: ansible_os_family == "Debian"
+
+  - name: copy pxc certs
+    copy:
+      src: ../support-files/certs/
+      dest: /etc/mysql/certs/
+
+  # bootstrap the pxc node
+  - name: bootstrap cluster on RHEL7
+    systemd:
+      name: mysql@bootstrap.service
+      state: started
+
+  # On Centos ps is started with random root password. Change ps root password and create cnf with new client password on centos.
+  - name: set root password on centos
+    command: /package-testing/setpass_57.sh
+    when: ansible_os_family == "RedHat"
+
+  - name: copy .my.cnf with credentials on centos
+    template: src=../templates/my_57.j2
+              dest=/root/.my.cnf
+              mode=0640 owner=root group=root
+    when: ansible_os_family == "RedHat"
+
+# Enable only tools repo to install pt
+  - name: include tasks for enabling tools testing repo
+    include_tasks: ../tasks/enable_only_testing_repo_for_pt.yml
+    vars:
+      repo_name: tools
+    when: lookup('env', 'install_repo') == "testing" or lookup('env', 'install_repo') == ""
+
+  - name: include tasks for enabling tools main repo
+    include_tasks: ../tasks/enable_only_main_repo_for_pt.yml
+    vars:
+      repo_name: tools
+    when: lookup('env', 'install_repo') == "main"
+
+  - name: include tasks for enabling  tools experimental repo
+    include_tasks: ../tasks/enable_only_experimental_repo_for_pt.yml
+    vars:
+      repo_name: tools
+    when: lookup('env', 'install_repo') == "experimental"
+
+# Install pt and run tool
+  - name: include tasks for pt installation
+    include_tasks: ../tasks/install_pt.yml
+
+#DEBUG check repos
+  - name: check enabled repos
+    command: percona-release show
+    register: repo_list
+
+  - name: output repos list
+    debug:
+      var: repo_list.stdout_lines
+  #DEBUG check repos
+
+#DEBUG list percona packages
+  - name: list installed percona packages
+    shell: apt list --installed|egrep -i "percona|mysql"
+    register: packages_list
+    when: ansible_os_family == "Debian"
+
+  - name: output percona installed packages list
+    debug:
+      var: packages_list.stdout_lines
+    when: ansible_os_family == "Debian"
+
+  - name: list installed percona packages
+    shell: yum list installed|egrep -i "percona|mysql"
+    register: packages_list
+    when: ansible_os_family == "RedHat"
+
+  - name: output percona installed packages list
+    debug:
+      var: packages_list.stdout_lines
+    when: ansible_os_family == "RedHat"
+  #DEBUG list percona packages
+
+#   remove till the PT-1959 is fixed
+#  - name: check that pt version is correct
+#    command: /package-testing/version_check.sh pt
+
+  - name: run pt-mysql-summary
+    command: pt-mysql-summary
+    register: pt_output
+
+#DEBUG pt output
+  - name: check pt output
+    debug:
+      var: pt_output
+  #DEBUG pt output
+
+#  - name: remove pt packages
+#    include: ../tasks/remove_pt.yml
