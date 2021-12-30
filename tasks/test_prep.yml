@@ -136,10 +136,10 @@
     with_items:
     - rm -rf /package-testing
     - rm -f master.zip
-    - wget --no-check-certificate -O master.zip https://github.com/eleo007/package-testing/archive/PT-2018-pt-packagetesting.zip
+    - wget --no-check-certificate -O master.zip https://github.com/eleo007/package-testing/archive/PT-2018-pt-packagetesting-pxc-three-repos.zip
     - unzip master.zip
     - rm -f master.zip
-    - mv package-testing-PT-2018-pt-packagetesting /package-testing
+    - mv package-testing-PT-2018-pt-packagetesting-pxc-three-repos /package-testing
     when: lookup('env', 'USE_LOCAL_PKG_TEST') == "" or lookup('env', 'USE_LOCAL_PKG_TEST') == "0"
 
   - name: install latest bats from github
