@@ -1,8 +1,10 @@
 ---
 # This playbook does following:
-#   enables Percona testing repository
-#   installs latest version of Percona-Toolkit
-#   installs latest version of PS-57, PS-80; MysqL-57, MySQL-80
+#   enables psmdb main repo
+#   installs latest version of Percona Server for MongoDB 50 (psmdb50)
+#   enables Percona tools repository
+#   installs latest version of Percona-Toolkit (pt)
+#   starts server and runs pt-mongodb-summary tool
 
 - hosts: all
   become: true
@@ -14,95 +16,112 @@
   - name: include tasks for test env setup
     include_tasks: ../tasks/test_prep.yml
 
-  - name: include tasks for enabling ps57 main repo
+  - name: include tasks for installing and setup ps57
     include_tasks: ../tasks/enable_main_repo.yml
     when: lookup('env', 'install_with') == "ps57"
 
-  - name: include tasks for installing ps57 packages
-    include_tasks: ../tasks/install_ps57.yml
-    when: lookup('env', 'install_with') == "ps57"
-
-  - name: include tasks for enabling ps80 main repo
-    include_tasks: ../tasks/enable_ps8_main_repo.yml
+  - name: include tasks for installing and setup ps80
+    include_tasks: ../tasks/pt_with_ps80.yml
     when: lookup('env', 'install_with') == "ps80"
 
-  - name: include tasks for installing ps80 packages
-    include_tasks: ../tasks/install_ps80.yml
-    vars:
-      packages: percona-server-server
-    when: lookup('env', 'install_with') == "ps80"
+  - name: include tasks for installing and setup pxc57
+    include_tasks: ../tasks/pt_with_pxc57.yml
+    when: lookup('env', 'install_with') == "pxc57"
 
-  - name: disable selinux
-    selinux: state=disabled
-    when: ansible_os_family == "RedHat" and lookup('env', 'install_with') == "pxc57"
+  - name: include tasks for installing and setup pxc80
+    include_tasks: ../tasks/pt_with_pxc80.yml
+    when: lookup('env', 'install_with') == "pxc80"
 
-  - name: include tasks for enabling "{{repo_name}}" test repo
+  - name: include tasks for installing and setup upstream57
+    include_tasks: ../tasks/pt_with_upstream57.yml
+    when: lookup('env', 'install_with') == "upstream57"
+
+  - name: include tasks for installing and setup upstream 80
+    include_tasks: ../tasks/pt_with_upstream80.yml
+    when: lookup('env', 'install_with') == "upstream80"
+
+  - name: include tasks for installing and setup psmdb 44
+    include_tasks: ../tasks/pt_with_psmdb44.yml
+    when: lookup('env', 'install_with') == "psmdb44"
+
+  - name: include tasks for installing and setup psmdb 50
+    include_tasks: ../tasks/pt_with_psmdb50.yml
+    when: lookup('env', 'install_with') == "psmdb50"
+
+# Enable only tools repo to install pt
+  - name: include tasks for enabling tools testing repo
     include_tasks: ../tasks/enable_only_testing_repo_for_pt.yml
+    vars:
+      repo_name: tools
     when: lookup('env', 'install_repo') == "testing" or lookup('env', 'install_repo') == ""
 
-  - name: include tasks for enabling  "{{repo_name}}"  main repo
+  - name: include tasks for enabling tools main repo
     include_tasks: ../tasks/enable_only_main_repo_for_pt.yml
+    vars:
+      repo_name: tools
     when: lookup('env', 'install_repo') == "main"
 
-  - name: include tasks for enabling  "{{repo_name}}" experimental repo
+  - name: include tasks for enabling  tools experimental repo
     include_tasks: ../tasks/enable_only_experimental_repo_for_pt.yml
+    vars:
+      repo_name: tools
     when: lookup('env', 'install_repo') == "experimental"
 
+# Install pt and run tool
   - name: include tasks for pt installation
     include_tasks: ../tasks/install_pt.yml
 
-# remove till the PT-1959 is fixed
+#DEBUG check repos
+  - name: check enabled repos
+    command: percona-release show
+    register: repo_list
+
+  - name: output repos list
+    debug:
+      var: repo_list.stdout_lines
+  #DEBUG check repos
+
+#DEBUG list percona packages
+  - name: list installed percona packages
+    shell: apt list --installed|egrep -i "percona|mysql"
+    register: packages_list
+    when: ansible_os_family == "Debian"
+
+  - name: output percona installed packages list
+    debug:
+      var: packages_list.stdout_lines
+    when: ansible_os_family == "Debian"
+
+  - name: list installed percona packages
+    shell: yum list installed|egrep -i "percona|mysql"
+    register: packages_list
+    when: ansible_os_family == "RedHat"
+
+  - name: output percona installed packages list
+    debug:
+      var: packages_list.stdout_lines
+    when: ansible_os_family == "RedHat"
+  #DEBUG list percona packages
+
+#   remove till the PT-1959 is fixed
 #  - name: check that pt version is correct
 #    command: /package-testing/version_check.sh pt
 
-
-  # bootstrap the cluster
-
-  - name: start mysql service
-    service: 
-      name: mysql
-      state: started
-    when: lookup('env', 'install_with') is match("(ps|upstream)(57|80)$") and ansible_os_family == "Debian"
-
-  - name: start mysql service on CentOS
-    systemd: 
-      name: mysql
-      state: started
-    when: lookup('env', 'install_with') is match("ps(57|80)$") and ansible_os_family == "RedHat"
-
-  - name: start mysqld service on CentOS for upstream
-    systemd: 
-      name: mysqld
-      state: started
-    when: lookup('env', 'install_with') is match("upstream(57|80)$") and ansible_os_family == "RedHat"
-
-  # set root password on centos
-  - name: set root password on centos
-    command: /package-testing/setpass_57.sh
-    when: lookup('env', 'install_with') is match('(pxc|ps|upstream)(57|80)$') and ansible_os_family == "RedHat"
-
-  - name: copy .my.cnf with credentials on centos
-    template: src=../templates/my_57.j2
-              dest=/root/.my.cnf
-              mode=0640 owner=root group=root
-    when: lookup('env', 'install_with') is match('(pxc|ps|upstream)(57|80)$') and ansible_os_family == "RedHat"
-#test bootstrap preparation 
-
-  - name: start mongod service
-    service: 
-      name: mongod
-      state: started
-    when: "'psmdb' in lookup('env', 'install_with')"
+  - name: run pt-mongodb-summary
+    command: pt-mongodb-summary
+    register: pt_output
+    when: lookup('env', 'install_with') is match('psmdb')
 
   - name: run pt-mysql-summary
-    command: sudo pt-mysql-summary
+    command: pt-mysql-summary
     register: pt_output
-    when: "'psmdb' not in lookup('env', 'install_with')"
+    when: lookup('env', 'install_with') is match('(pxc|ps|upstream)(57|80)$')
 
-  - name: run pt-mongo-summary
-    command: sudo pt-mongodb-summary
-    register: pt_output
-    when: "'psmdb' in lookup('env', 'install_with')"
+#DEBUG pt output
+  - name: check pt output
+    debug:
+      var: pt_output
+  #DEBUG pt output
 
 #  - name: remove pt packages
 #    include: ../tasks/remove_pt.yml
