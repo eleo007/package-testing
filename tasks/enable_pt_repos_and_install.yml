@@ -1,0 +1,15 @@
+  - name: include tasks for enabling "{{ repo_name }}" test repo
+    include_tasks: ../tasks/enable_only_repo.yml
+
+  - name: include tasks for pt installation
+    include_tasks: ../tasks/install_pt.yml
+
+# remove till the PT-1959 is fixed
+  - name: check that pt version is correct
+    command: /package-testing/version_check.sh pt
+
+  - name: remove pt packages
+    include: ../tasks/remove_pt.yml
+
+
+

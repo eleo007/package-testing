@@ -12,124 +12,17 @@
 #      client: "{{ lookup('env', 'install_repo') }}"
       client: "{{ lookup('env', 'client_to_test') }}"
 #      repo_name: "{{ lookup('env', 'repo_name') }}"
+      install_repo: "{{ lookup('env', 'install_repo') }}"
 
   tasks:
   - name: include tasks for test env setup
     include_tasks: ../tasks/test_prep.yml
 
-  - name: include tasks for enabling "repo_name" test repo
-    include_tasks: ../tasks/enable_only_testing_repo_for_pt.yml
+  - name: include tasks to install pt from [pt,tools, original] repos
+    include_tasks: ../tasks/enable_pt_repos_and_install.yml
     vars:
-      - repo_name: tools
-    when: lookup('env', 'install_repo') == "testing" or lookup('env', 'install_repo') == ""
-
-  - name: include tasks for enabling main repo
-    include: ../tasks/enable_only_main_repo_for_pt.yml
-    vars:
-      - repo_name: tools
-    when: lookup('env', 'install_repo') == "main"
-
-  - name: include tasks for enabling experimental repo
-    include_tasks: ../tasks/enable_only_experimental_repo_for_pt.yml
-    vars:
-      - repo_name: tools
-    when: lookup('env', 'install_repo') == "experimental"
-
-#DEBUG
-  - name: check enabled repos
-    command: percona-release show
-    register: repo_list
-
-  - name: output repos list
-    debug:
-      var: repo_list
-  # DEBUG
-
-  - name: include tasks for pt installation
-    include_tasks: ../tasks/install_pt.yml
-
-# remove till the PT-1959 is fixed
-  - name: check that pt version is correct
-    command: /package-testing/version_check.sh pt
-
-  - name: remove pt packages
-    include: ../tasks/remove_pt.yml
-
-  - name: include tasks for enabling "repo_name" test repo
-    include_tasks: ../tasks/enable_only_testing_repo_for_pt.yml
-    vars:
-      - repo_name: pt
-    when: lookup('env', 'install_repo') == "testing" or lookup('env', 'install_repo') == ""
-
-  - name: include tasks for enabling main repo
-    include: ../tasks/enable_only_main_repo_for_pt.yml
-    vars:
-      - repo_name: pt
-    when: lookup('env', 'install_repo') == "main"
-
-  - name: include tasks for enabling experimental repo
-    include_tasks: ../tasks/enable_only_experimental_repo_for_pt.yml
-    vars:
-      - repo_name: pt
-    when: lookup('env', 'install_repo') == "experimental"
-
-#DEBUG
-  - name: check enabled repos
-    command: percona-release show
-    register: repo_list
-
-  - name: output repos list
-    debug:
-      var: repo_list
-  # DEBUG
-
-  - name: include tasks for pt installation
-    include_tasks: ../tasks/install_pt.yml
-
-# remove till the PT-1959 is fixed
-  - name: check that pt version is correct
-    command: /package-testing/version_check.sh pt
-
-  - name: remove pt packages
-    include: ../tasks/remove_pt.yml
-
-  - name: include tasks for enabling "repo_name" test repo
-    include_tasks: ../tasks/enable_only_testing_repo_for_pt.yml
-    vars:
-      - repo_name: original
-    when: lookup('env', 'install_repo') == "testing" or lookup('env', 'install_repo') == ""
-
-  - name: include tasks for enabling main repo
-    include: ../tasks/enable_only_main_repo_for_pt.yml
-    vars:
-      - repo_name: original
-    when: lookup('env', 'install_repo') == "main"
-
-  - name: include tasks for enabling experimental repo
-    include_tasks: ../tasks/enable_only_experimental_repo_for_pt.yml
-    vars:
-      - repo_name: original
-    when: lookup('env', 'install_repo') == "experimental"
-
-#DEBUG
-  - name: check enabled repos
-    command: percona-release show
-    register: repo_list
-
-  - name: output repos list
-    debug:
-      var: repo_list
-  # DEBUG
-
-  - name: include tasks for pt installation
-    include_tasks: ../tasks/install_pt.yml
-
-# remove till the PT-1959 is fixed
-  - name: check that pt version is correct
-    command: /package-testing/version_check.sh pt
-
-  - name: remove pt packages
-    include: ../tasks/remove_pt.yml
-
-#  - name: check if process is stopped after package removal
-#    command: /package-testing/check_running.sh proxysql stopped
+      - repo_name: "{{ item }}"
+    loop:
+      - tools
+      - pt
+      - original
