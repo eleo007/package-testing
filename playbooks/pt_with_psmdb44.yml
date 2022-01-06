@@ -22,8 +22,6 @@
 
   - name: include tasks for installing psmdb 44 packages
     include_tasks: ../tasks/install_psmdb.yml
-    vars:
-      packages: percona-server-mongodb
 
 # Start psmdb service
   - name: start mongod service
