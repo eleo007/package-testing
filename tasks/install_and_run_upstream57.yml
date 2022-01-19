@@ -3,7 +3,7 @@
 # Enable MySQL repo and install MySQL packages
   - name: Install MySQL apt repository package
     apt:
-      deb: https://dev.mysql.com/get/mysql-apt-config_0.8.12-1_all.deb
+      deb: https://dev.mysql.com/get/mysql-apt-config_0.8.22-1_all.deb
     when: ansible_os_family == "Debian"
 
   - name: replace the default MySQL 8.0 repo with 5.7
