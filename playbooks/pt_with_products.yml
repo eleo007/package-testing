@@ -50,10 +50,12 @@
   - name: check enabled repos
     command: percona-release show
     register: repo_list
+    ignore_errors: yes
 
   - name: output repos list
     debug:
       var: repo_list.stdout_lines
+    ignore_errors: yes
   #DEBUG check repos
 
 #DEBUG list percona packages
@@ -105,10 +107,12 @@
   - name: check enabled repos
     command: percona-release show
     register: repo_list
+    ignore_errors: yes
 
   - name: output repos list
     debug:
       var: repo_list.stdout_lines
+    ignore_errors: yes
   #DEBUG check repos
 
 #DEBUG list percona packages
