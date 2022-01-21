@@ -56,7 +56,7 @@
       dest: /etc/mysql/certs/
 
   # bootstrap the pxc node
-  - name: bootstrap cluster on RHEL7
+  - name: bootstrap cluster
     systemd:
       name: mysql@bootstrap.service
       state: started
