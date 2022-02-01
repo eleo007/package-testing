@@ -75,6 +75,13 @@
 # remove till the PT-1959 is fixed
   - name: check that pt version is correct
     command: ../version_check.sh
+#DEBUG check version
+    register: check_output
+
+  - name: output percona installed packages list
+    debug:
+      var: check_output
+    #DEBUG check version
 
   - name: remove pt packages
     include: ../tasks/remove_pt.yml
