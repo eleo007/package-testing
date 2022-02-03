@@ -139,7 +139,7 @@
 
 #   remove till the PT-1959 is fixed
 #  - name: check that pt version is correct
-#    command: /package-testing/version_check.sh pt
+#    command: ../version_check.sh pt
 
   - name: run pt-mongodb-summary
     command: pt-mongodb-summary
