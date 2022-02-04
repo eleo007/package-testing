@@ -17,9 +17,10 @@
     include_tasks: ../tasks/test_prep.yml
 
   - name: include tasks for enabling main repo
-    include_tasks: ../tasks/enable_only_main_repo_for_pt.yml
+    include_tasks: ../tasks/enable_only_repo_for_pt.yml
     vars:
       - repo_name: tools
+      - repo_type: release
 
 #DEBUG check repos
   - name: check enabled repos
@@ -89,15 +90,17 @@
   #DEBUG list percona packages
 
   - name: include tasks for enabling testing repo
-    include_tasks: ../tasks/enable_only_testing_repo_for_pt.yml
+    include_tasks: ../tasks/enable_only_repo_for_pt.yml
     vars:
       - repo_name: tools
+      - repo_type: testing
     when: lookup('env', 'install_repo') != "experimental"
 
   - name: include tasks for enabling experimental repo
-    include_tasks: ../tasks/enable_only_experimental_repo_for_pt.yml
+    include_tasks: ../tasks/enable_only_repo_for_pt.yml
     vars:
       - repo_name: tools
+      - repo_type: experimental
     when: lookup('env', 'install_repo') == "experimental"
 
   - name: include tasks for pt installation

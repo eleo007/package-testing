@@ -82,21 +82,24 @@
 
 # Enable only tools repo to install pt
   - name: include tasks for enabling tools testing repo
-    include_tasks: ../tasks/enable_only_testing_repo_for_pt.yml
+    include_tasks: ../tasks/enable_only_repo_for_pt.yml
     vars:
       repo_name: tools
+      repo_type: testing
     when: lookup('env', 'install_repo') == "testing" or lookup('env', 'install_repo') == ""
 
   - name: include tasks for enabling tools main repo
-    include_tasks: ../tasks/enable_only_main_repo_for_pt.yml
+    include_tasks: ../tasks/enable_only_repo_for_pt.yml
     vars:
       repo_name: tools
+      repo_type: release
     when: lookup('env', 'install_repo') == "main"
 
   - name: include tasks for enabling  tools experimental repo
-    include_tasks: ../tasks/enable_only_experimental_repo_for_pt.yml
+    include_tasks: ../tasks/enable_only_repo_for_pt.yml
     vars:
       repo_name: tools
+      repo_type: experimental
     when: lookup('env', 'install_repo') == "experimental"
 
 # Install pt and run tool
