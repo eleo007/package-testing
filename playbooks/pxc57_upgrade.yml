@@ -7,6 +7,13 @@
 
   tasks:
 
+  - name: register Percona packages
+    shell: yum list installed| grep -i percona
+    register: percona_list
+
+  - name: print Percona packages
+    debug: var=percona_list
+
   - name: include tasks for enabling test repo
     include_tasks: ../tasks/enable_pxc57_testing_repo.yml
     when: lookup('env', 'upgrade_repo') == "testing" or lookup('env', 'upgrade_repo') == ""
@@ -76,6 +83,13 @@
       packages:
        - Percona-XtraDB-Cluster-shared-compat-57
     when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
+
+  - name: register Percona packages
+    shell: yum list installed| grep -i percona
+    register: percona_list1
+
+  - name: print Percona packages
+    debug: var=percona_list1
 
 # PXC-2317 workaround
   - name: start mysql service
