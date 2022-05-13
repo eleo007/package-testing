@@ -74,13 +74,19 @@ class GardbNode:
         self.docker_id = subprocess.check_output(['docker', 'run', '-d', '-i', '--name=garbd', '--net='+docker_network, '-v', test_pwd+'/cert:/cert', self.garbd_docker_image]).decode().strip()
 
     def install_garbd(self):
+        if pxc_version_major == "8.0":
+            self.repo_name = 'pxc-80'
+            self.garbd_name = 'percona-xtradb-cluster-garbd-8.0.26-16.1.el8'
+#            self.garbd_name = 'percona-xtradb-cluster-garbd'
+        else:
+            self.repo_name = 'pxc-57'
+            self.garbd_name = 'Percona-XtraDB-Cluster-garbd-57'
         subprocess.check_call(['docker', 'exec', 'garbd', 'yum', 'install', '-y', 'https://repo.percona.com/yum/percona-release-latest.noarch.rpm'])
-        subprocess.check_call(['docker', 'exec', 'garbd', 'percona-release', 'enable', 'pxc-80'])
+        subprocess.check_call(['docker', 'exec', 'garbd', 'percona-release', 'enable', self.repo_name])
         subprocess.check_call(['docker', 'exec', 'garbd', 'rpm', '--import', 'https://repo.percona.com/yum/RPM-GPG-KEY-Percona'])
         subprocess.check_call(['docker', 'exec', 'garbd', 'rpm', '--import', 'https://repo.percona.com/yum/PERCONA-PACKAGING-KEY'])
-#        subprocess.check_call(['docker', 'exec', 'garbd', 'yum', 'install', '-y', 'percona-xtradb-cluster-garbd'])
 # OLDER VERSION OF PACKAGE:
-        subprocess.check_call(['docker', 'exec', 'garbd', 'yum', 'install', '-y', 'percona-xtradb-cluster-garbd-8.0.26-16.1.el8']) 
+        subprocess.check_call(['docker', 'exec', 'garbd', 'yum', 'install', '-y', self.garbd_name]) 
 
     def connect_pxc(self):
         self.pxc_ips = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', base_node_name+'1', base_node_name+'2',base_node_name+'3']).decode().strip().replace('\n',',').replace('"','')
