@@ -72,7 +72,6 @@ class GardbNode:
         subprocess.check_call(['docker', 'pull', self.garbd_docker_image])
 #        subprocess.check_call(['docker', 'network', 'create', 'garbd_network'])
         self.docker_id = subprocess.check_output(['docker', 'run', '-d', '-i', '--name=garbd', '--net='+docker_network, '-v', test_pwd+'/cert:/cert', self.garbd_docker_image]).decode().strip()
-        self.ti_host = testinfra.get_host("docker://root@" + self.docker_id)
 
     def install_garbd(self):
         subprocess.check_call(['docker', 'exec', 'garbd', 'yum', 'install', '-y', 'https://repo.percona.com/yum/percona-release-latest.noarch.rpm'])
@@ -95,7 +94,9 @@ def garbd():
     start_docker = GardbNode()
     start_docker.run_docker()
     start_docker.install_garbd()
+    time.sleep(5)
     start_docker.connect_pxc()
+    time.sleep(30)
     yield start_docker
     start_docker.destroy()
 
@@ -105,6 +106,6 @@ def test_cluster_size(cluster,garbd):
     assert output.split('\t')[1].strip() == "4"
 
 def test_second_cluster_size(cluster, garbd):
-    time.sleep(120)
+    time.sleep(60)
     output = cluster[0].run_query('SHOW STATUS LIKE "wsrep_cluster_size";')
     assert output.split('\t')[1].strip() == "4"
