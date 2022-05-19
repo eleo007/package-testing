@@ -6,7 +6,6 @@ import time
 import shlex
 from settings import *
 
-
 class PxcNode:
     def __init__(self, node_name, bootstrap_node=False):
         self.node_name = node_name
@@ -75,43 +74,51 @@ class GardbNode:
 
     def install_garbd(self):
         if pxc_version_major == "8.0":
-            self.repo_name = 'pxc-80'
+            if docker_acc == 'percona':
+                self.repo_name = 'pxc-80'
+            else:
+                self.repo_name = 'pxc-80 testing'
             self.garbd_name = 'percona-xtradb-cluster-garbd-8.0.26-16.1.el8'
 #            self.garbd_name = 'percona-xtradb-cluster-garbd'
         else:
-            self.repo_name = 'pxc-57'
+            if docker_acc == 'percona':
+                self.repo_name = 'pxc-57'
+            else:
+                self.repo_name = 'pxc-57 testing'
             self.garbd_name = 'Percona-XtraDB-Cluster-garbd-57'
         subprocess.check_call(['docker', 'exec', 'garbd', 'yum', 'install', '-y', 'https://repo.percona.com/yum/percona-release-latest.noarch.rpm'])
         subprocess.check_call(['docker', 'exec', 'garbd', 'percona-release', 'enable', self.repo_name])
         subprocess.check_call(['docker', 'exec', 'garbd', 'rpm', '--import', 'https://repo.percona.com/yum/RPM-GPG-KEY-Percona'])
         subprocess.check_call(['docker', 'exec', 'garbd', 'rpm', '--import', 'https://repo.percona.com/yum/PERCONA-PACKAGING-KEY'])
-# OLDER VERSION OF PACKAGE:
         subprocess.check_call(['docker', 'exec', 'garbd', 'yum', 'install', '-y', self.garbd_name]) 
 
     def connect_pxc(self):
         self.pxc_ips = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', base_node_name+'1', base_node_name+'2',base_node_name+'3']).decode().strip().replace('\n',',').replace('"','')
-        subprocess.check_call(['docker', 'exec', '-d', 'garbd', 'garbd', '--group='+cluster_name, '--address=gcomm://'+self.pxc_ips, '--option="socket.ssl_key=/cert/server-key.pem; socket.ssl_cert=/cert/server-cert.pem; socket.ssl_ca=/cert/ca.pem; socket.ssl_cipher=AES128-SHA256"'])
+        if pxc_version_major == "8.0":
+            subprocess.check_call(['docker', 'exec', '-d', 'garbd', 'garbd', '--group='+cluster_name, '--address=gcomm://'+self.pxc_ips, '--option="socket.ssl_key=/cert/server-key.pem; socket.ssl_cert=/cert/server-cert.pem; socket.ssl_ca=/cert/ca.pem; socket.ssl_cipher=AES128-SHA256"'])
+        else:
+            subprocess.check_call(['docker', 'exec', '-d', 'garbd', 'garbd', '--group='+cluster_name, '--address=gcomm://'+self.pxc_ips])
 
     def destroy(self):
         subprocess.check_call(['docker', 'rm', '-f', self.docker_id])
  
 @pytest.fixture(scope='module')
 def garbd():
-    start_docker = GardbNode()
-    start_docker.run_docker()
-    start_docker.install_garbd()
+    garbd = GardbNode()
+    garbd.run_docker()
+    garbd.install_garbd()
     time.sleep(5)
-    start_docker.connect_pxc()
+    garbd.connect_pxc()
     time.sleep(30)
-    yield start_docker
-    start_docker.destroy()
+    yield garbd
+    garbd.destroy()
 
-#class TestGardb:
-def test_cluster_size(cluster,garbd):
-    output = cluster[0].run_query('SHOW STATUS LIKE "wsrep_cluster_size";')
-    assert output.split('\t')[1].strip() == "4"
+class TestGardb:
+    def test_cluster_size(self, cluster, garbd):
+        output = cluster[0].run_query('SHOW STATUS LIKE "wsrep_cluster_size";')
+        assert output.split('\t')[1].strip() == "4"
 
-def test_second_cluster_size(cluster, garbd):
-    time.sleep(60)
-    output = cluster[0].run_query('SHOW STATUS LIKE "wsrep_cluster_size";')
-    assert output.split('\t')[1].strip() == "4"
+    def test_second_cluster_size(self, cluster, garbd):
+        time.sleep(60)
+        output = cluster[0].run_query('SHOW STATUS LIKE "wsrep_cluster_size";')
+        assert output.split('\t')[1].strip() == "4"
