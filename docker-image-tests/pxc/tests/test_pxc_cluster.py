@@ -66,6 +66,57 @@ def cluster():
         node.destroy()
     subprocess.check_call(['docker', 'network', 'rm', docker_network])
 
+class GardbNode:
+    def run_ubi8_docker(self):
+        self.garbd_docker_image = "redhat/ubi8"
+        self.garbd_docker_name = 'garbd_node'
+        subprocess.check_call(['docker', 'pull', self.garbd_docker_image])
+#        subprocess.check_call(['docker', 'network', 'create', 'garbd_network'])
+        if pxc_version_major == "8.0":
+            self.docker_id = subprocess.check_output(['docker', 'run', '-d', '-i', '--name='+self.garbd_docker_name, '--net='+docker_network, '-v', test_pwd+'/cert:/cert', self.garbd_docker_image]).decode().strip()
+        else:
+            self.docker_id = subprocess.check_output(['docker', 'run', '-d', '-i', '--name='+self.garbd_docker_name, '--net='+docker_network, self.garbd_docker_image]).decode().strip()
+
+    def install_garbd(self):
+        if pxc_version_major == "8.0":
+            if docker_acc == 'percona':
+                self.repo_name = 'pxc-80'
+            else:
+                self.repo_name = 'pxc-80 testing'
+            self.garbd_name = 'percona-xtradb-cluster-garbd-8.0.26-16.1.el8'
+#            self.garbd_name = 'percona-xtradb-cluster-garbd'
+        else:
+            if docker_acc == 'percona':
+                self.repo_name = 'pxc-57'
+            else:
+                self.repo_name = 'pxc-57 testing'
+            self.garbd_name = 'Percona-XtraDB-Cluster-garbd-57'
+        subprocess.check_call(['docker', 'exec', self.garbd_docker_name, 'yum', 'install', '-y', 'https://repo.percona.com/yum/percona-release-latest.noarch.rpm'])
+        subprocess.check_call(['docker', 'exec', self.garbd_docker_name, 'percona-release', 'enable', self.repo_name])
+        subprocess.check_call(['docker', 'exec', self.garbd_docker_name, 'rpm', '--import', 'https://repo.percona.com/yum/RPM-GPG-KEY-Percona'])
+        subprocess.check_call(['docker', 'exec', self.garbd_docker_name, 'rpm', '--import', 'https://repo.percona.com/yum/PERCONA-PACKAGING-KEY'])
+        subprocess.check_call(['docker', 'exec', self.garbd_docker_name, 'yum', 'install', '-y', self.garbd_name]) 
+
+    def connect_pxc(self):
+        self.pxc_ips = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', base_node_name+'1', base_node_name+'2',base_node_name+'3']).decode().strip().replace('\n',',').replace('"','')
+        if pxc_version_major == "8.0":
+            subprocess.check_call(['docker', 'exec', '-d', self.garbd_docker_name, 'garbd', '--group='+cluster_name, '--address=gcomm://'+self.pxc_ips, '--option="socket.ssl_key=/cert/server-key.pem; socket.ssl_cert=/cert/server-cert.pem; socket.ssl_ca=/cert/ca.pem; socket.ssl_cipher=AES128-SHA256"'])
+        else:
+            subprocess.check_call(['docker', 'exec', '-d', self.garbd_docker_name, 'garbd', '--group='+cluster_name, '--address=gcomm://'+self.pxc_ips])
+
+    def destroy(self):
+        subprocess.check_call(['docker', 'rm', '-f', self.docker_id])
+
+@pytest.fixture(scope='module')
+def garbd():
+    garbd = GardbNode()
+    garbd.run_ubi8_docker()
+    garbd.install_garbd()
+    time.sleep(5)
+    garbd.connect_pxc()
+    time.sleep(30)
+    yield garbd
+    garbd.destroy()
 
 class TestCluster:
     @pytest.mark.parametrize("fname,soname,return_type", pxc_functions)
@@ -96,3 +147,13 @@ class TestCluster:
     def test_cluster_size(self, cluster):
         output = cluster[0].run_query('SHOW STATUS LIKE "wsrep_cluster_size";')
         assert output.split('\t')[1].strip() == "3"
+
+class TestGardb:
+    def test_cluster_size_at_startup(self, cluster, garbd):
+        output = cluster[0].run_query('SHOW STATUS LIKE "wsrep_cluster_size";')
+        assert output.split('\t')[1].strip() == "4"
+
+    def test_cluster_size_after_timeout(self, cluster, garbd):
+        time.sleep(60)
+        output = cluster[0].run_query('SHOW STATUS LIKE "wsrep_cluster_size";')
+        assert output.split('\t')[1].strip() == "4"
