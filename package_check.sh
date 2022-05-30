@@ -151,10 +151,15 @@ if [ ${product} = "ps56" -o ${product} = "ps57" -o ${product} = "ps80" ]; then
       deb_opt_package="percona-server-rocksdb"
       deb_num_pkgs="7"
     fi
+    if [ "${product}" = "ps80" ]; then
+      deb_dbg_pkg="percona-server-dbg"
+    else
+      deb_dbg_pkg="percona-server-${deb_maj_version}-dbg"
+    fi
     # if [ "$(dpkg -l | grep percona-server | grep -c ${version})" == "${deb_num_pkgs}" ]; then
     #   echo "all packages are installed"
     # else
-      for package in percona-server-server percona-server-client percona-server-test percona-server-dbg percona-server-source percona-server-common ${deb_opt_package}; do
+      for package in percona-server-server percona-server-client percona-server-test ${deb_dbg_pkg} percona-server-source percona-server-common ${deb_opt_package}; do
       echo "package: ${package}; version: ${version}, together: grep ${package} and grep -c ${version}"
         if [ "$(dpkg -l | grep ${package} | grep -c ${version})" != 0 ]; then
           echo "$(date +%Y%m%d%H%M%S): ${package} is installed"
