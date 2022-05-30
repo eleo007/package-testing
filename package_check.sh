@@ -117,17 +117,14 @@ if [ ${product} = "ps56" -o ${product} = "ps57" -o ${product} = "ps80" ]; then
     fi
     if [ "${product}" = "ps80" ]; then
       ps_name="percona-server"
+      rpm_pkgs_list="${ps_name}-server ${ps_name}-test ${ps_name}-debuginfo ${ps_name}-devel ${ps_name}-shared ${ps_name}-client"
     else
       ps_name="Percona-Server"
+      rpm_pkgs_list="${ps_name}-server-${rpm_maj_version} ${ps_name}-test-${rpm_maj_version} ${ps_name}-${rpm_maj_version}-debuginfo ${ps_name}-devel-${rpm_maj_version} ${ps_name}-shared-${rpm_maj_version} ${ps_name}-client-${rpm_maj_version}"
     fi
     # if [ "$(rpm -qa | grep "${ps_name}" | grep -c "${version}")" == "${rpm_num_pkgs}" ]; then
     #   echo "all packages are installed"
     # else
-      if  [ ${product} = "ps56" -o ${product} = "ps57" ]; then
-        rpm_pkgs_list="${ps_name}-server-${rpm_maj_version} ${ps_name}-test-${rpm_maj_version} ${ps_name}-${rpm_maj_version}-debuginfo ${ps_name}-devel-${rpm_maj_version} ${ps_name}-shared-${rpm_maj_version} ${ps_name}-client-${rpm_maj_version}"
-      else
-        rpm_pkgs_list="${ps_name}-server ${ps_name}-test ${ps_name}-debuginfo ${ps_name}-devel ${ps_name}-shared ${ps_name}-client"
-      fi
       echo ${rpm_pkgs_list}
       for package in ${rpm_pkgs_list} ${rpm_opt_package}; do
       echo "package: ${package}; rmp_version: ${rpm_version}, together: ${package}-${rpm_version}"
