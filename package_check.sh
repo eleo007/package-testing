@@ -124,6 +124,7 @@ if [ ${product} = "ps56" -o ${product} = "ps57" -o ${product} = "ps80" ]; then
     #   echo "all packages are installed"
     # else
       for package in ${ps_name}-server ${ps_name}-test ${ps_name}-debuginfo ${ps_name}-devel ${ps_name}-shared ${ps_name}-client ${rpm_opt_package}; do
+      echo "package: ${package}; rmp_version: ${rpm_version}, together: ${package}-${rpm_version}"
         if [ "$(rpm -qa | grep -c ${package}-${rpm_version})" -gt 0 ]; then
           echo "$(date +%Y%m%d%H%M%S): ${package} is installed" >> ${log}
         else
@@ -151,6 +152,7 @@ if [ ${product} = "ps56" -o ${product} = "ps57" -o ${product} = "ps80" ]; then
     #   echo "all packages are installed"
     # else
       for package in percona-server-server percona-server-client percona-server-test percona-server-dbg percona-server-source percona-server-common ${deb_opt_package}; do
+      echo "package: ${package}; version: ${version}, together: grep ${package} and grep -c ${version}"
         if [ "$(dpkg -l | grep ${package} | grep -c ${version})" != 0 ]; then
           echo "$(date +%Y%m%d%H%M%S): ${package} is installed"
         else
