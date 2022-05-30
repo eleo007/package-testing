@@ -120,10 +120,10 @@ if [ ${product} = "ps56" -o ${product} = "ps57" -o ${product} = "ps80" ]; then
     else
       ps_name="Percona-Server"
     fi
-    if [ "$(rpm -qa | grep "${ps_name}" | grep -c "${version}")" == "${rpm_num_pkgs}" ]; then
-      echo "all packages are installed"
-    else
-      for package in ${ps_name}-server-${rpm_maj_version} ${ps_name}-test-${rpm_maj_version} ${ps_name}-${rpm_maj_version}-debuginfo ${ps_name}-devel-${rpm_maj_version} ${ps_name}-shared-${rpm_maj_version} ${ps_name}-client-${rpm_maj_version} ${rpm_opt_package}; do
+    # if [ "$(rpm -qa | grep "${ps_name}" | grep -c "${version}")" == "${rpm_num_pkgs}" ]; then
+    #   echo "all packages are installed"
+    # else
+      for package in ${ps_name}-server ${ps_name}-test ${ps_name}-debuginfo ${ps_name}-devel ${ps_name}-shared ${ps_name}-client ${rpm_opt_package}; do
         if [ "$(rpm -qa | grep -c ${package}-${rpm_version})" -gt 0 ]; then
           echo "$(date +%Y%m%d%H%M%S): ${package} is installed" >> ${log}
         else
@@ -131,7 +131,7 @@ if [ ${product} = "ps56" -o ${product} = "ps57" -o ${product} = "ps80" ]; then
           exit 1
         fi
       done
-    fi
+    # fi
   else
     deb_maj_version=$(echo ${product} | sed 's/^[a-z]*//' | sed 's/./&\./') # 5.6
     if [ ${product} = "ps56" ]; then
@@ -147,10 +147,10 @@ if [ ${product} = "ps56" -o ${product} = "ps57" -o ${product} = "ps80" ]; then
       deb_opt_package="percona-server-rocksdb"
       deb_num_pkgs="7"
     fi
-    if [ "$(dpkg -l | grep percona-server | grep -c ${version})" == "${deb_num_pkgs}" ]; then
-      echo "all packages are installed"
-    else
-      for package in percona-server-server percona-server-client percona-server-test percona-server-${deb_maj_version}-dbg percona-server-source percona-server-common ${deb_opt_package}; do
+    # if [ "$(dpkg -l | grep percona-server | grep -c ${version})" == "${deb_num_pkgs}" ]; then
+    #   echo "all packages are installed"
+    # else
+      for package in percona-server-server percona-server-client percona-server-test percona-server-dbg percona-server-source percona-server-common ${deb_opt_package}; do
         if [ "$(dpkg -l | grep ${package} | grep -c ${version})" != 0 ]; then
           echo "$(date +%Y%m%d%H%M%S): ${package} is installed"
         else
@@ -158,7 +158,7 @@ if [ ${product} = "ps56" -o ${product} = "ps57" -o ${product} = "ps80" ]; then
           exit 1
         fi
       done
-    fi
+    # fi
   fi
 
 elif [ ${product} = "pxc56" -o ${product} = "pxc57" ]; then
