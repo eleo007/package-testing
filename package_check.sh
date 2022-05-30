@@ -87,10 +87,10 @@ if [ ${product} = "ps56" -o ${product} = "ps57" -o ${product} = "ps80" ]; then
       centos_maj_version=$(cat /etc/redhat-release | grep -oE '[0-9]+' | head -n 1)
     fi
     rpm_maj_version=$(echo ${product} | sed 's/^[a-z]*//') # 56
-    if [ ${product} = "ps57" ]; then
-      rpm_version="${version}" # 5.7.14-8
-    else
+    if [ ${product} = "ps56" ]; then
       rpm_version=$(echo ${version} | sed 's/-/-rel/') # 5.6.32-rel78.0
+    else
+      rpm_version="${version}" # 5.7.14-8
     fi
     if [ "${product}" = "ps56" ]; then
       rpm_opt_package="Percona-Server-tokudb-${rpm_maj_version} Percona-Server-selinux-${rpm_maj_version}"
