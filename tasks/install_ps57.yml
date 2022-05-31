@@ -57,6 +57,16 @@
       var: install_output
     when: ansible_os_family == "RedHat"
 
+  - name: check jemalloc package for OL8
+    command: yum info jemalloc*
+    register: yum_output
+    when: ansible_os_family == "RedHat"
+
+  - name: check jemalloc package details OL8
+    debug:
+      var: yum_output
+    when: ansible_os_family == "RedHat"
+
   - name: install Percona-Server-shared-compat-57 rpm package
     yum:
       name: "{{ packages }}"
