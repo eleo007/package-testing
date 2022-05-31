@@ -50,6 +50,12 @@
       - Percona-Server-shared-57
       - Percona-Server-client-57
     when: ansible_os_family == "RedHat"
+    register: install_output
+
+  - name: check install details for OL8
+    debug:
+      var: install_output
+    when: ansible_os_family == "RedHat"
 
   - name: install Percona-Server-shared-compat-57 rpm package
     yum:
