@@ -122,10 +122,10 @@
     with_items:
     - rm -rf /package-testing
     - rm -f master.zip
-    - wget --no-check-certificate -O master.zip https://github.com/Percona-QA/package-testing/archive/master.zip
+    - wget --no-check-certificate --branch DISTMYSQL-178-pdsm -O master.zip https://github.com/eleo007/package-testing/archive/DISTMYSQL-178-pdsm.zip
     - unzip master.zip
     - rm -f master.zip
-    - mv package-testing-master /package-testing
+    - mv package-testing-DISTMYSQL-178-pdsm /package-testing
 
   - name: set root password on centos
     command: /package-testing/setpass_57.sh
