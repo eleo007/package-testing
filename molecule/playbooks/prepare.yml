@@ -110,7 +110,7 @@
       with_items:
         - centos
         - root
-      when: (ansible_os_family == "RedHat") and (lookup('env', 'DESTROY_ENV') = "no")
+      when: (ansible_os_family == "RedHat") and (lookup('env', 'DESTROY_ENV') == "no")
 
     - name: Setup SSH keys Debian
       authorized_key:
@@ -121,7 +121,7 @@
       with_items:
         - admin
         - root
-      when: (ansible_distribution == "Debian") and (lookup('env', 'DESTROY_ENV') = "no")
+      when: (ansible_distribution == "Debian") and (lookup('env', 'DESTROY_ENV') == "no")
 
     - name: Setup SSH keys Ubuntu
       authorized_key:
@@ -132,4 +132,4 @@
       with_items:
         - ubuntu
         - root
-      when: (ansible_distribution == "Ubuntu") and (lookup('env', 'DESTROY_ENV') = "no")
+      when: (ansible_distribution == "Ubuntu") and (lookup('env', 'DESTROY_ENV') == "no")
