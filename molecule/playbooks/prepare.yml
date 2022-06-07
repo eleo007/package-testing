@@ -118,9 +118,6 @@
         key: "{{ lookup('file', 'public_keys') }}"
         state: present
         exclusive: True
-      with_items:
-        - admin
-        - root
       when: (ansible_distribution == "Debian") and (lookup('env', 'DESTROY_ENV') == "no")
 
     - name: Setup SSH keys Ubuntu
