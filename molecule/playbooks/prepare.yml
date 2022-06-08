@@ -119,7 +119,7 @@
 
     - name: Setup SSH keys Ubuntu
       authorized_key:
-        user: ubuntu
+        user: root
         key: "{{ lookup('file', 'public_keys') }}"
         state: present
         exclusive: True
