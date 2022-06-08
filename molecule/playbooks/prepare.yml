@@ -103,18 +103,15 @@
 
     - name: Setup SSH keys RHEL
       authorized_key:
-        user: root
+        user: centos
         key: "{{ lookup('file', 'public_keys') }}"
         state: present
         exclusive: True
-      with_items:
-        - centos
-        - root
       when: (ansible_os_family == "RedHat") and (lookup('env', 'DESTROY_ENV') == "no")
 
     - name: Setup SSH keys Debian
       authorized_key:
-        user: root
+        user: admin
         key: "{{ lookup('file', 'public_keys') }}"
         state: present
         exclusive: True
@@ -122,11 +119,8 @@
 
     - name: Setup SSH keys Ubuntu
       authorized_key:
-        user: root
+        user: ubuntu
         key: "{{ lookup('file', 'public_keys') }}"
         state: present
         exclusive: True
-      with_items:
-        - ubuntu
-        - root
       when: (ansible_distribution == "Ubuntu") and (lookup('env', 'DESTROY_ENV') == "no")
