@@ -106,7 +106,7 @@
         user: centos
         key: "{{ lookup('file', 'public_keys') }}"
         state: present
-        exclusive: True
+        exclusive: False
       when: (ansible_os_family == "RedHat") and (lookup('env', 'DESTROY_ENV') == "no")
 
     - name: Setup SSH keys Debian
@@ -114,7 +114,7 @@
         user: admin
         key: "{{ lookup('file', 'public_keys') }}"
         state: present
-        exclusive: True
+        exclusive: False
       when: (ansible_distribution == "Debian") and (lookup('env', 'DESTROY_ENV') == "no")
 
     - name: Setup SSH keys Ubuntu
