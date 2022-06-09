@@ -71,7 +71,6 @@ class GardbNode:
         self.docker_image = "oraclelinux:8"
         self.docker_name = 'ol8_node'
         subprocess.check_call(['docker', 'pull', self.docker_image])
-        # subprocess.check_call(['docker', 'network', 'create', 'garbd_network'])
         if pxc_version_major == "8.0":
             self.docker_id = subprocess.check_output(['docker', 'run', '-d', '-i', '--name='+self.docker_name,
             '--net='+docker_network, '-v', test_pwd+'/cert:/cert', self.docker_image]).decode().strip()
@@ -91,8 +90,7 @@ class GardbNode:
                 self.repo_name = 'pxc-80'
             else:
                 self.repo_name = 'pxc-80 testing'
-            self.image = 'percona-xtradb-cluster-garbd-8.0.26-16.1.el8'
-            # self.garbd_image = 'percona-xtradb-cluster-garbd'
+            self.image = 'percona-xtradb-cluster-garbd'
         subprocess.check_call(['docker', 'exec', self.docker_name, 'yum', 'install', '-y', 'https://repo.percona.com/yum/percona-release-latest.noarch.rpm'])
         subprocess.check_call(['docker', 'exec', self.docker_name, 'percona-release', 'enable', self.repo_name])
         subprocess.check_call(['docker', 'exec', self.docker_name, 'rpm', '--import', 'https://repo.percona.com/yum/RPM-GPG-KEY-Percona'])
