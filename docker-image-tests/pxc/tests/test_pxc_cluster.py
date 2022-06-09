@@ -157,6 +157,6 @@ class TestGardb:
         assert output.split('\t')[1].strip() == "4"
 
     def test_cluster_size_after_timeout(self, cluster, garbd):
-        time.sleep(60)
+        time.sleep(360)
         output = cluster[0].run_query('SHOW STATUS LIKE "wsrep_cluster_size";')
         assert output.split('\t')[1].strip() == "4"
