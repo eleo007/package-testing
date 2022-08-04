@@ -28,6 +28,6 @@ def test_orchestrator_version(host):
 
 
 def test_orchestrator_client(host):
-    cmd = 'orchestrator-client --help'
+    cmd = 'orchestrator-client --help h'
     result = host.run(cmd)
     assert result.rc == 0, result.stderr

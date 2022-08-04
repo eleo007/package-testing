@@ -168,13 +168,13 @@
   - name: start mysql service
     service: name=mysql state=started enabled=yes
 
-  - name: Disable old repository
+  - name: Disable old repository pdps-{{ pdmysql_version }} {{ repo }}
     command: percona-release disable pdps-{{ pdmysql_version }} {{ repo }}
     vars:
       repo: "{{ lookup('env', 'FROM_REPO') }}"
       pdmysql_version: "{{ lookup('env', 'FROM_VERSION') }}"
 
-  - name: Setup new repository
+  - name: Setup new repository pdps-{{ pdmysql_version }} {{ repo }}
     command: percona-release enable pdps-{{ pdmysql_version }} {{ repo }}
     vars:
       repo: "{{ lookup('env', 'TO_REPO') }}"
