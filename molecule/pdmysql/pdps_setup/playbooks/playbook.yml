@@ -4,4 +4,4 @@
   become: true
   become_method: sudo
   roles:
-    - role: setuppdps
+    - role: pdps_setup
