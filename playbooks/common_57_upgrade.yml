@@ -84,6 +84,12 @@
 
   - name: install plugins, import world database, test tokudb
     command: /package-testing/plugins_test_57u.sh ps
+    register: result
+
+  - debug:
+    var: result
+    verbosity: 2
+    msg: "{{ result.rc }}"
 
   - name: re-run ps_admin to install rocksdb
     command: /usr/bin/ps-admin --enable-rocksdb
