@@ -84,10 +84,11 @@
 
   - name: install plugins, import world database, test tokudb
     command: /package-testing/plugins_test_57u.sh ps
-    strategy: debug
-    gather_facts: yes
     register: result
-    msg: "{{ result.rc }}"
+    - name: debug 
+      strategy: debug
+      gather_facts: yes
+      msg: "{{ result.rc }}"
 
   - name: re-run ps_admin to install rocksdb
     command: /usr/bin/ps-admin --enable-rocksdb
