@@ -85,6 +85,8 @@
   - name: install plugins, import world database, test tokudb
     command: /package-testing/plugins_test_57u.sh ps
     register: result
+  
+  - name: added debug   
     debug:
     var: result
     verbosity: 2
