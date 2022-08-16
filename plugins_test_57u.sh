@@ -31,7 +31,7 @@ if [ ! -z "$1" ]; then
   if [ "$1" = "ps" ]; then
     mysql -e "CREATE DATABASE world2;"
     cat /package-testing/world.sql | mysql -D world2
-    mysql < /package-testing/tokudb_compression.sql
+    mysql < package-testing/tokudb_compression.sql
   fi
 fi
 
