@@ -85,8 +85,7 @@
   - name: install plugins, import world database, test tokudb
     command: /package-testing/plugins_test_57u.sh ps
     register: result
-
-  - debug:
+    debug:
     var: result
     verbosity: 2
     msg: "{{ result.rc }}"
