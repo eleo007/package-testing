@@ -90,9 +90,10 @@
       var: result
       verbosity: 2
 
-  - name: Example using fail and when together
-    ansible.builtin.fail:
-      msg: Fail after debug
+  - name: Print return information from the previous task
+    ansible.builtin.debug:
+      var: result
+      verbosity: 3
 
   - name: re-run ps_admin to install rocksdb
     command: /usr/bin/ps-admin --enable-rocksdb
