@@ -21,10 +21,10 @@
     when: ansible_os_family == "RedHat" and ansible_distribution_major_version >= "8"
 
   - name: enable the pdps-{{ version }} repo
-     command: percona-release enable-only pdps-{{ version }} {{ repo }}
-     vars:
-       repo: "{{ lookup('env', 'REPO') }}"
-       version: "{{ lookup('env', 'VERSION') }}"
+    command: percona-release enable-only pdps-{{ version }} {{ repo }}
+    vars:
+      repo: "{{ lookup('env', 'REPO') }}"
+      version: "{{ lookup('env', 'VERSION') }}"
     when: not MAJOR_REPO
 
   - name: enable the major pdps-{{ version }} repo
