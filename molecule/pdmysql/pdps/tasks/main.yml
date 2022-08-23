@@ -20,11 +20,19 @@
     command: yum module disable mariadb -y
     when: ansible_os_family == "RedHat" and ansible_distribution_major_version >= "8"
 
-  - name: enable the PDMYSQL-80 repo
+  - name: enable the pdps-{{ version }} repo
+     command: percona-release enable-only pdps-{{ version }} {{ repo }}
+     vars:
+       repo: "{{ lookup('env', 'REPO') }}"
+       version: "{{ lookup('env', 'VERSION') }}"
+    when: not MAJOR_REPO
+
+  - name: enable the major pdps-{{ version }} repo
     command: percona-release enable-only pdps-{{ version }} {{ repo }}
     vars:
       repo: "{{ lookup('env', 'REPO') }}"
-      version: "{{ lookup('env', 'VERSION') }}"
+      version: "{{ lookup('env', 'VERSION').split('.')[0] + lookup('env', 'VERSION').split('.')[1] }}"
+    when: MAJOR_REPO
 
   - name: install Percona Toolkit
     include_tasks: ../../../tasks/install_pt.yml
