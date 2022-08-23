@@ -24,6 +24,14 @@
     version: "{{ lookup('env', 'VERSION').split('.')[0] + '.' + lookup('env', 'VERSION').split('.')[1] }}"
   when: major_repo
 
+- name: Check used repo
+  command: percona-release show
+  register: repolist
+
+- name: show list of enabled repos
+  debug:
+    var: repolist
+
 - name: clean and update yum cache
   shell: |
     yum clean all
@@ -142,10 +150,12 @@
   with_items:
   - rm -rf /package-testing
   - rm -f master.zip
-  - wget --no-check-certificate -O master.zip https://github.com/eleo007/package-testing/archive/master.zip
+  - wget --no-check-certificate -O master.zip "https://github.com/eleo007/package-testing/archive/{{ branch }}.zip"
   - unzip master.zip
   - rm -f master.zip
-  - mv package-testing-master /package-testing
+  - mv "package-testing-{{ branch }}" /package-testing
+  vars:
+    branch: "{{ lookup('env', 'TESTING_BRANCH') }}"
 
 - name: install latest bats from github
   command: "{{ item }}"
