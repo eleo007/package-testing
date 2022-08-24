@@ -22,6 +22,14 @@
     version: "{{ lookup('env', 'VERSION').split('.')[0] + '.' + lookup('env', 'VERSION').split('.')[1] }}"
   when: major_repo
 
+- name: Check used repo
+  command: percona-release show
+  register: repolist
+
+- name: show list of enabled repos
+  debug:
+    var: repolist
+
 - name: clean and update yum cache
   shell: |
     yum clean all
