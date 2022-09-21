@@ -8,8 +8,8 @@ platforms:
     region: eu-central-1
     image: ami-059d20a9c4cb68026
     vpc_subnet_id: subnet-085deaca8c1c59a4f
-    instance_type: ec2-user
-    ssh_user: centos
+    instance_type: t2.micro
+    ssh_user: ec2-user
     root_device_name: /dev/sda1
     instance_tags:
       iit-billing-tag: jenkins-pxc-worker
