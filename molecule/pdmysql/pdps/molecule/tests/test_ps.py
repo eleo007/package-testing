@@ -78,6 +78,7 @@ def test_check_deb_package(host, package):
     dist = host.system_info.distribution
     if dist.lower() in ["redhat", "centos", 'rhel', 'oracleserver']:
         pytest.skip("This test only for Debian based platforms")
+    assert "rhel" in dist.lower()
     pkg = host.package(package)
     assert pkg.is_installed
     assert VERSION in pkg.version, pkg.version
