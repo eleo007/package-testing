@@ -151,7 +151,7 @@
     ignore_errors: yes
 
   - debug:
-    var: mysql_service_status
+      var: mysql_service_status
     ignore_errors: yes
 
   - name: Get Service Status
@@ -161,6 +161,6 @@
     ignore_errors: yes
 
   - debug:
-    var: mysqld_service_status
+      var: mysqld_service_status
     ignore_errors: yes
 
