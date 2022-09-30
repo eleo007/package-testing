@@ -36,6 +36,16 @@
       owner: root
       mode: 0644
 
+  - name: check pings
+    command: ping {{ lookup('env','MYSQL_ROUTER_IP') }} -c4
+    register: ping_output
+    ignore_errors: yes
+
+  - name: output ping reply
+    debug:
+      var: ping_output
+    ignore_errors: yes
+
   - name: install Percona Server deb packages
     apt:
       name: "{{ packages }}"
@@ -133,3 +143,24 @@
     service:
       name: mysql
       state: restarted
+
+  - name: Get Service Status
+    systemd:
+      name: "mysql"
+    register: mysql_service_status
+    ignore_errors: yes
+
+  - debug:
+    var: mysql_service_status
+    ignore_errors: yes
+
+  - name: Get Service Status
+    systemd:
+      name: "mysqld"
+    register: mysqld_service_status
+    ignore_errors: yes
+
+  - debug:
+    var: mysqld_service_status
+    ignore_errors: yes
+

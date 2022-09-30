@@ -48,6 +48,36 @@
       owner: root
       mode: 0644
 
+  - name: check pings
+    command: ping {{ lookup('env','PS_NODE1_IP') }} -c4
+    register: ping_output
+    ignore_errors: yes
+
+  - name: output ping reply
+    debug:
+      var: ping_output
+    ignore_errors: yes
+
+  - name: check pings
+    command: ping {{ lookup('env','PS_NODE2_IP') }} -c4
+    register: ping_output
+    ignore_errors: yes
+
+  - name: output ping reply
+    debug:
+      var: ping_output
+    ignore_errors: yes
+
+  - name: check pings
+    command: ping {{ lookup('env','PS_NODE3_IP') }} -c4
+    register: ping_output
+    ignore_errors: yes
+
+  - name: output ping reply
+    debug:
+      var: ping_output
+    ignore_errors: yes
+
   - name: install router and shell deb packages
     apt:
       name: "{{ packages }}"
