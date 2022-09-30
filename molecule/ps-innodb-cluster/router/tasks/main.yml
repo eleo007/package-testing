@@ -115,7 +115,8 @@
   - name: output cat reply
     debug:
       var: cat_output
-    fail:
+    
+  - fail:
       msg: Check earlier steps
 
   - pause:
