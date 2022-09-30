@@ -157,6 +157,16 @@
       var: lsof_output
     ignore_errors: yes
 
+  - name: check log
+    command: cat /var/log/mysql/error.log
+    register: cat_output
+    ignore_errors: yes
+
+  - name: output cat reply
+    debug:
+      var: cat_output
+    ignore_errors: yes
+
   - name: Get Service Status
     systemd:
       name: "mysql"
