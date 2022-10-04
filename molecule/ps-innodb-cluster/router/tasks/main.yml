@@ -48,36 +48,6 @@
       owner: root
       mode: 0644
 
-  - name: check pings
-    command: ping ps-node1 -c4
-    register: ping_output
-    ignore_errors: yes
-
-  - name: output ping reply
-    debug:
-      var: ping_output
-    ignore_errors: yes
-
-  - name: check pings
-    command: ping ps-node2 -c4
-    register: ping_output
-    ignore_errors: yes
-
-  - name: output ping reply
-    debug:
-      var: ping_output
-    ignore_errors: yes
-
-  - name: check pings
-    command: ping ps-node3 -c4
-    register: ping_output
-    ignore_errors: yes
-
-  - name: output ping reply
-    debug:
-      var: ping_output
-    ignore_errors: yes
-
   - name: install router and shell deb packages
     apt:
       name: "{{ packages }}"
@@ -106,18 +76,6 @@
   - name: create cluster
     shell: mysqlsh --uri=root@ps-node1 --password=Test1234# -- dba create-cluster testCluster
     ignore_errors: yes
-
-  - name: check log
-    command: cat /root/.mysqlsh/mysqlsh.log
-    register: cat_output
-    ignore_errors: yes
-
-  - name: output cat reply
-    debug:
-      var: cat_output
-    
-  - fail:
-      msg: Check earlier steps
 
   - pause:
       seconds: 10
