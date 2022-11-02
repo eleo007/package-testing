@@ -63,6 +63,10 @@ COMPONENTS = ['component_validate_password', 'component_log_sink_syseventlog',
 
 VERSION = os.environ.get("VERSION")
 
+RHEL_DISTS = ["redhat", "centos", "rhel", "oracleserver","ol"]
+
+DEB_DISTS = ["debian", "ubuntu"]
+
 
 def is_running(host):
     cmd = 'ps auxww| grep -v grep  | grep -c "mysql"'
@@ -76,7 +80,7 @@ def is_running(host):
 @pytest.mark.parametrize("package", DEBPACKAGES)
 def test_check_deb_package(host, package):
     dist = host.system_info.distribution
-    if dist.lower() in ["redhat", "centos", "rhel", "oracleserver","ol"]:
+    if dist.lower() in RHEL_DISTS:
         pytest.skip("This test only for Debian based platforms")
     pkg = host.package(package)
     assert pkg.is_installed
@@ -86,7 +90,7 @@ def test_check_deb_package(host, package):
 @pytest.mark.parametrize("package", RPMPACKAGES)
 def test_check_rpm_package(host, package):
     dist = host.system_info.distribution
-    if dist.lower() in ["debian", "ubuntu"]:
+    if dist.lower() in DEB_DISTS:
         pytest.skip("This test only for RHEL based platforms")
     pkg = host.package(package)
     assert pkg.is_installed
@@ -159,7 +163,7 @@ def test_disable_validate_password_plugin(host):
         plugin = host.run(cmd)
         assert plugin.rc == 0, plugin.stdout
         dist = host.system_info.distribution
-        if dist.lower() in ["redhat", "centos", "rhel", "oracleserver","ol"]:
+        if dist.lower() in RHEL_DISTS:
             cmd = 'service mysql restart'
             restart = host.run(cmd)
             assert restart.rc == 0, (restart.stdout, restart.stderr)
