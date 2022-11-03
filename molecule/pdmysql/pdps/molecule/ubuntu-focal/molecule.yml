@@ -24,10 +24,11 @@ provisioner:
     converge: ../../playbooks/playbook.yml
 verifier:
   name: testinfra
-  directory: ../tests/
+  directory: ../../../tests/pdps/
   options:
     verbose: true
     s: true
+    m: install
     junitxml: report.xml
   additional_files_or_dirs:
     - ../../../tests/test_proxysql2.py
