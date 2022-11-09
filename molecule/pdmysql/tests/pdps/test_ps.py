@@ -3,8 +3,6 @@ import pytest
 
 import testinfra.utils.ansible_runner
 
-from ..settings import *
-
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('all')
 
@@ -64,6 +62,10 @@ COMPONENTS = ['component_validate_password', 'component_log_sink_syseventlog',
               'component_audit_api_message_emit']
 
 VERSION = os.environ.get("VERSION")
+
+RHEL_DISTS = ["redhat", "centos", "rhel", "oracleserver","ol"]
+
+DEB_DISTS = ["debian", "ubuntu"]
 
 def is_running(host):
     cmd = 'ps auxww| grep -v grep  | grep -c "mysql"'
@@ -133,7 +135,7 @@ def test_components(component, host):
         assert check_result.rc == 1, (check_result.rc, check_result.stderr, check_result.stdout)
 
 @pytest.mark.install
-def test_madmin(host):
+def test_madmin_install(host):
     with host.sudo("root"):
         mysql = host.service("mysql")
         if not mysql.is_running:
@@ -154,7 +156,7 @@ def test_madmin(host):
         assert mysql.is_running
 
 @pytest.mark.upgrade
-def test_madmin(host):
+def test_madmin_upgrade(host):
     with host.sudo("root"):
         mysql = host.service("mysql")
         assert mysql.is_running
@@ -170,7 +172,7 @@ def test_madmin(host):
         assert mysql.is_running
 
 @pytest.mark.setup
-def test_madmin(host):
+def test_madmin_setup(host):
     with host.sudo("root"):
         mysql = host.service("mysql")
         assert mysql.is_running
