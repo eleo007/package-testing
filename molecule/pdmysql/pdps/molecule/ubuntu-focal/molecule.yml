@@ -30,10 +30,10 @@ verifier:
     s: true
     m: install
     junitxml: report.xml
-  additional_files_or_dirs:
-    - ../../../tests/test_proxysql2.py
-    - ../../../tests/test_pxb.py
-    - ../../../tests/test_sources.py
+  # additional_files_or_dirs:
+  #   - ../../../tests/test_proxysql2.py
+  #   - ../../../tests/test_pxb.py
+  #   - ../../../tests/test_sources.py
 
 scenario:
   name: ubuntu-focal
