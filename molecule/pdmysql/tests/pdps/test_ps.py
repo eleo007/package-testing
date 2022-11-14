@@ -75,7 +75,9 @@ def is_running(host):
         return True
     return False
 
-
+@pytest.mark.install
+@pytest.mark.setup
+@pytest.mark.upgrade
 @pytest.mark.parametrize("package", DEBPACKAGES)
 def test_check_deb_package(host, package):
     dist = host.system_info.distribution
@@ -85,7 +87,9 @@ def test_check_deb_package(host, package):
     assert pkg.is_installed
     assert VERSION in pkg.version, pkg.version
 
-
+@pytest.mark.install
+@pytest.mark.setup
+@pytest.mark.upgrade
 @pytest.mark.parametrize("package", RPMPACKAGES)
 def test_check_rpm_package(host, package):
     dist = host.system_info.distribution
@@ -95,7 +99,9 @@ def test_check_rpm_package(host, package):
     assert pkg.is_installed
     assert VERSION in pkg.version, pkg.version
 
-
+@pytest.mark.install
+@pytest.mark.setup
+@pytest.mark.upgrade
 @pytest.mark.parametrize("binary", ['mysqlsh', 'mysql', 'mysqlrouter'])
 def test_binary_version(host, binary):
     cmd = "{} --version".format(binary)
@@ -103,7 +109,9 @@ def test_binary_version(host, binary):
     assert result.rc == 0, (result.stderr, result.stdout)
     assert VERSION in result.stdout, result.stdout
 
-
+@pytest.mark.install
+@pytest.mark.setup
+@pytest.mark.upgrade
 @pytest.mark.parametrize('component', ['@@INNODB_VERSION', '@@VERSION'])
 def test_mysql_version(host, component):
     with host.sudo("root"):
@@ -112,14 +120,18 @@ def test_mysql_version(host, component):
         assert result.rc == 0, (result.stderr, result.stdout)
         assert int(result.stdout) == 1, result.stdout
 
-
+@pytest.mark.install
+@pytest.mark.setup
+@pytest.mark.upgrade
 @pytest.mark.parametrize('plugin_command', PLUGIN_COMMANDS)
 def test_plugins(host, plugin_command):
     with host.sudo("root"):
         result = host.run(plugin_command)
         assert result.rc == 0, (result.stderr, result.stdout)
 
-
+@pytest.mark.install
+@pytest.mark.setup
+@pytest.mark.upgrade
 @pytest.mark.parametrize("component", COMPONENTS)
 def test_components(component, host):
     with host.sudo("root"):
