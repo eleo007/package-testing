@@ -210,3 +210,17 @@ def test_disable_validate_password_plugin(host):
             cmd = 'service mysql restart'
             restart = host.run(cmd)
             assert restart.rc == 0, (restart.stdout, restart.stderr)
+
+# https://github.com/ansible-community/molecule/issues/2528
+# https://stackoverflow.com/questions/64248186/pytest-config-within-pytest-ini-not-being-registered-when-pytest-ini-is-in-tests
+# https://docs.pytest.org/_/downloads/en/7.1.x/pdf/
+# https://trollius.readthedocs.io/en/stable/configuration.html
+# https://testinfra.readthedocs.io/en/latest/examples.html?highlight=mark
+# https://pytest.org/en/7.2.x/example/markers.html
+# https://pytest.org/en/7.2.x/example/markers.html#adding-a-custom-marker-from-a-plugin
+# https://github.com/ansible-community/molecule/issues/735
+# https://docs.pytest.org/en/7.1.x/reference/reference.html
+# https://docs.pytest.org/en/7.1.x/reference/reference.html#pytestconfig
+# https://docs.pytest.org/en/7.1.x/reference/reference.html#config
+# https://docs.pytest.org/en/7.1.x/reference/reference.html#configuration-options
+
