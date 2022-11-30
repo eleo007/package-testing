@@ -28,7 +28,7 @@ verifier:
   options:
     verbose: true
     s: true
-    m: install
+    m: "not upgrade and not setup"
     junitxml: report.xml
   # additional_files_or_dirs:
   #   - ../../../tests/test_proxysql2.py

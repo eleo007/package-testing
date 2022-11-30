@@ -75,9 +75,6 @@ def is_running(host):
         return True
     return False
 
-@pytest.mark.install
-@pytest.mark.setup
-@pytest.mark.upgrade
 @pytest.mark.parametrize("package", DEBPACKAGES)
 def test_check_deb_package(host, package):
     dist = host.system_info.distribution
@@ -87,9 +84,6 @@ def test_check_deb_package(host, package):
     assert pkg.is_installed
     assert VERSION in pkg.version, pkg.version
 
-@pytest.mark.install
-@pytest.mark.setup
-@pytest.mark.upgrade
 @pytest.mark.parametrize("package", RPMPACKAGES)
 def test_check_rpm_package(host, package):
     dist = host.system_info.distribution
@@ -99,9 +93,6 @@ def test_check_rpm_package(host, package):
     assert pkg.is_installed
     assert VERSION in pkg.version, pkg.version
 
-@pytest.mark.install
-@pytest.mark.setup
-@pytest.mark.upgrade
 @pytest.mark.parametrize("binary", ['mysqlsh', 'mysql', 'mysqlrouter'])
 def test_binary_version(host, binary):
     cmd = "{} --version".format(binary)
@@ -109,9 +100,6 @@ def test_binary_version(host, binary):
     assert result.rc == 0, (result.stderr, result.stdout)
     assert VERSION in result.stdout, result.stdout
 
-@pytest.mark.install
-@pytest.mark.setup
-@pytest.mark.upgrade
 @pytest.mark.parametrize('component', ['@@INNODB_VERSION', '@@VERSION'])
 def test_mysql_version(host, component):
     with host.sudo("root"):
@@ -120,18 +108,12 @@ def test_mysql_version(host, component):
         assert result.rc == 0, (result.stderr, result.stdout)
         assert int(result.stdout) == 1, result.stdout
 
-@pytest.mark.install
-@pytest.mark.setup
-@pytest.mark.upgrade
 @pytest.mark.parametrize('plugin_command', PLUGIN_COMMANDS)
 def test_plugins(host, plugin_command):
     with host.sudo("root"):
         result = host.run(plugin_command)
         assert result.rc == 0, (result.stderr, result.stdout)
 
-@pytest.mark.install
-@pytest.mark.setup
-@pytest.mark.upgrade
 @pytest.mark.parametrize("component", COMPONENTS)
 def test_components(component, host):
     with host.sudo("root"):
@@ -146,7 +128,6 @@ def test_components(component, host):
         check_result = host.run(check_cmd)
         assert check_result.rc == 1, (check_result.rc, check_result.stderr, check_result.stdout)
 
-@pytest.mark.install
 def test_madmin_install(host):
     with host.sudo("root"):
         mysql = host.service("mysql")
@@ -156,38 +137,6 @@ def test_madmin_install(host):
             assert start.rc == 0, start.stdout
             mysql = host.service("mysql")
             assert mysql.is_running
-        cmd = 'mysqladmin shutdown'
-        shutdown = host.run(cmd)
-        assert shutdown.rc == 0, shutdown.stdout
-        mysql = host.service("mysql")
-        assert not mysql.is_running
-        cmd = 'service mysql start'
-        start = host.run(cmd)
-        assert start.rc == 0, start.stdout
-        mysql = host.service("mysql")
-        assert mysql.is_running
-
-@pytest.mark.upgrade
-def test_madmin_upgrade(host):
-    with host.sudo("root"):
-        mysql = host.service("mysql")
-        assert mysql.is_running
-        cmd = 'mysqladmin shutdown'
-        shutdown = host.run(cmd)
-        assert shutdown.rc == 0, shutdown.stdout
-        mysql = host.service("mysql")
-        assert not mysql.is_running
-        cmd = 'service mysql start'
-        start = host.run(cmd)
-        assert start.rc == 0, start.stdout
-        mysql = host.service("mysql")
-        assert mysql.is_running
-
-@pytest.mark.setup
-def test_madmin_setup(host):
-    with host.sudo("root"):
-        mysql = host.service("mysql")
-        assert mysql.is_running
         cmd = 'mysqladmin shutdown'
         shutdown = host.run(cmd)
         assert shutdown.rc == 0, shutdown.stdout
