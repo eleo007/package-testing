@@ -1,5 +1,6 @@
 import os
 import pytest
+from settings import *
 
 import testinfra.utils.ansible_runner
 
@@ -62,10 +63,6 @@ COMPONENTS = ['component_validate_password', 'component_log_sink_syseventlog',
               'component_audit_api_message_emit']
 
 VERSION = os.environ.get("VERSION")
-
-RHEL_DISTS = ["redhat", "centos", "rhel", "oracleserver","ol"]
-
-DEB_DISTS = ["debian", "ubuntu"]
 
 def is_running(host):
     cmd = 'ps auxww| grep -v grep  | grep -c "mysql"'
