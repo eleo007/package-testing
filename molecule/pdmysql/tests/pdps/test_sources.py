@@ -1,3 +1,4 @@
+import pytest
 from settings import *
 
 @pytest.mark.install
