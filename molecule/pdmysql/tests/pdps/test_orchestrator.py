@@ -1,5 +1,6 @@
 import os
 import pytest
+from settings import *
 
 import testinfra.utils.ansible_runner
 
