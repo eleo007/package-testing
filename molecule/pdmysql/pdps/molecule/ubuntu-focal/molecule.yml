@@ -28,7 +28,7 @@ verifier:
   options:
     verbose: true
     s: true
-    k: "server or pxb"
+    k: "test_pdps_ or test_pxb"
     junitxml: report.xml
   # additional_files_or_dirs:
   #   - ../../../tests/test_proxysql2.py
