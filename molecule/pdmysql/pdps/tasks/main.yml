@@ -224,3 +224,13 @@
       mode: 0744
     when: ansible_os_family == "RedHat"
     become: yes
+
+  - name: check pytest help
+    command: "pytest --help"
+    register: pytest_help
+    ignore_errors: yes
+
+  - name: ouput help
+    debug:
+      var: pytest_help
+    ignore_errors: yes
