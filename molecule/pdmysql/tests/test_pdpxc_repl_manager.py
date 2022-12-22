@@ -1,5 +1,4 @@
 import os
-from .settings import RHEL_DISTS
 import pytest
 import testinfra.utils.ansible_runner
 
