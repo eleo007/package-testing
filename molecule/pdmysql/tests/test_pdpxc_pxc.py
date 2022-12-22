@@ -109,6 +109,10 @@ def test_binary_version(host):
         assert result.rc == 0, result.stderr
         assert VERSION in result.stdout, result.stdout
 
+def test_mysql_running(host):
+    cmd = 'ps auxww| grep -v grep  | grep "mysql"'
+    result = host.run(cmd)
+    assert result.stdout in 'smth', result.stdout
 
 @pytest.mark.parametrize('component', ['@@INNODB_VERSION', '@@VERSION'])
 def test_mysql_version(host, component):
