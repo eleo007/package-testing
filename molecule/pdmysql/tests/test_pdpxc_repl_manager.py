@@ -1,4 +1,5 @@
 import os
+from .settings import RHEL_DISTS
 import pytest
 import testinfra.utils.ansible_runner
 
@@ -14,3 +15,8 @@ def test_check_package(host, package):
     pkg = host.package(package)
     assert pkg.is_installed
     assert REPL_MANAGER_VERSION in pkg.version, pkg.version
+
+def test_script_run(host):
+    cmd = "replication_manager.sh"
+    result = host.run(cmd)
+    assert "Access denied for user" in result.stdout, result.stdout
