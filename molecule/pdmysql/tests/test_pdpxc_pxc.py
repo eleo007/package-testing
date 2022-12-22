@@ -95,11 +95,11 @@ def test_check_shared_package(host, package):
     release = host.system_info.release
     if dist.lower() in DEB_DISTS:
         pytest.skip("This test only for RHEL based platforms")
-    if dist.lower() in RHEL_DISTS and release == '9':
+    if release in RHEL_DISTS and release == '9':
         pytest.skip("This test is for RHEL based platforms except RHEL 9")
     pkg = host.package(package)
     assert pkg.is_installed
-    assert VERSION in pkg.version, pkg.version
+    assert VERSION in pkg.version, (pkg.version, release)
 
 
 def test_binary_version(host):
@@ -108,11 +108,6 @@ def test_binary_version(host):
         result = host.run(cmd)
         assert result.rc == 0, result.stderr
         assert VERSION in result.stdout, result.stdout
-
-def test_mysql_running(host):
-    cmd = 'ps auxww| grep -v grep  | grep "mysql"'
-    result = host.run(cmd)
-    assert result.stdout in 'tttttttttttttttttttttttttttttttt', result.stdout
 
 @pytest.mark.parametrize('component', ['@@INNODB_VERSION', '@@VERSION'])
 def test_mysql_version(host, component):

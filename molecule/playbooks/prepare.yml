@@ -132,7 +132,7 @@
         key: "{{ lookup('file', 'public_keys') }}"
         state: present
         exclusive: False
-#      when: (ansible_distribution == "CentOS") and (lookup('env', 'DESTROY_ENV') == "no")
+      when: (ansible_distribution == "CentOS") and (lookup('env', 'DESTROY_ENV') == "no")
 
     - name: Setup SSH keys for Oracle Linux or Amazon
       authorized_key:
