@@ -169,6 +169,11 @@
 
     # Mandatory configuration for Molecule to function.
 
+    - name: Output 
+      debug:
+        var: "{{ ec2_jobs.results }}"
+      when: server.changed | bool
+
     - name: Populate instance config dict
       set_fact:
         instance_conf_dict: {
