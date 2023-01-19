@@ -142,11 +142,11 @@
                 volume_type: gp2
                 volume_size: 30
         tags: "{{
-            item.instance_tags | combine({
+            item.tags | combine({
               'Name': item.name,
               'ssh_user': item.ssh_user|default(ssh_user)
             })
-            if item.instance_tags is defined
+            if item.tags is defined
             else {
                 'Name': item.name,
                 'ssh_user': item.ssh_user|default(ssh_user)
@@ -171,7 +171,7 @@
 
     - name: Output 
       debug:
-        var: "{{ ec2_jobs.results }}"
+        var: "{{ server.results }}"
       when: server.changed | bool
 
     - name: Populate instance config dict
