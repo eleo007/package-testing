@@ -169,6 +169,11 @@
 
     # Mandatory configuration for Molecule to function.
 
+    - name: Output ec2_jobs  
+      debug:
+        msg: "{{ ec2_jobs.results }}"
+      when: server.changed | bool
+
     - name: Output 
       debug:
         msg: "{{ server.results }}"
