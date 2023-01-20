@@ -171,7 +171,7 @@
 
     - name: Output 
       debug:
-        var: "{{ server.results }}"
+        msg: "{{ server.results }}"
       when: server.changed | bool
 
     - name: Populate instance config dict
