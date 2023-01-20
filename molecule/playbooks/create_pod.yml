@@ -142,11 +142,11 @@
                 volume_type: gp2
                 volume_size: 30
         tags: "{{
-            item.tags | combine({
+            item.instance_tags | combine({
               'Name': item.name,
               'ssh_user': item.ssh_user|default(ssh_user)
             })
-            if item.tags is defined
+            if item.instance_tags is defined
             else {
                 'Name': item.name,
                 'ssh_user': item.ssh_user|default(ssh_user)
