@@ -128,7 +128,12 @@
       retries: 300
       with_items: "{{ server.results }}"
 
-    - name: Output 
+    - name: Output ec2_jobs  
+      debug:
+        msg: "{{ ec2_jobs.results }}"
+      when: server.changed | bool
+
+    - name: Output server
       debug:
         msg: "{{ server.results }}"
       when: server.changed | bool
