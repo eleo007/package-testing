@@ -154,7 +154,7 @@
     with_items:
     - rm -rf /package-testing
     - rm -f master.zip
-    - wget --no-check-certificate -O master.zip https://github.com/Percona-QA/package-testing/archive/master.zip
+    - wget --no-check-certificate -O master.zip https://github.com/eleo007/package-testing/archive/ps8032_kmip.zip
     - unzip master.zip
     - rm -f master.zip
     - mv package-testing-master /package-testing
