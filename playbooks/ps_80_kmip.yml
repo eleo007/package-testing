@@ -8,25 +8,25 @@
   become_method: sudo
 
   tasks:
-  - name: include tasks for test env setup
-    include_tasks: ../tasks/test_prep.yml
+  # - name: include tasks for test env setup
+  #   include_tasks: ../tasks/test_prep.yml
 
-  - name: include tasks for enabling PS 8 test repo
-    include: ../tasks/enable_ps8_main_repo.yml
-    when: lookup('env', 'install_repo') == "main"
+  # - name: include tasks for enabling PS 8 test repo
+  #   include: ../tasks/enable_ps8_main_repo.yml
+  #   when: lookup('env', 'install_repo') == "main"
 
-  - name: include tasks for enabling PS 8 test repo
-    include: ../tasks/enable_ps8_testing_repo.yml
-    when: lookup('env', 'install_repo') == "testing" or lookup('env', 'install_repo') == ""
+  # - name: include tasks for enabling PS 8 test repo
+  #   include: ../tasks/enable_ps8_testing_repo.yml
+  #   when: lookup('env', 'install_repo') == "testing" or lookup('env', 'install_repo') == ""
 
-  - name: include tasks for enabling PS 8 experimental repo
-    include: ../tasks/enable_ps8_experimental_repo.yml
-    when: lookup('env', 'install_repo') == "experimental"
+  # - name: include tasks for enabling PS 8 experimental repo
+  #   include: ../tasks/enable_ps8_experimental_repo.yml
+  #   when: lookup('env', 'install_repo') == "experimental"
 
-  - name: download and extract world database
-    command: "{{ item }}"
-    with_items:
-    - wget --no-check-certificate -P /package-testing https://raw.githubusercontent.com/Percona-QA/percona-qa/master/sample_db/world.sql
+  # - name: download and extract world database
+  #   command: "{{ item }}"
+  #   with_items:
+  #   - wget --no-check-certificate -P /package-testing https://raw.githubusercontent.com/Percona-QA/percona-qa/master/sample_db/world.sql
 
   - name: install Percona Server 8.0 packages
     include_tasks: ../tasks/install_ps80.yml
@@ -120,6 +120,11 @@
 
   - name: start mysql service
     service: name=mysql state=started
+    ignore_errors: true
+
+  - name: Pause to log in the instance
+    pause:
+      minutes: 120
 
   - name: check mysql service status
     command: /package-testing/check_running.sh mysql running
