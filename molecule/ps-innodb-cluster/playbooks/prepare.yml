@@ -122,3 +122,10 @@
         name: firewalld
         state: stopped
       when: ansible_distribution == "OracleLinux" and (ansible_distribution_major_version == "8" or ansible_distribution_major_version == "9") 
+
+    - name: Setup SSH keys Ubuntu
+      authorized_key:
+        user: ubuntu
+        key: "{{ lookup('file', 'public_keys') }}"
+        state: present
+        exclusive: False

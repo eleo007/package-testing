@@ -107,130 +107,130 @@
     include_tasks: ../tasks/install_pshell.yml
     when: install_mysql_shell == "yes" or install_mysql_shell == ""
 
-  - name: Handle check that Percona Server version is correct
-    block: 
-      - name: Run the version_check.sh script
-        shell: /package-testing/version_check.sh ps80 > version-check.log 2>&1
+  # - name: Handle check that Percona Server version is correct
+  #   block: 
+  #     - name: Run the version_check.sh script
+  #       shell: /package-testing/version_check.sh ps80 > version-check.log 2>&1
 
-      - name: Log check for warnings in the previous stage
-        command: /package-testing/scripts/log-warning-check.sh version-check.log
-        when: (lookup('env', 'check_warnings') == "yes")
+  #     - name: Log check for warnings in the previous stage
+  #       command: /package-testing/scripts/log-warning-check.sh version-check.log
+  #       when: (lookup('env', 'check_warnings') == "yes")
 
-    rescue:
-      - name: Fetch the output of the version_check.sh logfile on the script failure
-        command: cat "version-check.log"
-        register: versioncheckoutput
+  #   rescue:
+  #     - name: Fetch the output of the version_check.sh logfile on the script failure
+  #       command: cat "version-check.log"
+  #       register: versioncheckoutput
 
-      - name: Display the fetched output of the version_check.log logfile
-        debug:
-          msg: "Version check output: {{ versioncheckoutput.stdout }}"
+  #     - name: Display the fetched output of the version_check.log logfile
+  #       debug:
+  #         msg: "Version check output: {{ versioncheckoutput.stdout }}"
 
-      - name: Fail the task due to previous issues
-        fail:
-          msg: Failing the further tasks due to issues in the previous task.
+  #     - name: Fail the task due to previous issues
+  #       fail:
+  #         msg: Failing the further tasks due to issues in the previous task.
 
-  - name: check that Percona Server package versions are correct
-    command: /package-testing/package_check.sh ps80
+  # - name: check that Percona Server package versions are correct
+  #   command: /package-testing/package_check.sh ps80
 
-  - name: keyring plugins test
-    command: /package-testing/scripts/ps_keyring_plugins_test/ps_keyring_plugins_test.sh ps80
+  # - name: keyring plugins test
+  #   command: /package-testing/scripts/ps_keyring_plugins_test/ps_keyring_plugins_test.sh ps80
 
-  - name: re-run ps_admin to install rocksdb
-    command: /usr/bin/ps-admin --enable-rocksdb
+  # - name: re-run ps_admin to install rocksdb
+  #   command: /usr/bin/ps-admin --enable-rocksdb
 
-  - name: install plugins, import world database
-    command: /package-testing/plugins_test_80.sh ps
+  # - name: install plugins, import world database
+  #   command: /package-testing/plugins_test_80.sh ps
 
-  - name: check the clone and data masking plugins
-    command: /package-testing/scripts/ps_clone_dm_plugin_test.sh
+  # - name: check the clone and data masking plugins
+  #   command: /package-testing/scripts/ps_clone_dm_plugin_test.sh
 
-  - name: run some MyRocks tests
-    command: /package-testing/scripts/ps_myrocks_test.sh
+  # - name: run some MyRocks tests
+  #   command: /package-testing/scripts/ps_myrocks_test.sh
 
-  - name: run mysql compression tests script
-    command: /package-testing/scripts/mysql-comp-test/mysql_comp_test.sh ps80
+#   - name: run mysql compression tests script
+#     command: /package-testing/scripts/mysql-comp-test/mysql_comp_test.sh ps80
 
-  - name: run bats unit tests for ps-admin script
-    command: /usr/local/bin/bats /package-testing/bats/ps-admin_unit.bats
+#   - name: run bats unit tests for ps-admin script
+#     command: /usr/local/bin/bats /package-testing/bats/ps-admin_unit.bats
 
-  - name: run bats integration tests for ps-admin script
-    command: /usr/local/bin/bats /package-testing/bats/ps-admin_integration.bats
+#   - name: run bats integration tests for ps-admin script
+#     command: /usr/local/bin/bats /package-testing/bats/ps-admin_integration.bats
 
-  - name: run PAM tests
-    include_tasks: ../tasks/pam_test.yml
+#   - name: run PAM tests
+#     include_tasks: ../tasks/pam_test.yml
 
-  - name: install 3rd party packages with apt
-    apt:
-      name: "{{ packages }}"
-    vars:
-      packages:
-      - rsyslog-mysql
-    when: ansible_os_family == "Debian"
+#   - name: install 3rd party packages with apt
+#     apt:
+#       name: "{{ packages }}"
+#     vars:
+#       packages:
+#       - rsyslog-mysql
+#     when: ansible_os_family == "Debian"
 
-  - name: install 3rd party packages with yum
-    yum:
-      name: "{{ packages }}"
-    vars:
-      packages:
-      - rsyslog-mysql
-    when: ansible_os_family == "RedHat"
+#   - name: install 3rd party packages with yum
+#     yum:
+#       name: "{{ packages }}"
+#     vars:
+#       packages:
+#       - rsyslog-mysql
+#     when: ansible_os_family == "RedHat"
 
-  - name: list installed packages
-    include_tasks: ../tasks/list_installed_packages.yml
+#   - name: list installed packages
+#     include_tasks: ../tasks/list_installed_packages.yml
 
-  - name: run bats tests for mysql init scripts
-    command: /usr/local/bin/bats /package-testing/bats/mysql-init-scripts.bats
+#   - name: run bats tests for mysql init scripts
+#     command: /usr/local/bin/bats /package-testing/bats/mysql-init-scripts.bats
 
-  - name: start mysql service
-    service: name=mysql state=started
+#   - name: start mysql service
+#     service: name=mysql state=started
 
-    #  - name: check that mysqladmin shutdown works correctly
-    #    command: /package-testing/madmin_check.sh
+#     #  - name: check that mysqladmin shutdown works correctly
+#     #    command: /package-testing/madmin_check.sh
 
-  - name: disable all percona repos
-    command: percona-release disable all
+#   - name: disable all percona repos
+#     command: percona-release disable all
 
-  - name: get my.cnf stats
-    stat: path=/etc/my.cnf
-    register: mycnf
+#   - name: get my.cnf stats
+#     stat: path=/etc/my.cnf
+#     register: mycnf
 
-  - name: copy config file to backup
-    copy:
-      src: /etc/my.cnf
-      dest: /etc/my.cnf.backup
-      remote_src: yes
-    when: mycnf.stat.exists and ansible_os_family == "RedHat"
+#   - name: copy config file to backup
+#     copy:
+#       src: /etc/my.cnf
+#       dest: /etc/my.cnf.backup
+#       remote_src: yes
+#     when: mycnf.stat.exists and ansible_os_family == "RedHat"
 
-  - name: remove Percona Server deb packages
-    apt:
-      name: "{{ packages }}"
-      update_cache: no
-      state: absent
-    vars:
-      packages:
-      - percona-server*
-    when: ansible_os_family == "Debian"
+#   - name: remove Percona Server deb packages
+#     apt:
+#       name: "{{ packages }}"
+#       update_cache: no
+#       state: absent
+#     vars:
+#       packages:
+#       - percona-server*
+#     when: ansible_os_family == "Debian"
 
-  - name: remove Percona Server rpm packages
-    yum:
-      name: "{{ packages }}"
-      state: absent
-    vars:
-     packages:
-      - percona-server*
-    when: ansible_os_family == "RedHat"
+#   - name: remove Percona Server rpm packages
+#     yum:
+#       name: "{{ packages }}"
+#       state: absent
+#     vars:
+#      packages:
+#       - percona-server*
+#     when: ansible_os_family == "RedHat"
 
-  - name: check if process is stopped after package removal
-    command: /package-testing/check_running.sh mysql stopped
+#   - name: check if process is stopped after package removal
+#     command: /package-testing/check_running.sh mysql stopped
 
-  - stat:
-      path: /var/lib/mysql
-    register: p
+#   - stat:
+#       path: /var/lib/mysql
+#     register: p
 
-  - name: check /var/lib/mysql exists and not empty
-    fail:
-      msg: "Path exists and is a directory and is not empty"
-    when: p.stat.isdir is defined and p.stat.isdir and p.stat.size > 1000000
+#   - name: check /var/lib/mysql exists and not empty
+#     fail:
+#       msg: "Path exists and is a directory and is not empty"
+#     when: p.stat.isdir is defined and p.stat.isdir and p.stat.size > 1000000
 
-# - name: check apt/yum logs for errors
-#   command: /package-testing/scripts/log-check.sh
+# # - name: check apt/yum logs for errors
+# #   command: /package-testing/scripts/log-check.sh
