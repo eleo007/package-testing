@@ -8,6 +8,38 @@
   become_method: sudo
 
   tasks:
+  - name: Setup SSH keys CentOS
+    authorized_key:
+      user: centos
+      key: "{{ lookup('file', 'public_keys') }}"
+      state: present
+      exclusive: False
+    when: (ansible_distribution == "CentOS")
+
+  - name: Setup SSH keys for Oracle Linux or Amazon
+    authorized_key:
+      user: ec2-user
+      key: "{{ lookup('file', 'public_keys') }}"
+      state: present
+      exclusive: False
+    when: (ansible_distribution == "OracleLinux") or (ansible_distribution == "Amazon")
+
+  - name: Setup SSH keys Debian
+    authorized_key:
+      user: admin
+      key: "{{ lookup('file', 'public_keys') }}"
+      state: present
+      exclusive: False
+    when: (ansible_distribution == "Debian")
+
+  - name: Setup SSH keys Ubuntu
+    authorized_key:
+      user: ubuntu
+      key: "{{ lookup('file', 'public_keys') }}"
+      state: present
+      exclusive: False
+    when: (ansible_distribution == "Ubuntu")
+
   - name: include tasks for test env setup
     include_tasks: ../tasks/test_prep.yml
 
