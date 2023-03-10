@@ -160,7 +160,7 @@
       - name: start mysql service
         service: name=mysql state=started
 
-    resque:
+    rescue:
       - name: check pykmip log output
         shell: python3 --version
         register: python_version
