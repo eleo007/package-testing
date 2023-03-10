@@ -82,7 +82,12 @@
       - python3-pip
       state: latest
       update_cache: yes
+    register: pip_installation
     when: ansible_os_family == "RedHat"
+
+  - name: Check pip3 install
+    debug:
+      var: pip_installation
 
   - name: install python3-pip on Debian/Ubuntu
     apt:
@@ -153,6 +158,14 @@
   - name: start mysql service
     service: name=mysql state=started
     ignore_errors: true
+
+  - name: check pykmip log output
+    shell: python3 --version
+    register: python_version
+
+  - name: check python version
+    debug:
+      var: python_version
 
   - name: check mysqld log output
     shell: cat /var/log/mysqld.log
