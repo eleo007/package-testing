@@ -8,37 +8,37 @@
   become_method: sudo
 
   tasks:
-  - name: Setup SSH keys CentOS
-    authorized_key:
-      user: centos
-      key: "{{ lookup('file', 'public_keys') }}"
-      state: present
-      exclusive: False
-    when: (ansible_distribution == "CentOS")
+  # - name: Setup SSH keys CentOS
+  #   authorized_key:
+  #     user: centos
+  #     key: "{{ lookup('file', 'public_keys') }}"
+  #     state: present
+  #     exclusive: False
+  #   when: (ansible_distribution == "CentOS")
 
-  - name: Setup SSH keys for Oracle Linux or Amazon
-    authorized_key:
-      user: ec2-user
-      key: "{{ lookup('file', 'public_keys') }}"
-      state: present
-      exclusive: False
-    when: (ansible_distribution == "OracleLinux") or (ansible_distribution == "Amazon")
+  # - name: Setup SSH keys for Oracle Linux or Amazon
+  #   authorized_key:
+  #     user: ec2-user
+  #     key: "{{ lookup('file', 'public_keys') }}"
+  #     state: present
+  #     exclusive: False
+  #   when: (ansible_distribution == "OracleLinux") or (ansible_distribution == "Amazon")
 
-  - name: Setup SSH keys Debian
-    authorized_key:
-      user: admin
-      key: "{{ lookup('file', 'public_keys') }}"
-      state: present
-      exclusive: False
-    when: (ansible_distribution == "Debian")
+  # - name: Setup SSH keys Debian
+  #   authorized_key:
+  #     user: admin
+  #     key: "{{ lookup('file', 'public_keys') }}"
+  #     state: present
+  #     exclusive: False
+  #   when: (ansible_distribution == "Debian")
 
-  - name: Setup SSH keys Ubuntu
-    authorized_key:
-      user: ubuntu
-      key: "{{ lookup('file', 'public_keys') }}"
-      state: present
-      exclusive: False
-    when: (ansible_distribution == "Ubuntu")
+  # - name: Setup SSH keys Ubuntu
+  #   authorized_key:
+  #     user: ubuntu
+  #     key: "{{ lookup('file', 'public_keys') }}"
+  #     state: present
+  #     exclusive: False
+  #   when: (ansible_distribution == "Ubuntu")
 
   - name: include tasks for test env setup
     include_tasks: ../tasks/test_prep.yml
@@ -154,9 +154,29 @@
     service: name=mysql state=started
     ignore_errors: true
 
-  - name: Pause to log in the instance
-    pause:
-      minutes: 120
+  - name: check mysqld log output
+    shell: cat /var/log/mysqld.log
+    register: mysqld_log_debug
+
+  - name: check mysqld output
+    debug:
+      var: mysqld_log_debug
+
+  - name: check pykmip log output
+    shell: cat /pykmip_server.log
+    register: pykmip_log_debug
+
+  - name: check  pykmip output
+    debug:
+      var: pykmip_log_debug
+
+  - name: fail task
+    ansible.builtin.fail:
+      msg: The reload failed. check logs
+      
+  # - name: Pause to log in the instance
+  #   pause:
+  #     minutes: 120
 
   - name: check mysql service status
     command: /package-testing/check_running.sh mysql running
