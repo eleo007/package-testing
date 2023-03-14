@@ -160,7 +160,7 @@
     ignore_errors: true
 
   - name: check pykmip log output
-    shell: python3 --version
+    shell: pip3 show pykmip
     register: python_version
 
   - name: check python version
