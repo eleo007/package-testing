@@ -170,10 +170,12 @@
   - name: check mysqld log output
     shell: cat /var/log/mysqld.log
     register: mysqld_log_debug
+    ignore_errors: true
 
   - name: check mysqld output
     debug:
       var: mysqld_log_debug
+    ignore_errors: true
 
   - name: check pykmip log output
     shell: cat /pykmip_server.log
