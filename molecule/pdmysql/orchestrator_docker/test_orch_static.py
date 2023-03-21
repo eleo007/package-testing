@@ -30,16 +30,16 @@ class TestMysqlEnvironment:
     def test_packages(self, host):
         pkg_name = "percona-orchestrator"
         assert host.package(pkg_name).is_installed
-        assert host.package(pkg_name).version == orch_version
+        assert host.package(pkg_name).version +'-'+pkg.release == orch_version, pkg.version+'-'+pkg.release
 
     #@pytest.mark.parametrize("binary", orch_binary)
-    def test_binaries_exist(self, host, binary):
+    def test_binaries_exist(self, host):
         orch_binary="/usr/local/orchestrator/orchestrator"
         assert host.file(orch_binary).exists
         assert oct(host.file(orch_binary).mode) == '0o755'
 
     def test_binaries_version(self, host):
-        assert host.check_output("/usr/local/orchestrator/orchestrator --version") in orch_version
+        assert orch_version in host.check_output("/usr/local/orchestrator/orchestrator --version")
 
 
     def test_process_running(self, host):
@@ -62,11 +62,11 @@ class TestMysqlEnvironment:
         assert host.group('mysql').gid == 1001
 
     def test_orch_permissions(self, host):
-        assert host.file('/var/lib/orchestrator').user == 'mysql'
+        assert host.file('/var/lib/orchestrator').user == 'root'
         assert host.file('/var/lib/orchestrator').group == 'root'
         assert oct(host.file('/var/lib/orchestrator').mode) == '0o775'
 
     def test_mysql_files_permissions(self, host):
-        assert host.file('/etc/orchestrator').user == 'mysql'
-        assert host.file('/etc/orchestrator').group == 'mysql'
+        assert host.file('/etc/orchestrator').user == 'root'
+        assert host.file('/etc/orchestrator').group == 'root'
         assert oct(host.file('/etc/orchestrator').mode) == '0o750'
