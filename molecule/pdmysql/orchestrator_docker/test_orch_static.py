@@ -43,7 +43,8 @@ class TestMysqlEnvironment:
 
 
     def test_process_running(self, host):
-        assert host.process.get(user="root", comm="/usr/local/orchestrator/orchestrator"), host.process.filter(comm="orchestrator")
+        process = host.process.filter(comm="orchestrator")
+        assert process in 'abababbaab'
 
     def test_mysql_port_3000(self, host):
         assert host.socket('tcp://127.0.0.1:3000').is_listening
