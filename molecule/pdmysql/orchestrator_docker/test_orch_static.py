@@ -4,7 +4,7 @@ import subprocess
 import testinfra
 import time
 import os
-from settings import *
+#from settings import *
 
 orch_version = os.getenv('OCHESTARTOR_VERSION')
 container_name = 'orchestartor-docker-test-static'
@@ -27,15 +27,16 @@ def host():
 
 
 class TestMysqlEnvironment:
-    @pytest.mark.parametrize("pkg_name", "percona-orchestrator")
-    def test_packages(self, host, pkg_name):
+    def test_packages(self, host):
+        pkg_name = "percona-orchestrator"
         assert host.package(pkg_name).is_installed
         assert host.package(pkg_name).version == orch_version
 
-    @pytest.mark.parametrize("binary", "/usr/local/orchestrator/orchestrator")
+    #@pytest.mark.parametrize("binary", orch_binary)
     def test_binaries_exist(self, host, binary):
-        assert host.file(binary).exists
-        assert oct(host.file(binary).mode) == '0o755'
+        orch_binary="/usr/local/orchestrator/orchestrator"
+        assert host.file(orch_binary).exists
+        assert oct(host.file(orch_binary).mode) == '0o755'
 
     def test_binaries_version(self, host):
         assert host.check_output("/usr/local/orchestrator/orchestrator --version") in orch_version
