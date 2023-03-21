@@ -30,7 +30,7 @@ class TestMysqlEnvironment:
     def test_packages(self, host):
         pkg_name = "percona-orchestrator"
         assert host.package(pkg_name).is_installed
-        assert host.package(pkg_name).version +'-'+host.package(pkg_name).release == orch_version, pkg.version+'-'+pkg.release
+        assert host.package(pkg_name).version +'-'+host.package(pkg_name).release == orch_version, host.package(pkg_name).version+'-'+host.package(pkg_name).release
 
     #@pytest.mark.parametrize("binary", orch_binary)
     def test_binaries_exist(self, host):
