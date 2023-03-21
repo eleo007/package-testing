@@ -28,16 +28,22 @@ def inspect_data():
 
 class TestContainerAttributes:
     def test_args(self, inspect_data):
-        assert len(inspect_data['Args']) == 1
+        assert len(inspect_data['Args']) == 4
         assert inspect_data['Args'][0] == '/usr/local/orchestrator/orchestrator'
+        assert inspect_data['Args'][1] == '-config'
+        assert inspect_data['Args'][2] == '/etc/orchestrator/orchestrator.conf.json'
+        assert inspect_data['Args'][3] == 'http'
 
     def test_status(self, inspect_data):
         assert inspect_data['State']['Status'] == 'running'
         assert inspect_data['State']['Running'] == True
 
     def test_config(self, inspect_data):
-        assert len(inspect_data['Config']['Cmd']) == 1
+        assert len(inspect_data['Config']['Cmd']) == 4
         assert inspect_data['Config']['Cmd'][0] == '/usr/local/orchestrator/orchestrator'
+        assert inspect_data['Config']['Cmd'][1] == '-config'
+        assert inspect_data['Config']['Cmd'][2] == '/etc/orchestrator/orchestrator.conf.json'
+        assert inspect_data['Config']['Cmd'][3] == 'http'
 
     def test_image_name(self, inspect_data):
         assert inspect_data['Config']['Image'] == docker_image
