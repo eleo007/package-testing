@@ -62,11 +62,11 @@ class TestMysqlEnvironment:
         assert host.group('mysql').gid == 1001
 
     def test_orch_permissions(self, host):
-        assert host.file('/var/lib/orchestrator').user == 'root'
-        assert host.file('/var/lib/orchestrator').group == 'root'
+        assert host.file('/var/lib/orchestrator').user == 'mysql'
+        assert host.file('/var/lib/orchestrator').group == 'mysql'
         assert oct(host.file('/var/lib/orchestrator').mode) == '0o775'
 
     def test_mysql_files_permissions(self, host):
-        assert host.file('/etc/orchestrator').user == 'root'
-        assert host.file('/etc/orchestrator').group == 'root'
-        assert oct(host.file('/etc/orchestrator').mode) == '0o750'
+        assert host.file('/etc/orchestrator').user == 'mysql'
+        assert host.file('/etc/orchestrator').group == 'mysql'
+        assert oct(host.file('/etc/orchestrator').mode) == '0o755'
