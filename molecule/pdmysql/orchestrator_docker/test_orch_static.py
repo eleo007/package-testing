@@ -18,7 +18,7 @@ def host():
     subprocess.check_call(['docker', 'rm', '-f', docker_id])
 
 
-class TestMysqlEnvironment:
+class TestOrchEnvironment:
     def test_packages(self, host):
         pkg = host.package("percona-orchestrator")
         dist = host.system_info.distribution
@@ -28,7 +28,6 @@ class TestMysqlEnvironment:
         else:
             assert orch_version in pkg.version, pkg.version
 
-    #@pytest.mark.parametrize("binary", orch_binary)
     def test_binaries_exist(self, host):
         orch_binary="/usr/local/orchestrator/orchestrator"
         assert host.file(orch_binary).exists
