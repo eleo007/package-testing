@@ -20,9 +20,9 @@ docker_image = docker_acc + "/" + docker_product + ":" + docker_tag
 def host():
     docker_id = subprocess.check_output(
         ['docker', 'run', '--name', container_name, '-d', docker_image ]).decode().strip()
-    time.sleep(5)
+    time.sleep(20)
     subprocess.check_call(['docker','exec','--user','root',container_name,'microdnf','install','net-tools'])
-    time.sleep(15)
+    time.sleep(20)
     yield testinfra.get_host("docker://root@" + docker_id)
     subprocess.check_call(['docker', 'rm', '-f', docker_id])
 
