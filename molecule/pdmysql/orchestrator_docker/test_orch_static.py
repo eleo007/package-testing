@@ -68,6 +68,11 @@ class TestMysqlEnvironment:
         assert oct(host.file('/var/lib/orchestrator').mode) == '0o755'
 
     def test_mysql_files_permissions(self, host):
-        assert host.file('/etc/orchestrator').user == 'root'
-        assert host.file('/etc/orchestrator').group == 'root'
+        assert host.file('/etc/orchestrator/orchestrator.conf.json').user == 'mysql'
+        assert host.file('/etc/orchestrator/orchestrator.conf.json').group == 'mysql'
+        assert oct(host.file('/etc/orchestrator').mode) == '0o755'
+
+    def test_mysql_files_permissions(self, host):
+        assert host.file('/etc/orchestrator/orc-topology.cnf').user == 'mysql'
+        assert host.file('/etc/orchestrator/orc-topology.cnf').group == 'mysql'
         assert oct(host.file('/etc/orchestrator').mode) == '0o755'
