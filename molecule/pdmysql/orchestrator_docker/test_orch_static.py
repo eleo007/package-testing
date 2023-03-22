@@ -3,18 +3,9 @@ import pytest
 import subprocess
 import testinfra
 import time
-import os
-#from settings import *
+from .settings import *
 
-orch_version = os.getenv('OCHESTARTOR_VERSION')
 container_name = 'orchestartor-docker-test-static'
-
-docker_acc = os.getenv('DOCKER_ACC')
-orch_tag = os.getenv('ORCHESTRATOR_TAG')
-
-docker_product = 'percona-orchestrator'
-docker_tag = orch_tag
-docker_image = docker_acc + "/" + docker_product + ":" + docker_tag
 
 @pytest.fixture(scope='module')
 def host():
@@ -29,9 +20,13 @@ def host():
 
 class TestMysqlEnvironment:
     def test_packages(self, host):
-        pkg_name = "percona-orchestrator"
-        assert host.package(pkg_name).is_installed
-        assert orch_version in host.package(pkg_name).version +'-'+host.package(pkg_name).release, host.package(pkg_name).version+'-'+host.package(pkg_name).release
+        pkg = host.package("percona-orchestrator")
+        dist = host.system_info.distribution
+        assert pkg.is_installed
+        if dist.lower() in RHEL_DISTS:
+            assert orch_version in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
+        else:
+            assert orch_version in pkg.version, pkg.version
 
     #@pytest.mark.parametrize("binary", orch_binary)
     def test_binaries_exist(self, host):
@@ -67,12 +62,12 @@ class TestMysqlEnvironment:
         assert host.file('/var/lib/orchestrator').group == 'mysql'
         assert oct(host.file('/var/lib/orchestrator').mode) == '0o755'
 
-    def test_mysql_files_permissions(self, host):
+    def test_orch_conf_permissions(self, host):
         assert host.file('/etc/orchestrator/orchestrator.conf.json').user == 'mysql'
         assert host.file('/etc/orchestrator/orchestrator.conf.json').group == 'mysql'
         assert oct(host.file('/etc/orchestrator').mode) == '0o755'
 
-    def test_mysql_files_permissions(self, host):
+    def test_orch_topology_permissions(self, host):
         assert host.file('/etc/orchestrator/orc-topology.cnf').user == 'mysql'
         assert host.file('/etc/orchestrator/orc-topology.cnf').group == 'mysql'
         assert oct(host.file('/etc/orchestrator').mode) == '0o755'

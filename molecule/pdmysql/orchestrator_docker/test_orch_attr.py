@@ -3,17 +3,7 @@ import pytest
 import subprocess
 import testinfra
 import json
-import os
-from settings import *
-
-docker_acc = os.getenv('DOCKER_ACC')
-orch_version = os.getenv('OCHESTARTOR_VERSION')
-orch_tag = os.getenv('ORCHESTRATOR_TAG')
-
-docker_product = 'percona-orchestrator'
-docker_tag = orch_tag
-docker_image = docker_acc + "/" + docker_product + ":" + docker_tag
-
+from .settings import *
 
 container_name = 'orch-docker-test-inspect'
 
