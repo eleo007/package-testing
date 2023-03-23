@@ -86,7 +86,7 @@ def test_check_deb_package(host, package):
     pkg = host.package(package)
     assert pkg.is_installed
     if package == 'percona-mysql-shell':
-        shell_version = re.search(r'^(\d+\.\d+\.\d+)(?:-\d+\.\d+)*$', VERSION)
+        shell_version = re.search(r'^(\d+\.\d+\.\d+)(?:-\d+)*$', VERSION)
         assert shell_version[1] in pkg.version, (shell_version, pkg.version)
     else:
         assert VERSION in pkg.version, pkg.version
