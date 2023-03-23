@@ -94,7 +94,7 @@ def test_check_rpm_package(host, package):
         pytest.skip("This test only for RHEL based platforms")
     pkg = host.package(package)
     assert pkg.is_installed
-    assert VERSION in pkg.version, pkg.version
+    assert VERSION in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
 
 
 @pytest.mark.parametrize("binary", ['mysqlsh', 'mysql', 'mysqlrouter'])
