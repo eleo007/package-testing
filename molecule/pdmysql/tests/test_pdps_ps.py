@@ -101,7 +101,7 @@ def test_check_rpm_package(host, package):
     assert pkg.is_installed
     if package == 'percona-mysql-shell':
         shell_version = re.search(r'^(\d+\.\d+\.\d+)(?:-\d+\.\d+)*$', VERSION)
-        assert shell_version in pkg.version
+        assert shell_version[1] in pkg.version, (shell_version, pkg.version)
     else:
         assert VERSION in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
 
