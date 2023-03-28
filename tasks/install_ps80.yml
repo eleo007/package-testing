@@ -3,9 +3,8 @@
 
   - name: install Percona Server deb packages
     apt:
-      name: "{{ packages }}"
+      name: "{{ packages | product([minor_version]) | map('join', '') | join(',') }}"
       update_cache: yes
-      state: latest
     vars:
       packages:
       - percona-server-server
@@ -15,6 +14,7 @@
       - percona-server-client
       - percona-server-rocksdb
       - percona-mysql-router
+      minor_version: "{{ lookup('env', 'my_version')| regex_replace ('^(.+)$', '=\\1*') }}"
     when: ansible_os_family == "Debian"
 
   - name: get list of enabled dnf modules on centos 8
@@ -37,8 +37,7 @@
 
   - name: install Percona Server rpm packages
     yum:
-      name: "{{ packages }}"
-      state: latest
+      name: "{{ packages | product([minor_version]) | map('join', '') | join(',') }}"
       disablerepo: "epel"
       update_cache: yes
     vars:
@@ -50,4 +49,5 @@
       - percona-server-debuginfo
       - percona-server-devel
       - percona-server-rocksdb
+      minor_version: "{{ lookup('env', 'my_version')| regex_replace ('^(.+)$', '-\\1*') }}"
     when: ansible_os_family == "RedHat"
