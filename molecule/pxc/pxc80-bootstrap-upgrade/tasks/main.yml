@@ -57,7 +57,7 @@
 
   - name: check var
     debug:
-      msg: "My variable is {{ lookup('env', 'minor_version' }}"
+      msg: "My variable is {{ lookup('env', 'minor_version') }}"
 
   - name: install PXC 8 deb packages
     apt:
@@ -68,7 +68,7 @@
       - percona-xtradb-cluster-full{{ upgrade_minor_version }}
       - percona-xtrabackup-80
       - percona-toolkit
-      upgrade_minor_version: "{{ minor_version | regex_replace ('^(.+)$', '=1:\\1*') }}"
+      upgrade_minor_version: "{{ lookup('env', 'minor_version') | regex_replace ('^(.+)$', '=1:\1*') }}"
     when: ansible_os_family == "Debian"
 
   - name: install PXC 8 rpm packages
