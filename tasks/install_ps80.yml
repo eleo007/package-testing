@@ -14,7 +14,7 @@
       - percona-server-client
       - percona-server-rocksdb
       - percona-mysql-router
-      version: "{{ minor_version | default ('') | regex_replace ('^(.+)$', '-\\1*') }}"
+      version: "{{ minor_version | default ('') | regex_replace ('^(.+)$', '=\\1*') }}"
     when: ansible_os_family == "Debian"
 
   - name: get list of enabled dnf modules on centos 8
