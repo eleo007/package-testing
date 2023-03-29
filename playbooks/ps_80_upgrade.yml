@@ -33,8 +33,6 @@
 
   - name: include tasks for enabling main repo
     include: ../tasks/enable_main_repo.yml
-    vars:
-      minor_version: "{{ lookup('env', 'minor_version') }}"
 
   - name: include tasks for enabling PS 8 main repo
     include: ../tasks/enable_ps8_main_repo.yml
@@ -46,6 +44,15 @@
 
   - name: install Percona Server 8.0 packages
     include_tasks: ../tasks/install_ps80.yml
+    vars:
+      minor_version: "{{ lookup('env', 'minor_version') }}"
+
+  - name: register PS version 
+    shell: mysqld --version
+    register: ps_version
+
+  - name: print PS version 
+    debug: var=ps_version
 
 # Disable Percona Toolkit installation till its supported in OL9 and Jammy
 #  - name: install Percona Toolkit new deb packages
