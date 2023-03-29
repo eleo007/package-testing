@@ -3,7 +3,7 @@
 
   - name: install Percona Server deb packages
     apt:
-      name: "{{ packages | product([version]) | map('join', '') | join(',') }}"
+      name: "{{ ( packages + additional_packages ) | product([version]) | map('join', '') | join(',') }}"
       update_cache: yes
     vars:
       packages:
@@ -17,7 +17,8 @@
       - percona-server-common
       - libperconaserverclient21
       - libperconaserverclient21-dev
-      version: "{{ minor_version | default ('') | regex_replace ('^(.+)$', '=\\1*') }}"
+      version: "{{ minor_version | default ('') }}"
+      additional_packages: "{{ additional_update_packages | default (['']) }}"
     when: ansible_os_family == "Debian"
 
   - name: get list of enabled dnf modules on centos 8

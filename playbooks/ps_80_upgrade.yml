@@ -42,10 +42,19 @@
     with_items:
     - wget --no-check-certificate -P /package-testing https://raw.githubusercontent.com/Percona-QA/percona-qa/master/sample_db/world.sql
 
-  - name: install Percona Server 8.0 packages
+  - name: install Percona Server 8.0 packages with custom minor version
     include_tasks: ../tasks/install_ps80.yml
     vars:
-      minor_version: "{{ lookup('env', 'minor_version') }}"
+      minor_version: "{{ lookup('env', 'minor_version') | regex_replace ('^(.+)$', '=\\1*')}}"
+      additional_update_packages:
+      - percona-server-common
+      - libperconaserverclient21
+      - libperconaserverclient21-dev
+    when: lookup('env', 'minor_version') != ""
+
+  - name: install Percona Server 8.0 packages with custom minor version
+    include_tasks: ../tasks/install_ps80.yml
+    when: lookup('env', 'minor_version') == ""
 
   - name: register PS version 
     shell: mysqld --version
