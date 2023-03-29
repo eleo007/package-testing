@@ -52,11 +52,12 @@
       update_cache: yes
     vars:
       packages:
-      - percona-xtradb-cluster-full{{ minor_version }}
+      - percona-xtradb-cluster-full{{ full_minor_version }}
       - percona-xtradb-cluster-source{{ minor_version }}
       - percona-xtrabackup-80
       - percona-toolkit
-      minor_version: "{{ lookup('env', 'minor_version') | regex_replace ('^(.+)$', '=1:\\1*') }}"
+      full_minor_version: "{{ lookup('env', 'minor_version') | regex_replace ('^(.+)$', '=1:\\1*') }}"
+      minor_version: "{{ lookup('env', 'minor_version') | regex_replace ('^(.+)$', '=\\1*') }}"
     when: ansible_os_family == "Debian"
 
   - name: install PXC 8 rpm packages
