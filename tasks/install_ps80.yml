@@ -14,6 +14,7 @@
       - percona-server-client
       - percona-server-rocksdb
       - percona-mysql-router
+      - percona-server-common
       version: "{{ minor_version | default ('') | regex_replace ('^(.+)$', '=\\1*') }}"
     when: ansible_os_family == "Debian"
 
@@ -49,5 +50,6 @@
       - percona-server-debuginfo
       - percona-server-devel
       - percona-server-rocksdb
+      - percona-server-common
       version: "{{ minor_version | default ('') | regex_replace ('^(.+)$', '-\\1*') }}"
     when: ansible_os_family == "RedHat"
