@@ -3,7 +3,7 @@ import pytest
 import subprocess
 import testinfra
 import time
-from .settings import *
+from settings import *
 
 container_name = 'orchestartor-docker-test-static'
 

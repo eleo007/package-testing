@@ -3,7 +3,7 @@ import pytest
 import subprocess
 import testinfra
 import json
-from .settings import *
+from settings import *
 
 container_name = 'orch-docker-test-inspect'
 
