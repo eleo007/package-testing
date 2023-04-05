@@ -64,9 +64,9 @@ class TestOrchEnvironment:
     def test_orch_conf_permissions(self, host):
         assert host.file('/etc/orchestrator/orchestrator.conf.json').user == 'mysql'
         assert host.file('/etc/orchestrator/orchestrator.conf.json').group == 'mysql'
-        assert oct(host.file('/etc/orchestrator').mode) == '0o755'
+        assert oct(host.file('/etc/orchestrator').mode) == '0o775'
 
     def test_orch_topology_permissions(self, host):
         assert host.file('/etc/orchestrator/orc-topology.cnf').user == 'mysql'
         assert host.file('/etc/orchestrator/orc-topology.cnf').group == 'mysql'
-        assert oct(host.file('/etc/orchestrator').mode) == '0o755'
+        assert oct(host.file('/etc/orchestrator').mode) == '0o775'
