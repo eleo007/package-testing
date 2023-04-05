@@ -36,14 +36,13 @@ class TestOrchEnvironment:
     def test_binaries_version(self, host):
         assert orch_version in host.check_output("/usr/local/orchestrator/orchestrator --version")
 
-
     def test_process_running(self, host):
         assert host.process.get(user="mysql", comm="orchestrator")
 
-    def test_mysql_port_3000(self, host):
+    def test_http_port_3000(self, host):
         assert host.socket('tcp://127.0.0.1:3000').is_listening
 
-    def test_mysql_port_10008(self, host):
+    def test_raft_port_10008(self, host):
         assert host.socket('tcp://127.0.0.1:10008').is_listening
 
     def test_mysql_user(self, host):
