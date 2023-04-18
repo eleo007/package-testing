@@ -214,7 +214,7 @@ elif [ ${product} = "proxysql" -o ${product} = "proxysql2" ]; then
       echo "${binary} version ${version} is not good!. Installed version: ${installed_version}"
       exit 1
     else
-      echo "${binary} version is correct and ${version}" >> "${log}"
+      echo "${binary} version is correct and ${version}"
     fi
   done
 
