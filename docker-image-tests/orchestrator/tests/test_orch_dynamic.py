@@ -3,6 +3,7 @@ import pytest
 import subprocess
 import testinfra
 import json
+import time
 from settings import *
 
 orch_container_name = 'orchestartor-docker-test-static'
