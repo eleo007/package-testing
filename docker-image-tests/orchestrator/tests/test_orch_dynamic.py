@@ -20,7 +20,7 @@ def host():
     time.sleep(20)
     master_ps_docker_id = subprocess.check_output(
         ['docker', 'run', '--name', master_ps_container_name, '-e', 'MYSQL_ROOT_PASSWORD=secret', '-d', '--network', network_name, ps_docker_image,
-        '--log-error-verbosity=3 --report_host="'+master_ps_container_name, '" --max-allowed-packet="134217728"']).decode().strip()
+        '--log-error-verbosity=3', '--report_host="'+master_ps_container_name+'"', '--max-allowed-packet="134217728"']).decode().strip()
     time.sleep(20)
     slave_ps_docker_id = subprocess.check_output(
         ['docker', 'run', '--name', replica_ps_container_name, '-d', '--network', network_name, ps_docker_image, 
