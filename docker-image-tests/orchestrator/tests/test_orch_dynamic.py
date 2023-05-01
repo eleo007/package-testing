@@ -11,7 +11,7 @@ network_name = 'orchestrator'
 
 @pytest.fixture(scope='module')
 def host():
-    subprocess.check_call(['docker network create', network_name])
+    subprocess.check_call(['docker', 'network', 'create', network_name])
     orch_docker_id = subprocess.check_output(
         ['docker', 'run', '--name', orch_container_name, '-d', '--network', network_name, docker_image ]).decode().strip()
     time.sleep(20)
