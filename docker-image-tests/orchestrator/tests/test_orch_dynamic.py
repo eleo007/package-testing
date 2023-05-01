@@ -23,11 +23,11 @@ def host():
         '--log-error-verbosity=3', '--report_host="'+master_ps_container_name+'"', '--max-allowed-packet=134217728']).decode().strip()
     time.sleep(20)
     slave_ps_docker_id = subprocess.check_output(
-        ['docker', 'run', '--name', replica_ps_container_name, '-d', '--network', network_name, ps_docker_image, 
+        ['docker', 'run', '--name', replica_ps_container_name, '-e', 'MYSQL_ROOT_PASSWORD=secret', '-d', '--network', network_name, ps_docker_image, 
         '--log-error-verbosity=3', '--report_host="'+replica_ps_container_name+'"', '--max-allowed-packet=134217728']).decode().strip()
-    subprocess.check_call(['docker', 'exec', master_ps_docker_id, 'mysql -uroot -psecret -vvv -e"CREATE USER \'repl\'@\'%\' IDENTIFIED WITH mysql_native_password BY \'slavepass\'; GRANT REPLICATION SLAVE ON *.* TO repl@\'%\';"'])
-    subprocess.check_call(['docker', 'exec', slave_ps_docker_id, 'mysql -uroot -psecret -e\'change master to master_host="'+master_ps_container_name+'",master_user="repl",master_password="slavepass",master_log_file="binlog.000002";show warnings;\''])
-    subprocess.check_call(['docker', 'exec', slave_ps_docker_id, 'mysql -uroot -psecret -e\'START SLAVE;\''])
+    subprocess.check_call(['docker', 'exec', master_ps_docker_id, 'mysql', '-uroot', '-psecret', '-e', 'CREATE USER \'repl\'@\'%\' IDENTIFIED WITH mysql_native_password BY \'slavepass\'; GRANT REPLICATION SLAVE ON *.* TO \'repl\'@\'%\';'])
+    subprocess.check_call(['docker', 'exec', slave_ps_docker_id, 'mysql', '-uroot', '-psecret', '-e', 'change master to master_host="'+master_ps_container_name+'",master_user="repl",master_password="slavepass",master_log_file="binlog.000002";show warnings;'])
+    subprocess.check_call(['docker', 'exec', slave_ps_docker_id, 'mysql', '-uroot', '-psecret', '-e', 'START SLAVE;'])
     # yield testinfra.get_host("docker://root@" + orch_docker_id)
     # subprocess.check_call(['docker', 'rm', '-f', orch_docker_id])
 
