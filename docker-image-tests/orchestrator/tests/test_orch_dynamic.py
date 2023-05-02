@@ -42,5 +42,5 @@ def run_api_query (host, command):
     assert cmd.succeeded
     return cmd.stdout
 
-def test_discovery(host):
+def test_discovery(host, prepare):
     run_api_query(host,'discover')
