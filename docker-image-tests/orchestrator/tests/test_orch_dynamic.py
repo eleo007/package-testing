@@ -5,6 +5,7 @@ import testinfra
 import json
 import time
 from settings import *
+import os
 
 orch_container_name = 'orchestartor-docker-test-dynamic'
 ps_container_name = 'ps-docker'
@@ -13,7 +14,7 @@ replica_ps_container_name = 'ps-docker-replica'
 network_name = 'orchestrator'
 
 @pytest.fixture(scope='module')
-def host():
+def prepare():
     subprocess.check_call(['docker', 'network', 'create', network_name])
     orch_docker_id = subprocess.check_output(
         ['docker', 'run', '--name', orch_container_name, '-d', '--network', network_name, docker_image ]).decode().strip()
@@ -31,16 +32,15 @@ def host():
     subprocess.check_call(['docker', 'exec', replica_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', 'START REPLICA;'])
     subprocess.check_call(['docker', 'exec', source_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', 'CREATE USER \'orchestrator\'@\'%\' IDENTIFIED  WITH mysql_native_password BY \'\'; GRANT SUPER, PROCESS, REPLICATION SLAVE, RELOAD ON *.* TO \'orchestrator\'@\'%\'; GRANT SELECT ON mysql.slave_master_info TO \'orchestrator\'@\'%\';'])
     source_ps_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', source_ps_container_name]).decode().strip()
-    # yield testinfra.get_host("docker://root@" + orch_docker_id)
-    # subprocess.check_call(['docker', 'rm', '-f', orch_docker_id])
-#curl "http://172.18.0.2:3000/api/discover/172.18.0.3/3306"| jq '.'
+#     # yield testinfra.get_host("docker://root@" + orch_docker_id)
+#     # subprocess.check_call(['docker', 'rm', '-f', orch_docker_id])
+# #curl "http://172.18.0.2:3000/api/discover/172.18.0.3/3306"| jq '.'
 
-def run_api_query (self, command):
-    cmd = self.run('curl "http://'+orchestrator_ip+':3000/api/'+command+'/'+source_ps_container_name+'/3306| jq \'\.\[\] \'')
+def run_api_query (host, command):
+    orchestrator_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', orch_container_name]).decode().strip().replace('"','')
+    cmd = host.run('curl http://'+orchestrator_ip+':3000/api/'+command+'/'+source_ps_container_name+'/3306| jq \'.[]\'')
     assert cmd.succeeded
     return cmd.stdout
 
-class TestOrchConnection:
-    def test_discovery(self, host):
-        orchestrator_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', orch_container_name]).decode().strip()
-        run_api_query('discover')
+def test_discovery(host):
+    run_api_query(host,'discover')
