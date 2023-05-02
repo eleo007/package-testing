@@ -40,6 +40,7 @@ def run_api_query (self, command):
     assert cmd.succeeded
     return cmd.stdout
 
-def test_discovery(self, host):
-    orchestrator_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', orch_container_name]).decode().strip()
-    run_api_query('discover')
+class TestOrchConnection:
+    def test_discovery(self, host):
+        orchestrator_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', orch_container_name]).decode().strip()
+        run_api_query('discover')
