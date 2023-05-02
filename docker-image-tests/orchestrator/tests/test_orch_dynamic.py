@@ -20,19 +20,29 @@ def host():
     time.sleep(20)
     source_ps_docker_id = subprocess.check_output(
         ['docker', 'run', '--name', source_ps_container_name, '-e', 'MYSQL_ROOT_PASSWORD=secret', '-d', '--network', network_name, ps_docker_image,
-        '--log-error-verbosity=3', '--report_host="'+source_ps_container_name+'"', '--max-allowed-packet=134217728']).decode().strip()
+        '--log-error-verbosity=3', '--report_host='+source_ps_container_name, '--max-allowed-packet=134217728']).decode().strip()
     time.sleep(20)
     replica_ps_docker_id = subprocess.check_output(
         ['docker', 'run', '--name', replica_ps_container_name, '-e', 'MYSQL_ROOT_PASSWORD=secret', '-d', '--network', network_name, ps_docker_image, 
-        '--log-error-verbosity=3', '--report_host="'+replica_ps_container_name+'"', '--max-allowed-packet=134217728', '--server-id=2']).decode().strip()
+        '--log-error-verbosity=3', '--report_host='+replica_ps_container_name, '--max-allowed-packet=134217728', '--server-id=2']).decode().strip()
     time.sleep(20)
     subprocess.check_call(['docker', 'exec', source_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', 'CREATE USER \'repl\'@\'%\' IDENTIFIED WITH mysql_native_password BY \'replicapass\'; GRANT REPLICATION SLAVE ON *.* TO \'repl\'@\'%\';'])
     subprocess.check_call(['docker', 'exec', replica_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', 'CHANGE REPLICATION SOURCE to SOURCE_HOST=\''+source_ps_container_name+'\',SOURCE_USER=\'repl\',SOURCE_PASSWORD=\'replicapass\',SOURCE_LOG_FILE=\'binlog.000002\';show warnings;'])
     subprocess.check_call(['docker', 'exec', replica_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', 'START REPLICA;'])
     subprocess.check_call(['docker', 'exec', source_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', 'CREATE USER \'orchestrator\'@\'%\' IDENTIFIED  WITH mysql_native_password BY \'\'; GRANT SUPER, PROCESS, REPLICATION SLAVE, RELOAD ON *.* TO \'orchestrator\'@\'%\'; GRANT SELECT ON mysql.slave_master_info TO \'orchestrator\'@\'%\';'])
+    source_ps_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', source_ps_container_name]).decode().strip()
     # yield testinfra.get_host("docker://root@" + orch_docker_id)
     # subprocess.check_call(['docker', 'rm', '-f', orch_docker_id])
+#curl "http://172.18.0.2:3000/api/discover/172.18.0.3/3306"| jq '.'
 
-def test_packages(self, host):
-    cmd=host.run('echo \'some command\'')
+def run_api_query (self, command, verifier):
+    cmd = self.run('curl "http://'+orchestrator_ip+':3000/api/'+command+'/'+source_ps_container_name+'/3306| jq \'\.\[\] \'')
     assert cmd.succeeded
+    return cmd.stdout
+
+
+ORCHESTRATOR_API='http://172.18.0.2:3000/api'
+
+def test_discovery(self, host):
+    orchestrator_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', orch_container_name]).decode().strip()
+    run_api_query('discover')
