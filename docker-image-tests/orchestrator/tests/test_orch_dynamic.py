@@ -35,13 +35,10 @@ def host():
     # subprocess.check_call(['docker', 'rm', '-f', orch_docker_id])
 #curl "http://172.18.0.2:3000/api/discover/172.18.0.3/3306"| jq '.'
 
-def run_api_query (self, command, verifier):
+def run_api_query (self, command):
     cmd = self.run('curl "http://'+orchestrator_ip+':3000/api/'+command+'/'+source_ps_container_name+'/3306| jq \'\.\[\] \'')
     assert cmd.succeeded
     return cmd.stdout
-
-
-ORCHESTRATOR_API='http://172.18.0.2:3000/api'
 
 def test_discovery(self, host):
     orchestrator_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', orch_container_name]).decode().strip()
