@@ -12,6 +12,8 @@ orch_container_name = 'orchestartor-docker-test-dynamic'
 source_ps_container_name = 'ps-docker-source'
 replica_ps_container_name = 'ps-docker-replica'
 network_name = 'orchestrator'
+url='http://{}:3000/api/{}/{}/3306'
+
 source_state_values = (
     ('Key.Hostname', source_ps_container_name),('Version', ps_docker_tag),('SlaveHosts',replica_ps_container_name),
     ('IsLastCheckValid', 'true'),('IsUpToDate','true'),('SecondsSinceLastSeen.Int64','7'))
@@ -49,7 +51,7 @@ def prepare():
 
 def test_discovery(prepare):
     #prepare.orchestrator_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', orch_container_name]).decode().strip().replace('"','')
-    discover = requests.get('http://{}:3000/api/discover/{}/3306'.format(prepare, source_ps_container_name))
+    discover = requests.get(url.format(prepare, 'discover', source_ps_container_name))
     discover_output = json.loads(discover.text)
     assert discover_output['Message'] == 'Instance discovered: ps-docker-source:3306', (discover_output['Message'])
 
