@@ -16,7 +16,7 @@ url='http://{}:3000/api/{}/{}/3306'
 
 source_state_values = (
     ('Key', source_ps_container_name),('Version', ps_docker_tag),('SlaveHosts',replica_ps_container_name),
-    ('IsLastCheckValid', 'true'),('IsUpToDate','true'))
+    ('IsLastCheckValid', 'True'),('IsUpToDate','True'))
 #('SecondsSinceLastSeen.Int64','7')
 
 @pytest.fixture(scope='module')
