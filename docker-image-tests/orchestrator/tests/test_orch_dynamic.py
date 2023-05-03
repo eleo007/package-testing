@@ -8,10 +8,12 @@ from settings import *
 import os
 
 orch_container_name = 'orchestartor-docker-test-dynamic'
-ps_container_name = 'ps-docker'
 source_ps_container_name = 'ps-docker-source'
 replica_ps_container_name = 'ps-docker-replica'
 network_name = 'orchestrator'
+source_filters = (
+    (source_ps_container_name,'.Key.Hostname'),(ps_docker_tag, 'Version'),(replica_ps_container_name, 'SlaveHosts'),
+    ('true', 'IsLastCheckValid'),('true','IsUpToDate'),('6','SecondsSinceLastSeen.Int64'))
 
 @pytest.fixture(scope='module')
 def prepare():
@@ -38,10 +40,41 @@ def prepare():
 
 def run_api_query (host, command, filter):
     orchestrator_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', orch_container_name]).decode().strip().replace('"','')
-    cmd = host.run('curl -s http://'+orchestrator_ip+':3000/api/'+command+'/'+source_ps_container_name+'/3306| jq -r \'.'+filter+'\'')
+    cmd = host.run('curl -s http://'+orchestrator_ip+':3000/api/'+command+'/'+source_ps_container_name+'/3306| jq -r \'.'+filter+'\'' )
     assert cmd.succeeded
     return cmd.stdout
 
 def test_discovery(host, prepare):
     message = run_api_query(host,'discover', 'Message')
-    assert message.stdout == 'Instance discovered: ps-docker-source:3306', (message.stdout)
+    assert message == 'Instance discovered: ps-docker-source:3306\n', (message)
+
+#curl -s "http://172.18.0.2:3000/api/instance/ps-docker-source/3306"| jq .
+def test_source(host, prepare):
+    for value in source_filters:
+        message = run_api_query(host, 'instance', value[1])
+        assert value[0] in message, message
+
+# curl -s "http://172.18.0.2:3000/api/instance/ps-docker-replica/3306"| jq .
+# def test_replica(host, prepare):
+#     message = run_api_query(host,'discover', 'Message')
+#     assert message == 'Instance discovered: ps-docker-source:3306', (message)
+
+# curl -s "http://172.18.0.2:3000/api/cluster-info/ps-docker-source" | jq .
+# {
+#   "ClusterName": "ps-docker-source:3306",
+#   "ClusterAlias": ".ps-docker-source",
+#   "ClusterDomain": "",
+#   "CountInstances": 2,
+#   "HeuristicLag": 0,
+#   "HasAutomatedMasterRecovery": true,
+#   "HasAutomatedIntermediateMasterRecovery": true
+# }
+# def test_cluster(host, prepare):
+#     message = run_api_query(host,'discover', 'Message')
+#     assert message == 'Instance discovered: ps-docker-source:3306', (message)
+
+# def test_load(host, prepare):
+
+# def test_slave_stopped(host, prepare):
+
+# def test_replica_bloken
