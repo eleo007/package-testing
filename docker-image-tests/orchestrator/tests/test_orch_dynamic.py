@@ -49,7 +49,7 @@ def prepare():
 
 def test_discovery(prepare):
     #prepare.orchestrator_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', orch_container_name]).decode().strip().replace('"','')
-    discover = requests.get('http://{}:3000/api/discover/{}/3306'.format(orchestrator_ip, source_ps_container_name))
+    discover = requests.get('http://{}:3000/api/discover/{}/3306'.format(prepare, source_ps_container_name))
     discover_output = json.loads(discover.text)
     assert discover_output['Message'] == 'Instance discovered: ps-docker-source:3306', (discover_output['Message'])
 
