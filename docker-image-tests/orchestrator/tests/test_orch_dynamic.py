@@ -36,6 +36,7 @@ def prepare():
     subprocess.check_call(['docker', 'exec', source_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', 'CREATE USER \'orchestrator\'@\'%\' IDENTIFIED  WITH mysql_native_password BY \'\'; GRANT SUPER, PROCESS, REPLICATION SLAVE, RELOAD ON *.* TO \'orchestrator\'@\'%\'; GRANT SELECT ON mysql.slave_master_info TO \'orchestrator\'@\'%\';'])
     source_ps_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', source_ps_container_name]).decode().strip()
     orchestrator_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', orch_container_name]).decode().strip().replace('"','')
+    yield orchestrator_ip
 #     # yield testinfra.get_host("docker://root@" + orch_docker_id)
 #     # subprocess.check_call(['docker', 'rm', '-f', orch_docker_id])
 # #curl "http://172.18.0.2:3000/api/discover/172.18.0.3/3306"| jq '.'
@@ -46,10 +47,11 @@ def prepare():
 #     assert cmd.succeeded
 #     return cmd.stdout
 
-def test_discovery(host, prepare):
+def test_discovery(prepare):
+    #prepare.orchestrator_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', orch_container_name]).decode().strip().replace('"','')
     discover = requests.get('http://{}:3000/api/discover/{}/3306'.format(orchestrator_ip, source_ps_container_name))
     discover_output = json.loads(discover.text)
-    assert discover_output['Message'] == 'Instance discovered: ps-docker-source:3306\n', (discover_output)
+    assert discover_output['Message'] == 'Instance discovered: ps-docker-source:3306', (discover_output['Message'])
 
 #curl -s "http://172.18.0.2:3000/api/instance/ps-docker-source/3306"| jq .
 # def test_source(host, prepare):
