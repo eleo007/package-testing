@@ -61,7 +61,7 @@ def test_source(prepare):
     cur_state = requests.get(url.format(prepare, 'instance', source_ps_container_name))
     cur_state_output = json.loads(cur_state.text)
     for value in source_state_values:
-        assert value[1] in cur_state_output[value[1]] 
+        assert value[1] in str(cur_state_output[value[0]]), value
         # state = run_api_query(host, 'instance', value[1])
         # if value[0] != 'SecondsSinceLastSeen.Int64':
         #     assert value[1] in state, state
