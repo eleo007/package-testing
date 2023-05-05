@@ -15,9 +15,8 @@ network_name = 'orchestrator'
 url='http://{}:3000/api/{}/{}/3306'
 
 source_state_values = (
-    ('Key', source_ps_container_name),('Version', ps_docker_tag),('SlaveHosts',replica_ps_container_name),
-    ('IsLastCheckValid', 'True'),('IsUpToDate','True'))
-#('SecondsSinceLastSeen.Int64','7')
+    ('Key', 'Hostname', source_ps_container_name),('Version', ps_docker_tag),('SlaveHosts',replica_ps_container_name),
+    ('IsLastCheckValid', True),('IsUpToDate',True),('SecondsSinceLastSeen','Int64',7))
 
 @pytest.fixture(scope='module')
 def prepare():
@@ -61,12 +60,17 @@ def test_source(prepare):
     cur_state = requests.get(url.format(prepare, 'instance', source_ps_container_name))
     cur_state_output = json.loads(cur_state.text)
     for value in source_state_values:
-        assert value[1] in str(cur_state_output[value[0]]), value
-        # state = run_api_query(host, 'instance', value[1])
-        # if value[0] != 'SecondsSinceLastSeen.Int64':
-        #     assert value[1] in state, state
-        # else:
-        #     assert state < value[1], (value, state)
+        if len(value) == 3:
+            if value[0] == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
+                assert value[2] > decoded_hand[value[0]][value[1]], value
+            elif value[0] == 'SlaveHosts': # SlaveHosts returns list of objects. In testcase we have 1 replica == 1 object thus we check the 1st object in the list
+                assert value[2] == decoded_hand[value[0]][0][value[1]], value
+            else: # All other cases.
+                assert value[2] == decoded_hand[value[0]][value[1]], value
+        elif len(value) == 2:
+            assert value[1] == decoded_hand[value[0]], value
+        else:
+            print('Incorrect input in the variable!')
 
 # curl -s "http://172.18.0.2:3000/api/instance/ps-docker-replica/3306"| jq .
 # def test_replica(host, prepare):
