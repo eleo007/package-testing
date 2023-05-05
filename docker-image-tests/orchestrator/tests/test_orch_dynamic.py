@@ -62,13 +62,13 @@ def test_source(prepare):
     for value in source_state_values:
         if len(value) == 3:
             if value[0] == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
-                assert value[2] > decoded_hand[value[0]][value[1]], value
+                assert value[2] > cur_state_output[value[0]][value[1]], value
             elif value[0] == 'SlaveHosts': # SlaveHosts returns list of objects. In testcase we have 1 replica == 1 object thus we check the 1st object in the list
-                assert value[2] == decoded_hand[value[0]][0][value[1]], value
+                assert value[2] == cur_state_output[value[0]][0][value[1]], value
             else: # All other cases.
-                assert value[2] == decoded_hand[value[0]][value[1]], value
+                assert value[2] == cur_state_output[value[0]][value[1]], value
         elif len(value) == 2:
-            assert value[1] == decoded_hand[value[0]], value
+            assert value[1] == cur_state_output[value[0]], value
         else:
             print('Incorrect input in the variable!')
 
