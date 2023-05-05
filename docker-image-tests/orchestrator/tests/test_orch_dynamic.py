@@ -15,7 +15,7 @@ network_name = 'orchestrator'
 url='http://{}:3000/api/{}/{}/3306'
 
 source_state_values = (
-    ('Key', 'Hostname', source_ps_container_name),('Version', ps_docker_tag),('SlaveHosts',replica_ps_container_name),
+    ('Key', 'Hostname', source_ps_container_name),('Version', ps_docker_tag),('SlaveHosts', 'Hostname', replica_ps_container_name),
     ('IsLastCheckValid', True),('IsUpToDate',True),('SecondsSinceLastSeen','Int64',7))
 
 @pytest.fixture(scope='module')
