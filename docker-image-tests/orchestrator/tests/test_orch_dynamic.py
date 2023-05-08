@@ -14,9 +14,14 @@ replica_ps_container_name = 'ps-docker-replica'
 network_name = 'orchestrator'
 url='http://{}:3000/api/{}/{}/3306'
 
-source_state_values = (
+source_state_check = (
     ('Key', 'Hostname', source_ps_container_name),('Version', ps_docker_tag),('SlaveHosts', 'Hostname', replica_ps_container_name),
     ('IsLastCheckValid', True),('IsUpToDate',True),('SecondsSinceLastSeen','Int64',7))
+
+replica_state_check = (('Key', 'Hostname', replica_ps_container_name),('Version', ps_docker_tag),
+    ('MasterKey', 'Hostname', source_ps_container_name), ('IsDetachedMaster', False), ('Slave_SQL_Running', True), 
+    ('ReplicationSQLThreadRuning', True), ('Slave_IO_Running', True), ('ReplicationIOThreadRuning', True), ('ReplicationSQLThreadState', 1),
+    ('ReplicationIOThreadState', 1), ('SecondsBehindMaster', 'Int64', 0), ('SlaveLagSeconds', 'Int64', 0), ('ReplicationLagSeconds', 'Int64', 0), ('IsLastCheckValid', True),('IsUpToDate',True),('SecondsSinceLastSeen','Int64',7))
 
 @pytest.fixture(scope='module')
 def prepare():
@@ -57,25 +62,37 @@ def test_discovery(prepare):
 
 #curl -s "http://172.18.0.2:3000/api/instance/ps-docker-source/3306"| jq .
 def test_source(prepare):
-    cur_state = requests.get(url.format(prepare, 'instance', source_ps_container_name))
-    cur_state_output = json.loads(cur_state.text)
-    for value in source_state_values:
+    source_state = requests.get(url.format(prepare, 'instance', source_ps_container_name))
+    parced_source_state = json.loads(source_state.text)
+    for value in source_state_check:
         if len(value) == 3:
             if value[0] == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
-                assert value[2] > cur_state_output[value[0]][value[1]], value
+                assert value[2] > parced_source_state[value[0]][value[1]], value
             elif value[0] == 'SlaveHosts': # SlaveHosts returns list of objects. In testcase we have 1 replica == 1 object thus we check the 1st object in the list
-                assert value[2] == cur_state_output[value[0]][0][value[1]], value
+                assert value[2] == parced_source_state[value[0]][0][value[1]], value
             else: # All other cases.
-                assert value[2] == cur_state_output[value[0]][value[1]], value
+                assert value[2] == parced_source_state[value[0]][value[1]], value
         elif len(value) == 2:
-            assert value[1] == cur_state_output[value[0]], value
+            assert value[1] == parced_source_state[value[0]], value
         else:
             print('Incorrect input in the variable!')
 
 # curl -s "http://172.18.0.2:3000/api/instance/ps-docker-replica/3306"| jq .
-# def test_replica(host, prepare):
-#     message = run_api_query(host,'discover', 'Message')
-#     assert message == 'Instance discovered: ps-docker-source:3306', (message)
+def test_replica(prepare):
+    replica_state = requests.get(url.format(prepare, 'instance', replica_ps_container_name))
+    parced_replica_state = json.loads(replica_state.text)
+    for value in replica_state_check:
+        if len(value) == 3:
+            if value[0] == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
+                assert value[2] > parced_replica_state[value[0]][value[1]], value
+            elif value[0] == 'SlaveHosts': # SlaveHosts returns list of objects. In testcase we have 1 replica == 1 object thus we check the 1st object in the list
+                assert value[2] == parced_replica_state[value[0]][0][value[1]], value
+            else: # All other cases.
+                assert value[2] == parced_replica_state[value[0]][value[1]], value
+        elif len(value) == 2:
+            assert value[1] == parced_replica_state[value[0]], value
+        else:
+            print('Incorrect input in the variable!')
 
 # curl -s "http://172.18.0.2:3000/api/cluster-info/ps-docker-source" | jq .
 # {
