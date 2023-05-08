@@ -24,6 +24,12 @@ replica_state_check = ((replica_ps_container_name, 'Key', 'Hostname'),(ps_docker
     (1, 'ReplicationIOThreadState', ''), (0 ,'SecondsBehindMaster', 'Int64'), (0, 'SlaveLagSeconds', 'Int64'), (0, 'ReplicationLagSeconds', 'Int64'), 
     (True, 'IsLastCheckValid',''),(True, 'IsUpToDate',''),(7,'SecondsSinceLastSeen','Int64'))
 
+replica_state_stopped = ((replica_ps_container_name, 'Key', 'Hostname'),(ps_docker_tag, 'Version',''),
+    (source_ps_container_name, 'MasterKey', 'Hostname'), (False, 'IsDetachedMaster', ''), (False, 'Slave_SQL_Running','' ), 
+    (False, 'ReplicationSQLThreadRuning', ''), (False, 'Slave_IO_Running', ''), (False, 'ReplicationIOThreadRuning', ''), (0, 'ReplicationSQLThreadState', ''),
+    (0, 'ReplicationIOThreadState', ''), (0 ,'SecondsBehindMaster', 'Int64'), (0, 'SlaveLagSeconds', 'Int64'), (0, 'ReplicationLagSeconds', 'Int64'), 
+    (True, 'IsLastCheckValid',''),(True, 'IsUpToDate',''),(7,'SecondsSinceLastSeen','Int64'))
+
 @pytest.fixture(scope='module')
 def prepare():
     subprocess.check_call(['docker', 'network', 'create', network_name])
@@ -75,7 +81,7 @@ def test_source(prepare, value, key1, key2):
 # curl -s "http://172.18.0.2:3000/api/instance/ps-docker-replica/3306"| jq .
 @pytest.mark.parametrize("value, key1, key2", replica_state_check)
 def test_replica(prepare, value, key1, key2):
-    time.sleep(5)
+    time.sleep(8)
     replica_state = requests.get(url.format(prepare, 'instance', replica_ps_container_name))
     parced_replica_state = json.loads(replica_state.text)
     if key2:
@@ -90,6 +96,22 @@ def test_replica(prepare, value, key1, key2):
     else:
         print('Incorrect input in the variable!')
 
+@pytest.mark.parametrize("value, key1, key2", replica_state_stopped)
+def test_replica_stopped(prepare, value, key1, key2):
+    subprocess.check_call(['docker', 'exec', replica_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', 'STOP REPLICA;'])
+    replica_state = requests.get(url.format(prepare, 'instance', replica_ps_container_name))
+    parced_replica_state = json.loads(replica_state.text)
+    if key2:
+        if key1 == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
+            assert value > parced_replica_state[key1][key2], value
+        elif key1 == 'SlaveHosts': # SlaveHosts returns list of objects. In testcase we have 1 replica == 1 object thus we check the 1st object in the list
+            assert value == parced_replica_state[key1][0][key2], value
+        else: # All other cases.
+            assert value == parced_replica_state[key1][key2], value
+    elif not key2:
+        assert value == parced_replica_state[key1], value
+    else:
+        print('Incorrect input in the variable!')
 # curl -s "http://172.18.0.2:3000/api/cluster-info/ps-docker-source" | jq .
 # {
 #   "ClusterName": "ps-docker-source:3306",
@@ -106,6 +128,4 @@ def test_replica(prepare, value, key1, key2):
 
 # def test_load(host, prepare):
 
-# def test_slave_stopped(host, prepare):
-
-# def test_replica_bloken
+# def test_replica_broken
