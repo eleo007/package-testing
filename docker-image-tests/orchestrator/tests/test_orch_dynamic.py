@@ -59,11 +59,6 @@ def prepare():
 def stop_replication():
     time.sleep(1)
     subprocess.check_call(['docker', 'exec', replica_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', 'STOP REPLICA;'])
-    replica_state = requests.get(url.format(prepare, 'instance', replica_ps_container_name))
-    parced_replica_state = json.loads(replica_state.text)
-    return parced_replica_state
-
-
 
 def test_discovery(prepare):
     discover_source = requests.get(url.format(prepare, 'discover', source_ps_container_name))
@@ -108,7 +103,8 @@ def test_replica(prepare, value, key1, key2):
 
 @pytest.mark.parametrize("value, key1, key2", replica_state_stopped)
 def test_replica_stopped(prepare, stop_replication, value, key1, key2):
-    parced_replica_state = stop_replication
+    replica_state = requests.get(url.format(prepare, 'instance', replica_ps_container_name))
+    parced_replica_state = json.loads(replica_state.text)
     if key2:
         if key1 == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
             assert value > parced_replica_state[key1][key2], value
