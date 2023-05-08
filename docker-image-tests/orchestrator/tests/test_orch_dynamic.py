@@ -21,7 +21,8 @@ source_state_check = (
 replica_state_check = (('Key', 'Hostname', replica_ps_container_name),('Version', ps_docker_tag),
     ('MasterKey', 'Hostname', source_ps_container_name), ('IsDetachedMaster', False), ('Slave_SQL_Running', True), 
     ('ReplicationSQLThreadRuning', True), ('Slave_IO_Running', True), ('ReplicationIOThreadRuning', True), ('ReplicationSQLThreadState', 1),
-    ('ReplicationIOThreadState', 1), ('SecondsBehindMaster', 'Int64', 0), ('SlaveLagSeconds', 'Int64', 0), ('ReplicationLagSeconds', 'Int64', 0), ('IsLastCheckValid', True),('IsUpToDate',True),('SecondsSinceLastSeen','Int64',7))
+    ('ReplicationIOThreadState', 1), ('SecondsBehindMaster', 'Int64', 0), ('SlaveLagSeconds', 'Int64', 0), ('ReplicationLagSeconds', 'Int64', 0), 
+    ('IsLastCheckValid', True),('IsUpToDate',True),('SecondsSinceLastSeen','Int64',7))
 
 @pytest.fixture(scope='module')
 def prepare():
@@ -56,9 +57,12 @@ def prepare():
 
 def test_discovery(prepare):
     #prepare.orchestrator_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', orch_container_name]).decode().strip().replace('"','')
-    discover = requests.get(url.format(prepare, 'discover', source_ps_container_name))
-    discover_output = json.loads(discover.text)
-    assert discover_output['Message'] == 'Instance discovered: ps-docker-source:3306', (discover_output['Message'])
+    discover_source = requests.get(url.format(prepare, 'discover', source_ps_container_name))
+    discover_source_output = json.loads(discover_source.text)
+    discover_replica = requests.get(url.format(prepare, 'discover', replica_ps_container_name))
+    discover_replica_output = json.loads(discover_replica.text)
+    assert discover_source_output['Message'] == 'Instance discovered: ps-docker-source:3306', (discover_source_output['Message'])
+    assert discover_replica_output['Message'] == 'Instance discovered: ps-docker-replica:3306', (discover_replica_output['Message'])
 
 #curl -s "http://172.18.0.2:3000/api/instance/ps-docker-source/3306"| jq .
 def test_source(prepare):
@@ -79,7 +83,7 @@ def test_source(prepare):
 
 # curl -s "http://172.18.0.2:3000/api/instance/ps-docker-replica/3306"| jq .
 def test_replica(prepare):
-    replica_state = requests.get(url.format(prepare, 'instance', replica_ps_container_name))
+    replica_state = requests.get(url.format(prepare, 'instance', replica_ps_container_name), headers={"Host": "172.18.0.2:3000"})
     parced_replica_state = json.loads(replica_state.text)
     for value in replica_state_check:
         if len(value) == 3:
