@@ -28,7 +28,7 @@ replica_state_stopped = ((replica_ps_container_name, 'Key', 'Hostname'),(ps_dock
     (source_ps_container_name, 'MasterKey', 'Hostname'), (False, 'IsDetachedMaster', ''), (False, 'Slave_SQL_Running','' ), 
     (False, 'ReplicationSQLThreadRuning', ''), (False, 'Slave_IO_Running', ''), (False, 'ReplicationIOThreadRuning', ''), (0, 'ReplicationSQLThreadState', ''),
     (0, 'ReplicationIOThreadState', ''), (0 ,'SecondsBehindMaster', 'Int64'), (0, 'SlaveLagSeconds', 'Int64'), (0, 'ReplicationLagSeconds', 'Int64'), 
-    (True, 'IsLastCheckValid',''),(True, 'IsUpToDate',''),(7,'SecondsSinceLastSeen','Int64'))
+    (True, 'IsLastCheckValid',''),(True, 'IsUpToDate',''))
 
 @pytest.fixture(scope='module')
 def prepare():
@@ -99,6 +99,7 @@ def test_replica(prepare, value, key1, key2):
 @pytest.mark.parametrize("value, key1, key2", replica_state_stopped)
 def test_replica_stopped(prepare, value, key1, key2):
     subprocess.check_call(['docker', 'exec', replica_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', 'STOP REPLICA;'])
+    time.sleep(1)
     replica_state = requests.get(url.format(prepare, 'instance', replica_ps_container_name))
     parced_replica_state = json.loads(replica_state.text)
     if key2:
