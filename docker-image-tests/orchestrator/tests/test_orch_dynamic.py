@@ -57,8 +57,8 @@ def prepare():
 
 @pytest.fixture(scope='module')
 def stop_replication():
-    time.sleep(1)
     subprocess.check_call(['docker', 'exec', replica_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', 'STOP REPLICA;'])
+    time.sleep(1)
 
 def test_discovery(prepare):
     discover_source = requests.get(url.format(prepare, 'discover', source_ps_container_name))
