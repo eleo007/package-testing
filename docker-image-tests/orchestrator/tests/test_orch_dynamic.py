@@ -29,15 +29,15 @@ def prepare():
     subprocess.check_call(['docker', 'network', 'create', network_name])
     orch_docker_id = subprocess.check_output(
         ['docker', 'run', '--name', orch_container_name, '-d', '--network', network_name, docker_image ]).decode().strip()
-    time.sleep(15)
+    time.sleep(10)
     source_ps_docker_id = subprocess.check_output(
         ['docker', 'run', '--name', source_ps_container_name, '-e', 'MYSQL_ROOT_PASSWORD=secret', '-d', '--network', network_name, ps_docker_image,
         '--log-error-verbosity=3', '--report_host='+source_ps_container_name, '--max-allowed-packet=134217728']).decode().strip()
-    time.sleep(15)
+    time.sleep(10)
     replica_ps_docker_id = subprocess.check_output(
         ['docker', 'run', '--name', replica_ps_container_name, '-e', 'MYSQL_ROOT_PASSWORD=secret', '-d', '--network', network_name, ps_docker_image, 
         '--log-error-verbosity=3', '--report_host='+replica_ps_container_name, '--max-allowed-packet=134217728', '--server-id=2']).decode().strip()
-    time.sleep(15)
+    time.sleep(10)
     subprocess.check_call(['docker', 'exec', source_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', 'CREATE USER \'repl\'@\'%\' IDENTIFIED WITH mysql_native_password BY \'replicapass\'; GRANT REPLICATION SLAVE ON *.* TO \'repl\'@\'%\';'])
     subprocess.check_call(['docker', 'exec', replica_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', 'CHANGE REPLICATION SOURCE to SOURCE_HOST=\''+source_ps_container_name+'\',SOURCE_USER=\'repl\',SOURCE_PASSWORD=\'replicapass\',SOURCE_LOG_FILE=\'binlog.000002\';show warnings;'])
     subprocess.check_call(['docker', 'exec', replica_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', 'START REPLICA;'])
@@ -83,7 +83,7 @@ def test_source(prepare):
 
 # curl -s "http://172.18.0.2:3000/api/instance/ps-docker-replica/3306"| jq .
 def test_replica(prepare):
-    time.sleep(10)
+    time.sleep(5)
     replica_state = requests.get(url.format(prepare, 'instance', replica_ps_container_name))
     parced_replica_state = json.loads(replica_state.text)
     for value in replica_state_check:
