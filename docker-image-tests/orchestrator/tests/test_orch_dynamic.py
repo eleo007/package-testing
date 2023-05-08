@@ -83,7 +83,7 @@ def test_source(prepare):
 
 # curl -s "http://172.18.0.2:3000/api/instance/ps-docker-replica/3306"| jq .
 def test_replica(prepare):
-    replica_state = requests.get(url.format(prepare, 'instance', replica_ps_container_name))
+    time.sleep(20)
     replica_state = requests.get(url.format(prepare, 'instance', replica_ps_container_name))
     parced_replica_state = json.loads(replica_state.text)
     for value in replica_state_check:
