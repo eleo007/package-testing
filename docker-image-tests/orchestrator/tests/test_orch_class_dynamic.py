@@ -83,18 +83,10 @@ def replica_state():
     return replica_state
 
 @pytest.fixture(scope='module')
-def replica_state():
-    time.sleep(10)
-    orchestrator=Orchestrator()
-    replica_state=orchestrator.run_api_call('instance', replica_ps_container_name)
-    print('this is one run')
-    return replica_state
-
-@pytest.fixture(scope='module')
 def replica_stopped_state():
     orchestrator=Orchestrator()
     orchestrator.stop_replication()
-    time.sleep(2)
+    time.sleep(5)
     replica_stopped_state=orchestrator.run_api_call('instance', replica_ps_container_name)
     print('this is one run')
     return replica_stopped_state
@@ -122,7 +114,6 @@ class TestOrchestrator:
     # curl -s "http://172.18.0.2:3000/api/instance/ps-docker-replica/3306"| jq .
     @pytest.mark.parametrize("value, key1, key2", replica_state_check)
     def test_replica(self, replica_state, value, key1, key2):
-        time.sleep(8)
         if key2:
             if key1 == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
                 assert value > replica_state[key1][key2], value
