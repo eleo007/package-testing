@@ -69,13 +69,13 @@ def discover_state():
     return discover_state
 
 @pytest.fixture(scope='module')
-def source_state():
+def source_state(discover_state):
     orchestrator=Orchestrator()
     source_state=orchestrator.run_api_call('instance', source_ps_container_name)
     return source_state
 
 @pytest.fixture(scope='module')
-def replica_state():
+def replica_state(discover_state):
     orchestrator=Orchestrator()
     replica_state=orchestrator.run_api_call('instance', replica_ps_container_name)
     return replica_state
