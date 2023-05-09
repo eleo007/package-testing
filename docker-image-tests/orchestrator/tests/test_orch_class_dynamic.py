@@ -82,7 +82,7 @@ def load_state(host):
     source_ps_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', source_ps_container_name]).decode().strip()
     subprocess.check_call(['docker', 'exec', source_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', \
                            'CREATE USER \'sysbench\'@\'%\' IDENTIFIED  WITH mysql_native_password BY \'Test1234#\'; \
-                           GRANT ALL PRIVILEGES *.* to \'sysbench\'@\'%\'; \
+                           GRANT ALL PRIVILEGES on *.* to \'sysbench\'@\'%\'; \
                            CREATE DATABASE sbtest;'])
     cmd='sysbench --tables=20 --table-size=100000 --threads=4 --rand-type=pareto --db-driver=mysql \
     --mysql-user=sysbench --mysql-password=Test1234# --mysql-host={} --mysql-port=3306 --mysql-db=sbtest --mysql-storage-engine=innodb \
