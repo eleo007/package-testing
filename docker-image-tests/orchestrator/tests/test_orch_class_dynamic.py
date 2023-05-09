@@ -106,7 +106,7 @@ def test_discovery(discover_state):
     assert discover_state['Message'] == 'Instance discovered: ps-docker-source:3306', (discover_state['Message'])
 
 #curl -s "http://172.18.0.2:3000/api/instance/ps-docker-source/3306"| jq .
-@pytest.mark.parametrize("value, key1, key2", source_state_check)
+@pytest.mark.parametrize("value, key1, key2", source_state_check, ids=[f'{x[0]} {x[1]}' for x in source_state_check])
 def test_source(source_state, value, key1, key2):
 #    for value in source_state_check:
     if key2:
