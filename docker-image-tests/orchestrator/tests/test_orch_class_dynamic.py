@@ -61,7 +61,7 @@ class Orchestrator:
 @pytest.fixture(scope='module')
 def discover_state():
     orchestrator=Orchestrator()
-    orchestrator.prepare()
+    # orchestrator.prepare()
     discover_state=orchestrator.run_api_call('discover', source_ps_container_name)
     return discover_state
 
