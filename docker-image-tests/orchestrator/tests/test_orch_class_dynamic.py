@@ -76,8 +76,10 @@ def source_state():
 
 @pytest.fixture(scope='module')
 def replica_state():
+    time.sleep(10)
     orchestrator=Orchestrator()
     replica_state=orchestrator.run_api_call('instance', replica_ps_container_name)
+    print('this is one run')
     return replica_state
 
 def test_discovery(discover_state):
