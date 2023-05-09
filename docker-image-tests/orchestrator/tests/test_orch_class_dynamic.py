@@ -25,7 +25,7 @@ replica_state_check = ((replica_ps_container_name, 'Key', 'Hostname'),(ps_docker
 
 replica_state_stopped = ((replica_ps_container_name, 'Key', 'Hostname'),(ps_docker_tag, 'Version',''),
     (source_ps_container_name, 'MasterKey', 'Hostname'), (False, 'IsDetachedMaster', ''), (False, 'Slave_SQL_Running','' ), 
-    (False, 'ReplicationSQLThreadRuning', ''), (False, 'Slave_IO_Running', ''), (False, 'ReplicationIOThreadRuning', ''), (0, 'ReplsicationSQLThreadState', ''),
+    (False, 'ReplicationSQLThreadRuning', ''), (False, 'Slave_IO_Running', ''), (False, 'ReplicationIOThreadRuning', ''), (0, 'ReplicationSQLThreadState', ''),
     (0, 'ReplicationIOThreadState', ''), (0 ,'SecondsBehindMaster', 'Int64'), (0, 'SlaveLagSeconds', 'Int64'), (0, 'ReplicationLagSeconds', 'Int64'), 
     (True, 'IsLastCheckValid',''),(True, 'IsUpToDate',''))
 
@@ -84,9 +84,9 @@ def load_state(host):
                            'CREATE USER \'sysbench\'@\'%\' IDENTIFIED  WITH mysql_native_password BY \'Test1234#\'; \
                            GRANT ALL PRIVILEGES on *.* to \'sysbench\'@\'%\'; \
                            CREATE DATABASE sbtest;'])
-    cmd='sysbench --tables=20 --table-size=100000 --threads=4 --rand-type=pareto --db-driver=mysql \
-    --mysql-user=sysbench --mysql-password=Test1234# --mysql-host={} --mysql-port=3306 --mysql-db=sbtest --mysql-storage-engine=innodb \
-    /usr/share/sysbench/oltp_read_write.lua prepare'.format(source_ps_ip)
+    cmd='sysbench --tables=20 --table-size=10000 --threads=4 --rand-type=pareto --db-driver=mysql \
+        --mysql-user=sysbench --mysql-password=Test1234# --mysql-host={} --mysql-port=3306 --mysql-db=sbtest --mysql-storage-engine=innodb \
+        /usr/share/sysbench/oltp_read_write.lua prepare'.format(source_ps_ip)
     host.run(cmd)
     time.sleep(10)
     load_state=run_api_call('instance', replica_ps_container_name)
