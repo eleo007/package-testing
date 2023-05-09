@@ -120,7 +120,7 @@ def test_source(source_state, value, key1, key2):
         assert value == source_state[key1], value
 
 # curl -s "http://172.18.0.2:3000/api/instance/ps-docker-replica/3306"| jq .
-@pytest.mark.parametrize("value, key1, key2", replica_state_check, ids=[f'{x[1]} {x[2]}' for x in source_state_check])
+@pytest.mark.parametrize("value, key1, key2", replica_state_check, ids=[f'{x[1]} {x[2]}' for x in replica_state_check])
 def test_replica(replica_state, value, key1, key2):
     if key2:
         if key1 == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
@@ -131,7 +131,7 @@ def test_replica(replica_state, value, key1, key2):
         assert value == replica_state[key1], value
 
 
-@pytest.mark.parametrize("value, key1, key2", replica_state_check, ids=[f'{x[1]} {x[2]}' for x in source_state_check])
+@pytest.mark.parametrize("value, key1, key2", replica_state_check, ids=[f'{x[1]} {x[2]}' for x in replica_state_check])
 def test_load(load_state, value, key1, key2):
     if key2:
         if key1 == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
@@ -141,7 +141,7 @@ def test_load(load_state, value, key1, key2):
     else:
         assert value == load_state[key1], value
 
-@pytest.mark.parametrize("value, key1, key2", replica_state_stopped, ids=[f'{x[1]} {x[2]}' for x in source_state_check])
+@pytest.mark.parametrize("value, key1, key2", replica_state_stopped, ids=[f'{x[1]} {x[2]}' for x in replica_state_stopped])
 def test_replica_stopped(replica_stopped_state, value, key1, key2):
     if key2:
         if key1 == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
