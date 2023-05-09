@@ -25,7 +25,7 @@ replica_state_check = ((replica_ps_container_name, 'Key', 'Hostname'),(ps_docker
 
 replica_state_stopped = ((replica_ps_container_name, 'Key', 'Hostname'),(ps_docker_tag, 'Version',''),
     (source_ps_container_name, 'MasterKey', 'Hostname'), (False, 'IsDetachedMaster', ''), (False, 'Slave_SQL_Running','' ), 
-    (False, 'ReplicationSQLThreadRuning', ''), (False, 'Slave_IO_Running', ''), (False, 'ReplicationIOThreadRuning', ''), (0, 'ReplicationSQLThreadState', ''),
+    (False, 'ReplicationSQLThreadRuning', ''), (False, 'Slave_IO_Running', ''), (False, 'ReplicationIOThreadRuning', ''), (0, 'ReplsicationSQLThreadState', ''),
     (0, 'ReplicationIOThreadState', ''), (0 ,'SecondsBehindMaster', 'Int64'), (0, 'SlaveLagSeconds', 'Int64'), (0, 'ReplicationLagSeconds', 'Int64'), 
     (True, 'IsLastCheckValid',''),(True, 'IsUpToDate',''))
 
@@ -78,6 +78,22 @@ def replica_state():
     return replica_state
 
 @pytest.fixture(scope='module')
+def load_state(host):
+    source_ps_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', source_ps_container_name]).decode().strip()
+    subprocess.check_call(['docker', 'exec', source_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', \
+                           'CREATE USER \'sysbench\'@\'%\' IDENTIFIED  WITH mysql_native_password BY \'Test1234#\'; \
+                           GRANT ALL PRIVILEGES *.* to \'sysbench\'\@\'%\'; \
+                           CREATE DATABASE sbtest;'])
+    cmd='sysbench --tables=20 --table-size=100000 --threads=4 --rand-type=pareto --db-driver=mysql \
+    --mysql-user=sysbench --mysql-password=Test1234# --mysql-host={} --mysql-port=3306 --mysql-db=sbtest --mysql-storage-engine=innodb \
+    /usr/share/sysbench/oltp_read_write.lua prepare'.format(source_ps_ip)
+    host.run(cmd)
+    time.sleep(10)
+    load_state=run_api_call('instance', replica_ps_container_name)
+    print('this is one run')
+    return load_state
+
+@pytest.fixture(scope='module')
 def replica_stopped_state():
     subprocess.check_call(['docker', 'exec', replica_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', 'STOP REPLICA;'])
     time.sleep(5)
@@ -100,10 +116,8 @@ def test_source(source_state, value, key1, key2):
             assert value == source_state[key1][0][key2], value
         else: # All other cases.
             assert value == source_state[key1][key2], value
-    elif not key2:
-        assert value == source_state[key1], value
     else:
-        print('Incorrect input in the variable!')
+        assert value == replica_state[key1], value
 
 # curl -s "http://172.18.0.2:3000/api/instance/ps-docker-replica/3306"| jq .
 @pytest.mark.parametrize("value, key1, key2", replica_state_check)
@@ -111,29 +125,41 @@ def test_replica(replica_state, value, key1, key2):
     if key2:
         if key1 == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
             assert value > replica_state[key1][key2], value
-        elif key1 == 'SlaveHosts': # SlaveHosts returns list of objects. In testcase we have 1 replica == 1 object thus we check the 1st object in the list
-            assert value == replica_state[key1][0][key2], value
         else: # All other cases.
             assert value == replica_state[key1][key2], value
-    elif not key2:
-        assert value == replica_state[key1], value
     else:
-        print('Incorrect input in the variable!')
+        assert value == replica_state[key1], value
+
+
+@pytest.mark.parametrize("value, key1, key2", replica_state_check)
+def test_load(load_state, value, key1, key2):
+    if key2:
+        if key1 == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
+            assert value > load_state[key1][key2], value
+        else: # All other cases.
+            assert value == load_state[key1][key2], value
+    else:
+        assert value == replica_state[key1], value
 
 @pytest.mark.parametrize("value, key1, key2", replica_state_stopped)
 def test_replica_stopped(replica_stopped_state, value, key1, key2):
     if key2:
         if key1 == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
             assert value > replica_stopped_state[key1][key2], value
-        elif key1 == 'SlaveHosts': # SlaveHosts returns list of objects. In testcase we have 1 replica == 1 object thus we check the 1st object in the list
-            assert value == replica_stopped_state[key1][0][key2], value
         else: # All other cases.
             assert value == replica_stopped_state[key1][key2], value
-    elif not key2:
-        assert value == replica_stopped_state[key1], value
     else:
-        print('Incorrect input in the variable!')
+        assert value == replica_state[key1], value
 
+# @pytest.mark.parametrize("value, key1, key2", replica_state_check)
+# def test_replica_broken(replica_stopped_state, value, key1, key2):
+#     if key2:
+#         if key1 == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
+#             assert value > replica_stopped_state[key1][key2], value
+#         else: # All other cases.
+#             assert value == replica_stopped_state[key1][key2], value
+#     else:
+#         assert value == replica_state[key1], value
     # curl -s "http://172.18.0.2:3000/api/cluster-info/ps-docker-source" | jq .
     # {
     #   "ClusterName": "ps-docker-source:3306",
