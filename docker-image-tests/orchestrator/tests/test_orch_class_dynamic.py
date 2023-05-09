@@ -82,7 +82,7 @@ def load_state(host):
     source_ps_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', source_ps_container_name]).decode().strip()
     subprocess.check_call(['docker', 'exec', source_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', \
                            'CREATE USER \'sysbench\'@\'%\' IDENTIFIED  WITH mysql_native_password BY \'Test1234#\'; \
-                           GRANT ALL PRIVILEGES *.* to \'sysbench\'\@\'%\'; \
+                           GRANT ALL PRIVILEGES *.* to \'sysbench\'@\'%\'; \
                            CREATE DATABASE sbtest;'])
     cmd='sysbench --tables=20 --table-size=100000 --threads=4 --rand-type=pareto --db-driver=mysql \
     --mysql-user=sysbench --mysql-password=Test1234# --mysql-host={} --mysql-port=3306 --mysql-db=sbtest --mysql-storage-engine=innodb \
@@ -117,10 +117,10 @@ def test_source(source_state, value, key1, key2):
         else: # All other cases.
             assert value == source_state[key1][key2], value
     else:
-        assert value == replica_state[key1], value
+        assert value == source_state[key1], value
 
 # curl -s "http://172.18.0.2:3000/api/instance/ps-docker-replica/3306"| jq .
-@pytest.mark.parametrize("value, key1, key2", replica_state_check)
+@pytest.mark.parametrize("value, key1, key2", replica_state_check, ids=[f'{x[1]} {x[2]}' for x in source_state_check])
 def test_replica(replica_state, value, key1, key2):
     if key2:
         if key1 == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
@@ -131,7 +131,7 @@ def test_replica(replica_state, value, key1, key2):
         assert value == replica_state[key1], value
 
 
-@pytest.mark.parametrize("value, key1, key2", replica_state_check)
+@pytest.mark.parametrize("value, key1, key2", replica_state_check, ids=[f'{x[1]} {x[2]}' for x in source_state_check])
 def test_load(load_state, value, key1, key2):
     if key2:
         if key1 == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
@@ -139,9 +139,9 @@ def test_load(load_state, value, key1, key2):
         else: # All other cases.
             assert value == load_state[key1][key2], value
     else:
-        assert value == replica_state[key1], value
+        assert value == load_state[key1], value
 
-@pytest.mark.parametrize("value, key1, key2", replica_state_stopped)
+@pytest.mark.parametrize("value, key1, key2", replica_state_stopped, ids=[f'{x[1]} {x[2]}' for x in source_state_check])
 def test_replica_stopped(replica_stopped_state, value, key1, key2):
     if key2:
         if key1 == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
@@ -149,7 +149,7 @@ def test_replica_stopped(replica_stopped_state, value, key1, key2):
         else: # All other cases.
             assert value == replica_stopped_state[key1][key2], value
     else:
-        assert value == replica_state[key1], value
+        assert value == replica_stopped_state[key1], value
 
 # @pytest.mark.parametrize("value, key1, key2", replica_state_check)
 # def test_replica_broken(replica_stopped_state, value, key1, key2):
