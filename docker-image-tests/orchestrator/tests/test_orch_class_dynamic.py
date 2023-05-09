@@ -30,7 +30,7 @@ replica_state_stopped = ((replica_ps_container_name, 'Key', 'Hostname'),(ps_dock
     (True, 'IsLastCheckValid',''),(True, 'IsUpToDate',''))
 
 class Orchestrator:
-    def __init__(self):
+    def prepare(self):
         subprocess.check_call(['docker', 'network', 'create', network_name])
         orch_docker_id = subprocess.check_output(
             ['docker', 'run', '--name', orch_container_name, '-d', '--network', network_name, docker_image ]).decode().strip()
@@ -61,7 +61,7 @@ class Orchestrator:
 @pytest.fixture(scope='module')
 def discover_state():
     orchestrator=Orchestrator()
-    # orchestrator.prepare()
+    orchestrator.prepare()
     discover_state=orchestrator.run_api_call('discover', source_ps_container_name)
     return discover_state
 
