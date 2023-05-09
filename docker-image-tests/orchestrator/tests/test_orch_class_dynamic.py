@@ -29,8 +29,9 @@ replica_state_stopped = ((replica_ps_container_name, 'Key', 'Hostname'),(ps_dock
     (0, 'ReplicationIOThreadState', ''), (0 ,'SecondsBehindMaster', 'Int64'), (0, 'SlaveLagSeconds', 'Int64'), (0, 'ReplicationLagSeconds', 'Int64'), 
     (True, 'IsLastCheckValid',''),(True, 'IsUpToDate',''))
 
-class Orchestrator:
-    def prepare(self):
+
+class TestOrchestrator:
+    def __init__(self) -> None:
         subprocess.check_call(['docker', 'network', 'create', network_name])
         orch_docker_id = subprocess.check_output(
             ['docker', 'run', '--name', orch_container_name, '-d', '--network', network_name, docker_image ]).decode().strip()
@@ -58,37 +59,32 @@ class Orchestrator:
         parced_state = json.loads(server_state.text)
         return parced_state
     
-@pytest.fixture(scope='module')
-def discover_state():
-    orchestrator=Orchestrator()
-    orchestrator.prepare()
-    discover_state=orchestrator.run_api_call('discover', source_ps_container_name)
-    return discover_state
+    @pytest.fixture(scope='module')
+    def discover_state(self):
+        discover_state=self.run_api_call('discover', source_ps_container_name)
+        return discover_state
 
-@pytest.fixture(scope='module')
-def source_state():
-    orchestrator=Orchestrator()
-    source_state=orchestrator.run_api_call('instance', source_ps_container_name)
-    return source_state
+    @pytest.fixture(scope='module')
+    def source_state(self):
+        source_state=self.run_api_call('instance', source_ps_container_name)
+        return source_state
 
-@pytest.fixture(scope='module')
-def replica_state():
-    time.sleep(10)
-    orchestrator=Orchestrator()
-    replica_state=orchestrator.run_api_call('instance', replica_ps_container_name)
-    print('this is one run')
-    return replica_state
+    @pytest.fixture(scope='module')
+    def replica_state(self):
+        time.sleep(10)
+        replica_state=self.run_api_call('instance', replica_ps_container_name)
+        print('this is one run')
+        return replica_state
 
-@pytest.fixture(scope='module')
-def replica_stopped_state():
-    orchestrator=Orchestrator()
-    subprocess.check_call(['docker', 'exec', replica_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', 'STOP REPLICA;'])
-    time.sleep(5)
-    replica_stopped_state=orchestrator.run_api_call('instance', replica_ps_container_name)
-    print('this is one run')
-    return replica_stopped_state
+    @pytest.fixture(scope='module')
+    def replica_stopped_state(self):
+        subprocess.check_call(['docker', 'exec', replica_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', 'STOP REPLICA;'])
+        time.sleep(5)
+        replica_stopped_state=self.run_api_call('instance', replica_ps_container_name)
+        print('this is one run')
+        return replica_stopped_state
 
-class TestOrchestrator:
+ 
     def test_discovery(self, discover_state):
         assert discover_state['Message'] == 'Instance discovered: ps-docker-source:3306', (discover_state['Message'])
 
