@@ -82,72 +82,87 @@ def replica_state():
     print('this is one run')
     return replica_state
 
-def test_discovery(discover_state):
-    assert discover_state['Message'] == 'Instance discovered: ps-docker-source:3306', (discover_state['Message'])
+@pytest.fixture(scope='module')
+def replica_state():
+    time.sleep(10)
+    orchestrator=Orchestrator()
+    replica_state=orchestrator.run_api_call('instance', replica_ps_container_name)
+    print('this is one run')
+    return replica_state
 
-#curl -s "http://172.18.0.2:3000/api/instance/ps-docker-source/3306"| jq .
-@pytest.mark.parametrize("value, key1, key2", source_state_check)
-def test_source(source_state, value, key1, key2):
-#    for value in source_state_check:
-    if key2:
-        if key1 == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
-            assert value > source_state[key1][key2], value
-        elif key1 == 'SlaveHosts': # SlaveHosts returns list of objects. In testcase we have 1 replica == 1 object thus we check the 1st object in the list
-            assert value == source_state[key1][0][key2], value
-        else: # All other cases.
-            assert value == source_state[key1][key2], value
-    elif not key2:
-        assert value == source_state[key1], value
-    else:
-        print('Incorrect input in the variable!')
+@pytest.fixture(scope='module')
+def replica_stopped_state():
+    orchestrator=Orchestrator()
+    orchestrator.stop_replication()
+    time.sleep(2)
+    replica_stopped_state=orchestrator.run_api_call('instance', replica_ps_container_name)
+    print('this is one run')
+    return replica_stopped_state
 
-# curl -s "http://172.18.0.2:3000/api/instance/ps-docker-replica/3306"| jq .
-@pytest.mark.parametrize("value, key1, key2", replica_state_check)
-def test_replica(replica_state, value, key1, key2):
-    time.sleep(8)
-    if key2:
-        if key1 == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
-            assert value > replica_state[key1][key2], value
-        elif key1 == 'SlaveHosts': # SlaveHosts returns list of objects. In testcase we have 1 replica == 1 object thus we check the 1st object in the list
-            assert value == replica_state[key1][0][key2], value
-        else: # All other cases.
-            assert value == replica_state[key1][key2], value
-    elif not key2:
-        assert value == replica_state[key1], value
-    else:
-        print('Incorrect input in the variable!')
+class TestOrchestrator:
+    def test_discovery(self, discover_state):
+        assert discover_state['Message'] == 'Instance discovered: ps-docker-source:3306', (discover_state['Message'])
 
-# @pytest.mark.parametrize("value, key1, key2", replica_state_stopped)
-# def test_replica_stopped(prepare, stop_replication, value, key1, key2):
-#     time.sleep(1)
-#     replica_state = requests.get(url.format(prepare, 'instance', replica_ps_container_name))
-#     parced_replica_state = json.loads(replica_state.text)
-#     if key2:
-#         if key1 == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
-#             assert value > parced_replica_state[key1][key2], value
-#         elif key1 == 'SlaveHosts': # SlaveHosts returns list of objects. In testcase we have 1 replica == 1 object thus we check the 1st object in the list
-#             assert value == parced_replica_state[key1][0][key2], value
-#         else: # All other cases.
-#             assert value == parced_replica_state[key1][key2], value
-#     elif not key2:
-#         assert value == parced_replica_state[key1], value
-#     else:
-#         print('Incorrect input in the variable!')
+    #curl -s "http://172.18.0.2:3000/api/instance/ps-docker-source/3306"| jq .
+    @pytest.mark.parametrize("value, key1, key2", source_state_check)
+    def test_source(self, source_state, value, key1, key2):
+    #    for value in source_state_check:
+        if key2:
+            if key1 == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
+                assert value > source_state[key1][key2], value
+            elif key1 == 'SlaveHosts': # SlaveHosts returns list of objects. In testcase we have 1 replica == 1 object thus we check the 1st object in the list
+                assert value == source_state[key1][0][key2], value
+            else: # All other cases.
+                assert value == source_state[key1][key2], value
+        elif not key2:
+            assert value == source_state[key1], value
+        else:
+            print('Incorrect input in the variable!')
 
-# curl -s "http://172.18.0.2:3000/api/cluster-info/ps-docker-source" | jq .
-# {
-#   "ClusterName": "ps-docker-source:3306",
-#   "ClusterAlias": ".ps-docker-source",
-#   "ClusterDomain": "",
-#   "CountInstances": 2,
-#   "HeuristicLag": 0,
-#   "HasAutomatedMasterRecovery": true,
-#   "HasAutomatedIntermediateMasterRecovery": true
-# }
-# def test_cluster(host, prepare):
-#     message = run_api_query(host,'discover', 'Message')
-#     assert message == 'Instance discovered: ps-docker-source:3306', (message)
+    # curl -s "http://172.18.0.2:3000/api/instance/ps-docker-replica/3306"| jq .
+    @pytest.mark.parametrize("value, key1, key2", replica_state_check)
+    def test_replica(self, replica_state, value, key1, key2):
+        time.sleep(8)
+        if key2:
+            if key1 == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
+                assert value > replica_state[key1][key2], value
+            elif key1 == 'SlaveHosts': # SlaveHosts returns list of objects. In testcase we have 1 replica == 1 object thus we check the 1st object in the list
+                assert value == replica_state[key1][0][key2], value
+            else: # All other cases.
+                assert value == replica_state[key1][key2], value
+        elif not key2:
+            assert value == replica_state[key1], value
+        else:
+            print('Incorrect input in the variable!')
 
-# def test_load(host, prepare):
+    @pytest.mark.parametrize("value, key1, key2", replica_state_stopped)
+    def test_replica_stopped(self, replica_stopped_state, value, key1, key2):
+        if key2:
+            if key1 == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
+                assert value > replica_stopped_state[key1][key2], value
+            elif key1 == 'SlaveHosts': # SlaveHosts returns list of objects. In testcase we have 1 replica == 1 object thus we check the 1st object in the list
+                assert value == replica_stopped_state[key1][0][key2], value
+            else: # All other cases.
+                assert value == replica_stopped_state[key1][key2], value
+        elif not key2:
+            assert value == replica_stopped_state[key1], value
+        else:
+            print('Incorrect input in the variable!')
 
-# def test_replica_broken
+    # curl -s "http://172.18.0.2:3000/api/cluster-info/ps-docker-source" | jq .
+    # {
+    #   "ClusterName": "ps-docker-source:3306",
+    #   "ClusterAlias": ".ps-docker-source",
+    #   "ClusterDomain": "",
+    #   "CountInstances": 2,
+    #   "HeuristicLag": 0,
+    #   "HasAutomatedMasterRecovery": true,
+    #   "HasAutomatedIntermediateMasterRecovery": true
+    # }
+    # def test_cluster(host, prepare):
+    #     message = run_api_query(host,'discover', 'Message')
+    #     assert message == 'Instance discovered: ps-docker-source:3306', (message)
+
+    # def test_load(host, prepare):
+
+    # def test_replica_broken
