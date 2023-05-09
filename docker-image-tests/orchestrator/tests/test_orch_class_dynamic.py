@@ -30,7 +30,7 @@ replica_state_stopped = ((replica_ps_container_name, 'Key', 'Hostname'),(ps_dock
     (True, 'IsLastCheckValid',''),(True, 'IsUpToDate',''))
 
 class Orchestrator:
-    def __init__(self):
+    def prepare(self):
         subprocess.check_call(['docker', 'network', 'create', network_name])
         orch_docker_id = subprocess.check_output(
             ['docker', 'run', '--name', orch_container_name, '-d', '--network', network_name, docker_image ]).decode().strip()
@@ -48,13 +48,12 @@ class Orchestrator:
         subprocess.check_call(['docker', 'exec', replica_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', 'START REPLICA;'])
         subprocess.check_call(['docker', 'exec', source_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', 'CREATE USER \'orchestrator\'@\'%\' IDENTIFIED  WITH mysql_native_password BY \'\'; GRANT SUPER, PROCESS, REPLICATION SLAVE, RELOAD ON *.* TO \'orchestrator\'@\'%\'; GRANT SELECT ON mysql.slave_master_info TO \'orchestrator\'@\'%\';'])
         source_ps_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', source_ps_container_name]).decode().strip()
-        orchestrator_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', orch_container_name]).decode().strip().replace('"','')
-        return orchestrator_ip
 #     # yield testinfra.get_host("docker://root@" + orch_docker_id)
 #     # subprocess.check_call(['docker', 'rm', '-f', orch_docker_id])
 # #curl "http://172.18.0.2:3000/api/discover/172.18.0.3/3306"| jq '.'
 
-    def run_api_call(self, orchestrator_ip, command, ps_server):
+    def run_api_call(self, command, ps_server):
+        orchestrator_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', orch_container_name]).decode().strip().replace('"','')
         server_state = requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, command, ps_server))
         parced_state = json.loads(server_state.text)
         return parced_state
@@ -65,21 +64,21 @@ class Orchestrator:
 @pytest.fixture(scope='module')
 def discover_state():
     orchestrator=Orchestrator()
-    discover_state=orchestrator.run_api_call(orchestrator_ip, 'discover', source_ps_container_name)
+    orchestrator.prepare
+    discover_state=orchestrator.run_api_call('discover', source_ps_container_name)
     return discover_state
 
 @pytest.fixture(scope='module')
 def source_state():
     orchestrator=Orchestrator()
-    source_state=orchestrator.run_api_call(orchestrator_ip, 'instance', source_ps_container_name)
+    source_state=orchestrator.run_api_call('instance', source_ps_container_name)
     return source_state
 
 @pytest.fixture(scope='module')
 def replica_state():
     orchestrator=Orchestrator()
-    replica_state=orchestrator.run_api_call(orchestrator_ip, 'instance', source_ps_container_name)
+    replica_state=orchestrator.run_api_call('instance', replica_ps_container_name)
     return replica_state
-
 
 def test_discovery(discover_state):
     assert discover_state['Message'] == 'Instance discovered: ps-docker-source:3306', (discover_state['Message'])
