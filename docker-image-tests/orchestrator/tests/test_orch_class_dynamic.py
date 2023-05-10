@@ -23,11 +23,10 @@ replica_state_check = ((replica_ps_container_name, 'Key', 'Hostname'),(ps_docker
     (1, 'ReplicationIOThreadState', ''), (0 ,'SecondsBehindMaster', 'Int64'), (0, 'SlaveLagSeconds', 'Int64'), (0, 'ReplicationLagSeconds', 'Int64'), 
     (True, 'IsLastCheckValid',''),(True, 'IsUpToDate',''),(7,'SecondsSinceLastSeen','Int64'))
 
-replica_state_stopped = ((replica_ps_container_name, 'Key', 'Hostname'),(ps_docker_tag, 'Version',''),
-    (source_ps_container_name, 'MasterKey', 'Hostname'), (False, 'IsDetachedMaster', ''), (False, 'Slave_SQL_Running','' ), 
-    (False, 'ReplicationSQLThreadRuning', ''), (False, 'Slave_IO_Running', ''), (False, 'ReplicationIOThreadRuning', ''), (0, 'ReplicationSQLThreadState', ''),
-    (0, 'ReplicationIOThreadState', ''), (0 ,'SecondsBehindMaster', 'Int64'), (0, 'SlaveLagSeconds', 'Int64'), (0, 'ReplicationLagSeconds', 'Int64'), 
-    (True, 'IsLastCheckValid',''),(True, 'IsUpToDate',''))
+replica_state_stopped = ((replica_ps_container_name, 'Key', 'Hostname'),
+    (source_ps_container_name, 'MasterKey', 'Hostname'), (False, 'Slave_SQL_Running','' ), (False, 'ReplicationSQLThreadRuning', ''),
+    (False, 'Slave_IO_Running', ''), (False, 'ReplicationIOThreadRuning', ''), (0, 'ReplicationSQLThreadState', ''),
+    (0, 'ReplicationIOThreadState', ''), (True, 'IsLastCheckValid',''),(True, 'IsUpToDate',''))
 
 def prepare():
         subprocess.check_call(['docker', 'network', 'create', network_name])
