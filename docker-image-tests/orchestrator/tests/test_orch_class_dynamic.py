@@ -88,7 +88,7 @@ def load_state(host):
         --mysql-user=sysbench --mysql-password=Test1234# --mysql-host={} --mysql-port=3306 --mysql-db=sbtest --mysql-storage-engine=innodb \
         /usr/share/sysbench/oltp_read_write.lua prepare'.format(source_ps_ip)
     host.run(cmd)
-    time.sleep(10)
+    time.sleep(15)
     load_state=run_api_call('instance', replica_ps_container_name)
     print('this is one run')
     return load_state
