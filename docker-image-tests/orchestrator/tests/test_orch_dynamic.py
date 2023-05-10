@@ -130,6 +130,7 @@ def test_source():
     assert r.status_code == 200
     for value in source_attr_reference:
         current_attr_value = receive_current_value(value['key_path'], source_state)
+        print(current_attr_value)
         assert current_attr_value == value['expected_value'], value
 
 # def test_replica(replica_state, value, key1, key2):
