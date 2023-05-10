@@ -83,9 +83,8 @@ def test_source(orchestrator_ip):
     r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'instance', source_ps_container))
     source_state = json.loads(r.text)
     assert r.status_code == 200
-    for value in source_attr_reference:
-        current_attr_value = receive_current_value(value['key_path'], source_state)
-        print(current_attr_value)
+    for attibute in source_attr_reference:
+        current_attr_value = receive_current_value(attibute['key_path'], source_state)
         assert current_attr_value == value['expected_value'], value
 
 def test_replica(orchestrator_ip):
@@ -93,9 +92,8 @@ def test_replica(orchestrator_ip):
     r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'instance', replica_ps_container))
     source_state = json.loads(r.text)
     assert r.status_code == 200
-    for value in replica_attr_reference:
-        current_attr_value = receive_current_value(value['key_path'], source_state)
-        print(current_attr_value)
+    for attibute in replica_attr_reference:
+        current_attr_value = receive_current_value(attibute['key_path'], source_state)
         assert current_attr_value == value['expected_value'], value
 
 def test_load(host,orchestrator_ip):
@@ -108,9 +106,8 @@ def test_load(host,orchestrator_ip):
     r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'instance', replica_ps_container))
     source_state = json.loads(r.text)
     assert r.status_code == 200
-    for value in replica_attr_reference:
-        current_attr_value = receive_current_value(value['key_path'], source_state)
-        print(current_attr_value)
+    for attibute in replica_attr_reference:
+        current_attr_value = receive_current_value(attibute['key_path'], source_state)
         assert current_attr_value == value['expected_value'], value
 
 def test_replica_stopped(orchestrator_ip):
@@ -120,7 +117,6 @@ def test_replica_stopped(orchestrator_ip):
     r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'instance', replica_ps_container))
     source_state = json.loads(r.text)
     assert r.status_code == 200
-    for value in replica_stopped_attr_reference:
-        current_attr_value = receive_current_value(value['key_path'], source_state)
-        print(current_attr_value)
+    for attibute in replica_stopped_attr_reference:
+        current_attr_value = receive_current_value(attibute['key_path'], source_state)
         assert current_attr_value == value['expected_value'], value
