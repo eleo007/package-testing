@@ -15,9 +15,9 @@ network_name = 'orchestrator'
 ps_password='secret'
 
 source_state_reference = (
-    (source_ps_container, 'Key', 'Hostname',),(ps_docker_tag, 'Version', ''),
+    (source_ps_container, 'Key', 'Hostname',),(ps_docker_tag, 'Version'),
     (replica_ps_container,'SlaveHosts', 'Hostname'),
-    (True, 'IsLastCheckValid', ''),(True, 'IsUpToDate',''),(7,'SecondsSinceLastSeen','Int64'))
+    (True, 'IsLastCheckValid'),(True, 'IsUpToDate'),(7,'SecondsSinceLastSeen','Int64'))
 
 replica_state_reference = (
     (replica_ps_container, 'Key', 'Hostname'),(ps_docker_tag, 'Version',''),
@@ -105,18 +105,19 @@ def test_discovery():
     discover_state=run_api_call('discover', source_ps_container)
     assert discover_state['Message'] == 'Instance discovered: ps-docker-source:3306', (discover_state['Message'])
 
-@pytest.mark.parametrize("value, key1, key2", source_state_reference, ids=[f'{x[1]} {x[2]}' for x in source_state_reference])
+#@pytest.mark.parametrize("value, key1, key2", source_state_reference, ids=[f'{x[1]} {x[2]}' for x in source_state_reference])
 def test_source( value, key1, key2):
     source_state=run_api_call('instance', source_ps_container)
-    if key2:
-        if key1 == 'SecondsSinceLastSeen':
-            assert value > source_state[key1][key2], value
-        elif key1 == 'SlaveHosts':
-            assert value == source_state[key1][0][key2], value
+    for value in source_state_reference:
+        if len(value)==3:
+            if value[1] == 'SecondsSinceLastSeen':
+                assert value[0] > source_state[value[1]][value[2]], value
+            elif key1 == 'SlaveHosts':
+                assert value[0] == source_state[value[1]][0][value[2]], value
+            else:
+                assert value[0] == source_state[value[1]][value[2]], value
         else:
-            assert value == source_state[key1][key2], value
-    else:
-        assert value == source_state[key1], value
+            assert value[0] == source_state[value[1]], value
 
 # @pytest.mark.parametrize("value, key1, key2", replica_state_reference, ids=[f'{x[1]} {x[2]}' for x in replica_state_reference])
 # def test_replica(replica_state, value, key1, key2):
