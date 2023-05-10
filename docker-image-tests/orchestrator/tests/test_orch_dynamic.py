@@ -141,7 +141,7 @@ def test_replica_stopped(orchestrator_ip):
     time.sleep(2)
     subprocess.check_call(['docker', 'exec', replica_ps_container, 'mysql', '-uroot', '-psecret', '-e', 'STOP REPLICA;'])
     time.sleep(10)
-    r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'instance', replica_stopped_attr_reference))
+    r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'instance', replica_ps_container))
     source_state = json.loads(r.text)
     assert r.status_code == 200
     for value in replica_attr_reference:
