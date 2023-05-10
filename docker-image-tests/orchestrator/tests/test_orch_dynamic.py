@@ -111,10 +111,10 @@ def receive_current_value(value, server_state):
             current_value = server_state[value[1]][0][value[2]]
             return current_value
         else:
-            current_value = server_state[value[1]][value[2]], value
+            current_value = server_state[value[1]][value[2]]
             return current_value
     else:
-        current_value = server_state[value[1]], value
+        current_value = server_state[value[1]]
         return current_value
 
 #@pytest.mark.parametrize("value, key1, key2", source_state_reference, ids=[f'{x[1]} {x[2]}' for x in source_state_reference])
