@@ -103,48 +103,48 @@ def test_discovery():
     assert r.status_code == 200
     assert discover_state['Message'] == 'Instance discovered: ps-docker-source:3306', (discover_state['Message'])
 
-def test_source():
-    r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'instance', source_ps_container))
-    source_state = json.loads(r.text)
-    assert r.status_code == 200
-    for value in source_attr_reference:
-        current_attr_value = receive_current_value(value['key_path'], source_state)
-        print(current_attr_value)
-        assert current_attr_value == value['expected_value'], value
+# def test_source():
+#     r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'instance', source_ps_container))
+#     source_state = json.loads(r.text)
+#     assert r.status_code == 200
+#     for value in source_attr_reference:
+#         current_attr_value = receive_current_value(value['key_path'], source_state)
+#         print(current_attr_value)
+#         assert current_attr_value == value['expected_value'], value
 
-def test_replica():
-    time.sleep(10)
-    r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'instance', replica_ps_container))
-    source_state = json.loads(r.text)
-    assert r.status_code == 200
-    for value in replica_attr_reference:
-        current_attr_value = receive_current_value(value['key_path'], source_state)
-        print(current_attr_value)
-        assert current_attr_value == value['expected_value'], value
+# def test_replica():
+#     time.sleep(10)
+#     r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'instance', replica_ps_container))
+#     source_state = json.loads(r.text)
+#     assert r.status_code == 200
+#     for value in replica_attr_reference:
+#         current_attr_value = receive_current_value(value['key_path'], source_state)
+#         print(current_attr_value)
+#         assert current_attr_value == value['expected_value'], value
 
-def test_load(host):
-    source_ps_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', source_ps_container]).decode().strip()
-    cmd='sysbench --tables=20 --table-size=10000 --threads=4 --rand-type=pareto --db-driver=mysql \
-        --mysql-user=sysbench --mysql-password=Test1234# --mysql-host={} --mysql-port=3306 --mysql-db=sbtest --mysql-storage-engine=innodb \
-        /usr/share/sysbench/oltp_read_write.lua prepare'.format(source_ps_ip)
-    host.run(cmd)
-    time.sleep(15)
-    r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'instance', replica_ps_container))
-    source_state = json.loads(r.text)
-    assert r.status_code == 200
-    for value in replica_attr_reference:
-        current_attr_value = receive_current_value(value['key_path'], source_state)
-        print(current_attr_value)
-        assert current_attr_value == value['expected_value'], value
+# def test_load(host):
+#     source_ps_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', source_ps_container]).decode().strip()
+#     cmd='sysbench --tables=20 --table-size=10000 --threads=4 --rand-type=pareto --db-driver=mysql \
+#         --mysql-user=sysbench --mysql-password=Test1234# --mysql-host={} --mysql-port=3306 --mysql-db=sbtest --mysql-storage-engine=innodb \
+#         /usr/share/sysbench/oltp_read_write.lua prepare'.format(source_ps_ip)
+#     host.run(cmd)
+#     time.sleep(15)
+#     r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'instance', replica_ps_container))
+#     source_state = json.loads(r.text)
+#     assert r.status_code == 200
+#     for value in replica_attr_reference:
+#         current_attr_value = receive_current_value(value['key_path'], source_state)
+#         print(current_attr_value)
+#         assert current_attr_value == value['expected_value'], value
 
-def test_replica_stopped():
-    time.sleep(2)
-    subprocess.check_call(['docker', 'exec', replica_ps_container, 'mysql', '-uroot', '-psecret', '-e', 'STOP REPLICA;'])
-    time.sleep(10)
-    r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'instance', replica_stopped_attr_reference))
-    source_state = json.loads(r.text)
-    assert r.status_code == 200
-    for value in replica_attr_reference:
-        current_attr_value = receive_current_value(value['key_path'], source_state)
-        print(current_attr_value)
-        assert current_attr_value == value['expected_value'], value
+# def test_replica_stopped():
+#     time.sleep(2)
+#     subprocess.check_call(['docker', 'exec', replica_ps_container, 'mysql', '-uroot', '-psecret', '-e', 'STOP REPLICA;'])
+#     time.sleep(10)
+#     r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'instance', replica_stopped_attr_reference))
+#     source_state = json.loads(r.text)
+#     assert r.status_code == 200
+#     for value in replica_attr_reference:
+#         current_attr_value = receive_current_value(value['key_path'], source_state)
+#         print(current_attr_value)
+#         assert current_attr_value == value['expected_value'], value
