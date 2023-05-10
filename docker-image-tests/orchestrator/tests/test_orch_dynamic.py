@@ -35,7 +35,7 @@ replica_stopped_attr_reference = ({"key_path": ["Key", "Hostname"], "expected_va
                                   {"key_path": ["IsLastCheckValid"], "expected_value": True},
                                   {"key_path": ["IsUpToDate"], "expected_value": True},)
 
-@pytest.fixture(scope='module', autouse=True)
+@pytest.fixture(scope='module')
 def orchestrator_ip(host):
         subprocess.check_call(['docker', 'network', 'create', network_name])
         #start orchestrator and PS containers
@@ -85,7 +85,7 @@ def test_source(orchestrator_ip):
     assert r.status_code == 200
     for attibute in source_attr_reference:
         current_attr_value = receive_current_value(attibute['key_path'], source_state)
-        assert current_attr_value == value['expected_value'], value
+        assert current_attr_value == attibute['expected_value'], attibute
 
 def test_replica(orchestrator_ip):
     time.sleep(10)
@@ -94,7 +94,7 @@ def test_replica(orchestrator_ip):
     assert r.status_code == 200
     for attibute in replica_attr_reference:
         current_attr_value = receive_current_value(attibute['key_path'], source_state)
-        assert current_attr_value == value['expected_value'], value
+        assert current_attr_value == attibute['expected_value'], attibute
 
 def test_load(host,orchestrator_ip):
     source_ps_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', source_ps_container]).decode().strip()
@@ -108,7 +108,7 @@ def test_load(host,orchestrator_ip):
     assert r.status_code == 200
     for attibute in replica_attr_reference:
         current_attr_value = receive_current_value(attibute['key_path'], source_state)
-        assert current_attr_value == value['expected_value'], value
+        assert current_attr_value == attibute['expected_value'], attibute
 
 def test_replica_stopped(orchestrator_ip):
     time.sleep(2)
@@ -119,4 +119,4 @@ def test_replica_stopped(orchestrator_ip):
     assert r.status_code == 200
     for attibute in replica_stopped_attr_reference:
         current_attr_value = receive_current_value(attibute['key_path'], source_state)
-        assert current_attr_value == value['expected_value'], value
+        assert current_attr_value == attibute['expected_value'], attibute
