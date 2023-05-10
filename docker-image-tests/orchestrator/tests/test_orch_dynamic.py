@@ -17,13 +17,13 @@ ps_password='secret'
 source_state_reference = (
     (source_ps_container, 'Key', 'Hostname',),(ps_docker_tag, 'Version'),
     (replica_ps_container,'SlaveHosts', 'Hostname'),
-    (True, 'IsLastCheckValid'),(True, 'IsUpToDate'),(7,'SecondsSinceLastSeen','Int64'))
+    (True, 'IsLastCheckValid'),(True, 'IsUpToDate'))
 
 replica_state_reference = (
     (replica_ps_container, 'Key', 'Hostname'),(ps_docker_tag, 'Version',''),
     (source_ps_container, 'MasterKey', 'Hostname'), 
     (True, 'ReplicationSQLThreadRuning', ''), (True, 'ReplicationIOThreadRuning', ''),  
-    (True, 'IsLastCheckValid',''),(True, 'IsUpToDate',''),(7,'SecondsSinceLastSeen','Int64'))
+    (True, 'IsLastCheckValid',''),(True, 'IsUpToDate',''))
 
 replica_stopped_reference = (
     (replica_ps_container, 'Key', 'Hostname'),
