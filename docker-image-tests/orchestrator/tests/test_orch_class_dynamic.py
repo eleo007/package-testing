@@ -8,7 +8,7 @@ from settings import *
 import os
 import requests
 
-orch_container_name = 'orchestartor-docker-test-dynamic'
+orch_container_name = 'orchestartor-docker-discover'
 source_ps_container_name = 'ps-docker-source'
 replica_ps_container_name = 'ps-docker-replica'
 network_name = 'orchestrator'
@@ -77,7 +77,7 @@ def replica_state():
 @pytest.fixture(scope='module')
 def load_state(host):
     source_ps_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', source_ps_container_name]).decode().strip()
-    subprocess.check_call(['docker', 'exec', source_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', \
+    subprocess.check_call(['docker', 'exec', source_ps_container_name, 'mysql', '-uroot', '-p'+ps_password+'', '-e', \
                            'CREATE USER \'sysbench\'@\'%\' IDENTIFIED  WITH mysql_native_password BY \'Test1234#\'; \
                            GRANT ALL PRIVILEGES on *.* to \'sysbench\'@\'%\'; \
                            CREATE DATABASE sbtest;'])
