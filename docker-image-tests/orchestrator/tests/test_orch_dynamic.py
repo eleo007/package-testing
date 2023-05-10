@@ -106,7 +106,7 @@ def test_discovery():
     assert discover_state['Message'] == 'Instance discovered: ps-docker-source:3306', (discover_state['Message'])
 
 #@pytest.mark.parametrize("value, key1, key2", source_state_reference, ids=[f'{x[1]} {x[2]}' for x in source_state_reference])
-def test_source( value, key1, key2):
+def test_source():
     source_state=run_api_call('instance', source_ps_container)
     for value in source_state_reference:
         if len(value)==3:
