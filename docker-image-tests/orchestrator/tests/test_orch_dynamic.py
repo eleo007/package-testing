@@ -112,7 +112,7 @@ def test_source():
         if len(value)==3:
             if value[1] == 'SecondsSinceLastSeen':
                 assert value[0] > source_state[value[1]][value[2]], value
-            elif key1 == 'SlaveHosts':
+            elif value[1] == 'SlaveHosts':
                 assert value[0] == source_state[value[1]][0][value[2]], value
             else:
                 assert value[0] == source_state[value[1]][value[2]], value
