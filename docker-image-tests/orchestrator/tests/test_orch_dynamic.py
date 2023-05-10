@@ -105,19 +105,25 @@ def test_discovery():
     discover_state=run_api_call('discover', source_ps_container)
     assert discover_state['Message'] == 'Instance discovered: ps-docker-source:3306', (discover_state['Message'])
 
+def receive_current_value(value, server_state):
+    if len(value)==3:
+        if value[1] == 'SlaveHosts':
+            current_value = server_state[value[1]][0][value[2]]
+            return current_value
+        else:
+            current_value = server_state[value[1]][value[2]], value
+            return current_value
+    else:
+        current_value = server_state[value[1]], value
+        return current_value
+
 #@pytest.mark.parametrize("value, key1, key2", source_state_reference, ids=[f'{x[1]} {x[2]}' for x in source_state_reference])
 def test_source():
     source_state=run_api_call('instance', source_ps_container)
     for value in source_state_reference:
-        if len(value)==3:
-            if value[1] == 'SecondsSinceLastSeen':
-                assert value[0] > source_state[value[1]][value[2]], value
-            elif value[1] == 'SlaveHosts':
-                assert value[0] == source_state[value[1]][0][value[2]], value
-            else:
-                assert value[0] == source_state[value[1]][value[2]], value
-        else:
-            assert value[0] == source_state[value[1]], value
+        current_value=receive_current_value(value, source_state)
+        print(current_value)
+        assert current_value == value[0], value
 
 # @pytest.mark.parametrize("value, key1, key2", replica_state_reference, ids=[f'{x[1]} {x[2]}' for x in replica_state_reference])
 # def test_replica(replica_state, value, key1, key2):
