@@ -49,9 +49,6 @@ def prepare():
         source_ps_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', source_ps_container_name]).decode().strip()
         orchestrator_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', orch_container_name]).decode().strip().replace('"','')
         return orchestrator_ip
-#     # yield testinfra.get_host("docker://root@" + orch_docker_id)
-#     # subprocess.check_call(['docker', 'rm', '-f', orch_docker_id])
-# #curl "http://172.18.0.2:3000/api/discover/172.18.0.3/3306"| jq '.
 
 orchestrator_ip = prepare()
 
@@ -94,12 +91,15 @@ def load_state(host):
     return load_state
 
 @pytest.fixture(scope='module')
-def replica_stopped_state():
+def replica_stopped_state(host):
+    time.sleep(2)
     subprocess.check_call(['docker', 'exec', replica_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', 'STOP REPLICA;'])
     time.sleep(5)
     replica_stopped_state=run_api_call('instance', replica_ps_container_name)
     print('this is one run')
-    return replica_stopped_state
+    yield replica_stopped_state
+    cmd='docker rm -f $(docker ps -a -q) || true && docker network rm {} || true'.format(network_name)
+    host.run(cmd)
 
 
 def test_discovery(discover_state):
@@ -150,30 +150,3 @@ def test_replica_stopped(replica_stopped_state, value, key1, key2):
             assert value == replica_stopped_state[key1][key2], value
     else:
         assert value == replica_stopped_state[key1], value
-
-# @pytest.mark.parametrize("value, key1, key2", replica_state_check)
-# def test_replica_broken(replica_stopped_state, value, key1, key2):
-#     if key2:
-#         if key1 == 'SecondsSinceLastSeen': # Lastseen is int and should be less than 7 sec
-#             assert value > replica_stopped_state[key1][key2], value
-#         else: # All other cases.
-#             assert value == replica_stopped_state[key1][key2], value
-#     else:
-#         assert value == replica_state[key1], value
-    # curl -s "http://172.18.0.2:3000/api/cluster-info/ps-docker-source" | jq .
-    # {
-    #   "ClusterName": "ps-docker-source:3306",
-    #   "ClusterAlias": ".ps-docker-source",
-    #   "ClusterDomain": "",
-    #   "CountInstances": 2,
-    #   "HeuristicLag": 0,
-    #   "HasAutomatedMasterRecovery": true,
-    #   "HasAutomatedIntermediateMasterRecovery": true
-    # }
-    # def test_cluster(host, prepare):
-    #     message = run_api_query(host,'discover', 'Message')
-    #     assert message == 'Instance discovered: ps-docker-source:3306', (message)
-
-    # def test_load(host, prepare):
-
-    # def test_replica_broken
