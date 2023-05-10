@@ -14,22 +14,26 @@ replica_ps_container = 'ps-docker-replica'
 network_name = 'orchestrator'
 ps_password='secret'
 
-source_state_reference = (
-    (source_ps_container, 'Key', 'Hostname',),(ps_docker_tag, 'Version'),
-    (replica_ps_container,'SlaveHosts', 'Hostname'),
-    (True, 'IsLastCheckValid'),(True, 'IsUpToDate'))
+source_attr_reference = ({"key_path": ["Key", "Hostname"], "expected_value": source_ps_container},
+                         {"key_path": ["Version"], "expected_value": ps_docker_tag},
+                         {"key_path": ["SlaveHosts", "Hostname"], "expected_value": replica_ps_container},
+                         {"key_path": ["IsLastCheckValid"], "expected_value": True},
+                         {"key_path": ["IsUpToDate"], "expected_value": True},)
 
-replica_state_reference = (
-    (replica_ps_container, 'Key', 'Hostname'),(ps_docker_tag, 'Version',''),
-    (source_ps_container, 'MasterKey', 'Hostname'), 
-    (True, 'ReplicationSQLThreadRuning', ''), (True, 'ReplicationIOThreadRuning', ''),  
-    (True, 'IsLastCheckValid',''),(True, 'IsUpToDate',''))
+replica_attr_reference = ({"key_path": ["Key", "Hostname"], "expected_value": replica_ps_container},
+                          {"key_path": ["Version"], "expected_value": ps_docker_tag},
+                          {"key_path": ["MasterKey", "Hostname"], "expected_value": source_ps_container},
+                          {"key_path": ["ReplicationSQLThreadRuning"], "expected_value": True},
+                          {"key_path": ["ReplicationIOThreadRuning"], "expected_value": True},
+                          {"key_path": ["IsLastCheckValid"], "expected_value": True},
+                          {"key_path": ["IsUpToDate"], "expected_value": True},)
 
-replica_stopped_reference = (
-    (replica_ps_container, 'Key', 'Hostname'),
-    (source_ps_container, 'MasterKey', 'Hostname'), 
-    (False, 'ReplicationSQLThreadRuning', ''), (False, 'ReplicationIOThreadRuning', ''), 
-    (True, 'IsLastCheckValid',''),(True, 'IsUpToDate',''))
+replica_stopped_attr_reference = ({"key_path": ["Key", "Hostname"], "expected_value": replica_ps_container},
+                                  {"key_path": ["MasterKey", "Hostname"], "expected_value": source_ps_container},
+                                  {"key_path": ["ReplicationSQLThreadRuning"], "expected_value": False},
+                                  {"key_path": ["ReplicationIOThreadRuning"], "expected_value": False},
+                                  {"key_path": ["IsLastCheckValid"], "expected_value": True},
+                                  {"key_path": ["IsUpToDate"], "expected_value": True},)
 
 def prepare():
         subprocess.check_call(['docker', 'network', 'create', network_name])
@@ -50,12 +54,7 @@ def prepare():
         orchestrator_ip = subprocess.check_output(['docker', 'inspect', '-f' '"{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"', orch_container]).decode().strip().replace('"','')
         return orchestrator_ip
 
-orchestrator_ip = prepare()
 
-def run_api_call(command, ps_server):
-    server_state = requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, command, ps_server))
-    parced_state = json.loads(server_state.text)
-    return parced_state
 
 # @pytest.fixture(scope='module')
 # def discover_state():
@@ -100,40 +99,45 @@ def run_api_call(command, ps_server):
 #     cmd='docker rm -f $(docker ps -a -q) || true && docker network rm {} || true'.format(network_name)
 #     host.run(cmd)
 
+orchestrator_ip = prepare()
 
-def test_discovery():
-    discover_state=run_api_call('discover', source_ps_container)
-    assert discover_state['Message'] == 'Instance discovered: ps-docker-source:3306', (discover_state['Message'])
+# def run_api_call(command, ps_server):
+#     server_state = requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, command, ps_server))
+#     parced_state = json.loads(server_state.text)
+#     return parced_state
 
-def receive_current_value(value, server_state):
-    if len(value)==3:
-        if value[1] == 'SlaveHosts':
-            current_value = server_state[value[1]][0][value[2]]
+def receive_current_value(key_path, server_state):
+    if len(key_path) == 2:
+        if key_path[0] == 'SlaveHosts':
+            current_value = server_state[key_path[0]][0][key_path[1]]
             return current_value
         else:
-            current_value = server_state[value[1]][value[2]]
+            current_value = server_state[key_path[0]][key_path[1]]
             return current_value
     else:
-        current_value = server_state[value[1]]
+        current_value = server_state[key_path[0]]
         return current_value
 
-#@pytest.mark.parametrize("value, key1, key2", source_state_reference, ids=[f'{x[1]} {x[2]}' for x in source_state_reference])
-def test_source():
-    source_state=run_api_call('instance', source_ps_container)
-    for value in source_state_reference:
-        current_value=receive_current_value(value, source_state)
-        print(current_value)
-        assert current_value == value[0], value
+def test_discovery():
+    r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'discover', source_ps_container))
+    discover_state = json.loads(r.text)
+    assert r.status_code == 200
+    assert discover_state['Message'] == 'Instance discovered: ps-docker-source:3306', (discover_state['Message'])
 
-# @pytest.mark.parametrize("value, key1, key2", replica_state_reference, ids=[f'{x[1]} {x[2]}' for x in replica_state_reference])
+def test_source():
+    r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'instance', source_ps_container))
+    source_state = json.loads(r.text)
+    assert r.status_code == 200
+    for value in source_attr_reference:
+        current_attr_value = receive_current_value(value['key_path'], source_state)
+        assert current_attr_value == value['expected_value'], value
+
 # def test_replica(replica_state, value, key1, key2):
-#     if key2:
-#         if key1 == 'SecondsSinceLastSeen': 
-#             assert value > replica_state[key1][key2], value
-#         else: 
-#             assert value == replica_state[key1][key2], value
-#     else:
-#         assert value == replica_state[key1], value
+#     replica_state=run_api_call('instance', replica_ps_container)
+#     for value in replica_attr_reference:
+#         refence_value = value[0]
+#         current_value = receive_current_value(value[1], value[2], replica_state)
+#         assert current_value == refence_value, value
 
 
 # @pytest.mark.parametrize("value, key1, key2", replica_state_reference, ids=[f'{x[1]} {x[2]}' for x in replica_state_reference])
