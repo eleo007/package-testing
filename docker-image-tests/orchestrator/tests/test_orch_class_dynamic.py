@@ -93,7 +93,7 @@ def load_state(host):
 def replica_stopped_state(host):
     time.sleep(2)
     subprocess.check_call(['docker', 'exec', replica_ps_container_name, 'mysql', '-uroot', '-psecret', '-e', 'STOP REPLICA;'])
-    time.sleep(5)
+    time.sleep(10)
     replica_stopped_state=run_api_call('instance', replica_ps_container_name)
     print('this is one run')
     yield replica_stopped_state
