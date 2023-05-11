@@ -45,6 +45,7 @@ def orchestrator_ip():
     docker_client = docker.from_env()
     docker_client.networks.create(network_name)
     orchestrator_container= docker_client.containers.run(docker_image, name=orch_container, network=network_name, detach=True)
+    print (orchestrator_container)
     source_container = docker_client.containers.run(ps_docker_image, '--log-error-verbosity=3 --report_host='+source_ps_container+' --max-allowed-packet=134217728',
                         name=source_ps_container, environment=["MYSQL_ROOT_PASSWORD="+ps_password], network=network_name, detach=True)
     replica_container=docker_client.containers.run(ps_docker_image, '--log-error-verbosity=3 --report_host='+source_ps_container+' --max-allowed-packet=134217728 --server-id=2',
