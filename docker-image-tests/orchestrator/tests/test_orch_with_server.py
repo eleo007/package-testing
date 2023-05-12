@@ -48,14 +48,11 @@ def orchestrator_ip():
     print('I started orch')
     source_container = docker_client.containers.run(ps_docker_image, '--log-error-verbosity=3 --report_host='+source_ps_container+' --max-allowed-packet=134217728',
                         name=source_ps_container, environment=["MYSQL_ROOT_PASSWORD="+ps_password], network=network_name, detach=True)
-    replica_container=docker_client.containers.run(ps_docker_image, '--log-error-verbosity=3 --report_host='+source_ps_container+' --max-allowed-packet=134217728 --server-id=2',
+    replica_container=docker_client.containers.run(ps_docker_image, '--log-error-verbosity=3 --report_host='+replica_ps_container+' --max-allowed-packet=134217728 --server-id=2',
                         name=replica_ps_container, environment=["MYSQL_ROOT_PASSWORD="+ps_password], network=network_name, detach=True)
     print('I started source_container replica_container')
     #wait till replica mysql is up and listening on port
-    replica_ps_up=docker_client.containers.get(replica_ps_container).logs(tail=1)
-    while b'/usr/sbin/mysqld: ready for connections. Version:' not in replica_ps_up:
-        time.sleep(2)
-        replica_ps_up=docker_client.containers.get(source_ps_container).logs(tail=1)
+    time.sleep(15)
     print('I waited till rpl is up')
     #setup replication
     source_container.exec_run('mysql -uroot -p'+ps_password+' -e "CREATE USER \'repl\'@\'%\' IDENTIFIED WITH mysql_native_password BY \'replicapass\'; \
