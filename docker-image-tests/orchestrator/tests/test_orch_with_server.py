@@ -92,7 +92,7 @@ def test_discovery(orchestrator_ip):
     r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'discover', source_ps_container))
     discover_state = json.loads(r.text)
     assert r.status_code == 200
-    assert discover_state['Message'] == 'Instance discovered: ps-docker-source:3306', (discover_state['Message'])
+    assert discover_state['Message'] == 'Instance discovered: '+source_ps_container+':3306', (discover_state['Message'])
 
 def test_source(orchestrator_ip):
     r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'instance', source_ps_container))
@@ -105,10 +105,10 @@ def test_source(orchestrator_ip):
 def test_replica(orchestrator_ip):
     time.sleep(10)
     r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'instance', replica_ps_container))
-    source_state = json.loads(r.text)
+    replica_state = json.loads(r.text)
     assert r.status_code == 200
     for attibute in replica_attr_reference:
-        current_attr_value = receive_current_value(attibute['key_path'], source_state)
+        current_attr_value = receive_current_value(attibute['key_path'], replica_state)
         assert current_attr_value == attibute['expected_value'], attibute
 
 def test_load(host,orchestrator_ip):
@@ -119,10 +119,10 @@ def test_load(host,orchestrator_ip):
     host.run(cmd)
     time.sleep(15)
     r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'instance', replica_ps_container))
-    source_state = json.loads(r.text)
+    replica_state = json.loads(r.text)
     assert r.status_code == 200
     for attibute in replica_attr_reference:
-        current_attr_value = receive_current_value(attibute['key_path'], source_state)
+        current_attr_value = receive_current_value(attibute['key_path'], replica_state)
         assert current_attr_value == attibute['expected_value'], attibute
 
 def test_replica_stopped(orchestrator_ip):
@@ -130,8 +130,8 @@ def test_replica_stopped(orchestrator_ip):
     subprocess.check_call(['docker', 'exec', replica_ps_container, 'mysql', '-uroot', '-psecret', '-e', 'STOP REPLICA;'])
     time.sleep(10)
     r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'instance', replica_ps_container))
-    source_state = json.loads(r.text)
+    replica_state = json.loads(r.text)
     assert r.status_code == 200
     for attibute in replica_stopped_attr_reference:
-        current_attr_value = receive_current_value(attibute['key_path'], source_state)
+        current_attr_value = receive_current_value(attibute['key_path'], replica_state)
         assert current_attr_value == attibute['expected_value'], attibute
