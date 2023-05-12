@@ -49,7 +49,6 @@ def orchestrator_ip():
                         name=source_ps_container, environment=["MYSQL_ROOT_PASSWORD="+ps_password], network=network_name, detach=True)
     replica_container=docker_client.containers.run(ps_docker_image, '--log-error-verbosity=3 --report_host='+replica_ps_container+' --max-allowed-packet=134217728 --server-id=2',
                         name=replica_ps_container, environment=["MYSQL_ROOT_PASSWORD="+ps_password], network=network_name, detach=True)
-    print('I started source_container replica_container')
     #wait till replica mysql is up and listening on port
     time.sleep(15)
     #setup replication
