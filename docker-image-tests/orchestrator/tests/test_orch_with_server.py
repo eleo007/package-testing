@@ -44,8 +44,7 @@ replica_stopped_attr_reference = ({"key_path": ["Key", "Hostname"], "expected_va
 def orchestrator_ip():
     docker_client = docker.from_env()
     docker_client.networks.create(network_name)
-    orchestrator_container= docker_client.containers.run(docker_image, name=orch_container, network=network_name, detach=True)
-    print (orchestrator_container)
+    docker_client.containers.run(docker_image, name=orch_container, network=network_name, detach=True)
     source_container = docker_client.containers.run(ps_docker_image, '--log-error-verbosity=3 --report_host='+source_ps_container+' --max-allowed-packet=134217728',
                         name=source_ps_container, environment=["MYSQL_ROOT_PASSWORD="+ps_password], network=network_name, detach=True)
     replica_container=docker_client.containers.run(ps_docker_image, '--log-error-verbosity=3 --report_host='+source_ps_container+' --max-allowed-packet=134217728 --server-id=2',
@@ -70,7 +69,7 @@ def orchestrator_ip():
                                 GRANT ALL PRIVILEGES on *.* to \'sysbench\'@\'%\'; \
                                 CREATE DATABASE sbtest;"')
     #get orchestrator IP
-    orchestrator = orchestrator_container.attrs['NetworkSettings']['Networks'][network_name]['IPAddress']
+    orchestrator = docker_client.containers.get(orch_container).attrs['NetworkSettings']['Networks'][network_name]['IPAddress']
     yield orchestrator
     containers_list=docker_client.containers.list()
     for container in containers_list:
