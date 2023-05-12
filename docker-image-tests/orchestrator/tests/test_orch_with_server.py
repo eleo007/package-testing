@@ -45,36 +45,43 @@ def orchestrator_ip():
     docker_client = docker.from_env()
     docker_client.networks.create(network_name)
     docker_client.containers.run(docker_image, name=orch_container, network=network_name, detach=True)
+    print('I started orch')
     source_container = docker_client.containers.run(ps_docker_image, '--log-error-verbosity=3 --report_host='+source_ps_container+' --max-allowed-packet=134217728',
                         name=source_ps_container, environment=["MYSQL_ROOT_PASSWORD="+ps_password], network=network_name, detach=True)
     replica_container=docker_client.containers.run(ps_docker_image, '--log-error-verbosity=3 --report_host='+source_ps_container+' --max-allowed-packet=134217728 --server-id=2',
                         name=replica_ps_container, environment=["MYSQL_ROOT_PASSWORD="+ps_password], network=network_name, detach=True)
+    print('I started source_container replica_container')
     #wait till replica mysql is up and listening on port
     replica_ps_up=docker_client.containers.get(replica_ps_container).logs(tail=1)
     while b'/usr/sbin/mysqld: ready for connections. Version:' not in replica_ps_up:
         time.sleep(2)
         replica_ps_up=docker_client.containers.get(source_ps_container).logs(tail=1)
+    print('I waited till rpl is up')
     #setup replication
     source_container.exec_run('mysql -uroot -p'+ps_password+' -e "CREATE USER \'repl\'@\'%\' IDENTIFIED WITH mysql_native_password BY \'replicapass\'; \
                             GRANT REPLICATION SLAVE ON *.* TO \'repl\'@\'%\';"')
     replica_container.exec_run('mysql -uroot -p'+ps_password+' -e "CHANGE REPLICATION SOURCE to SOURCE_HOST=\''+source_ps_container+'\', \
                             SOURCE_USER=\'repl\',SOURCE_PASSWORD=\'replicapass\',SOURCE_LOG_FILE=\'binlog.000002\';START REPLICA;"')
+    print('I set up rpl')
     #Add orchestrator user to PS
     source_container.exec_run('mysql -uroot -p'+ps_password+' -e "CREATE USER \'orchestrator\'@\'%\' IDENTIFIED  WITH mysql_native_password BY \'\'; \
                             GRANT SUPER, PROCESS, REPLICATION SLAVE, RELOAD ON *.* TO \'orchestrator\'@\'%\'; \
                             GRANT SELECT ON mysql.slave_master_info TO \'orchestrator\'@\'%\';"')
+    print('I set up orch')
     #Add sysbench user to PS
     source_container.exec_run('mysql -uroot -p'+ps_password+' -e \
                                 "CREATE USER \'sysbench\'@\'%\' IDENTIFIED  WITH mysql_native_password BY \'Test1234#\'; \
                                 GRANT ALL PRIVILEGES on *.* to \'sysbench\'@\'%\'; \
                                 CREATE DATABASE sbtest;"')
+    print('I set up sysbench')
     #get orchestrator IP
     orchestrator = docker_client.containers.get(orch_container).attrs['NetworkSettings']['Networks'][network_name]['IPAddress']
-    yield orchestrator
-    containers_list=docker_client.containers.list()
-    for container in containers_list:
-        container.remove(v=True, force=True)
-    docker_client.networks.get(network_name).remove()
+    return orchestrator
+    # yield orchestrator
+    # containers_list=docker_client.containers.list()
+    # for container in containers_list:
+    #     container.remove(v=True, force=True)
+    # docker_client.networks.get(network_name).remove()
 
 def receive_current_value(key_path, server_state):
     if len(key_path) == 2:
@@ -89,6 +96,7 @@ def receive_current_value(key_path, server_state):
         return current_value
 
 def test_discovery(orchestrator_ip):
+    print(orchestrator_ip)
     r=requests.get('http://{}:3000/api/{}/{}/3306'.format(orchestrator_ip, 'discover', source_ps_container))
     discover_state = json.loads(r.text)
     assert r.status_code == 200
