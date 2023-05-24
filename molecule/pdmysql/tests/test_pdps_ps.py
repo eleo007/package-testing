@@ -68,6 +68,10 @@ COMPONENTS = ['component_validate_password', 'component_log_sink_syseventlog',
 
 VERSION = os.environ.get("VERSION")
 
+UPSTREAM_VERSION = VERSION.split('-')[0]
+
+PERCONA_VERSION = VERSION.split('-')[1]
+
 def is_running(host):
     cmd = 'ps auxww| grep -v grep  | grep -c "mysql"'
     result = host.run(cmd)
@@ -84,11 +88,15 @@ def test_check_deb_package(host, package):
         pytest.skip("This test only for Debian based platforms")
     pkg = host.package(package)
     assert pkg.is_installed
+    # percona-mysql-shell package does not have percona version value in package version
     if package == 'percona-mysql-shell':
-        shell_version = re.search(r'^(\d+\.\d+\.\d+)(?:-\d+)*$', VERSION)
-        assert shell_version[1] in pkg.version, (shell_version, pkg.version)
+        assert UPSTREAM_VERSION in pkg.version, (UPSTREAM_VERSION, pkg.version)
     else:
-        assert VERSION in pkg.version, pkg.version
+        # if PERCONA_VERSION contains custom build value, convert 8.0.32-24.2 to format passed by host.package.version for deb: 8.0.32-24-2
+        if PERCONA_VERSION.count('.'):
+            assert UPSTREAM_VERSION+'-'+PERCONA_VERSION.replace('.','-') in pkg.version, pkg.version
+        else:
+            assert VERSION in pkg.version, pkg.version
 
 
 @pytest.mark.parametrize("package", RPMPACKAGES)
@@ -98,9 +106,9 @@ def test_check_rpm_package(host, package):
         pytest.skip("This test only for RHEL based platforms")
     pkg = host.package(package)
     assert pkg.is_installed
+    # percona-mysql-shell package does not have percona version
     if package == 'percona-mysql-shell':
-        shell_version = re.search(r'^(\d+\.\d+\.\d+)(?:-\d+)*$', VERSION)
-        assert shell_version[1] in pkg.version, (shell_version, pkg.version)
+        assert UPSTREAM_VERSION in pkg.version, (UPSTREAM_VERSION, pkg.version)
     else:
         assert VERSION in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
 
