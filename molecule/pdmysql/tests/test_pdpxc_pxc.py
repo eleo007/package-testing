@@ -1,6 +1,7 @@
 import os
 import pytest
 import testinfra.utils.ansible_runner
+import re
 from .settings import *
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
@@ -70,7 +71,6 @@ COMPONENTS = ['component_validate_password', 'component_log_sink_syseventlog',
 VERSION = os.environ['VERSION']
 DEB_PERCONA_BUILD_VERSION = ''
 RPM_PERCONA_BUILD_VERSION = ''
-
 if re.search(r'^\d+\.\d+\.\d+-\d+\.\d+$', VERSION): # if full package VERSION 8.0.32-24.2 is passed
     DEB_PERCONA_BUILD_VERSION = re.sub(r'.(\d+)$',r'-\g<1>', VERSION) # 8.0.32-24-2
     RPM_PERCONA_BUILD_VERSION = VERSION # 8.0.32-24.2
