@@ -68,10 +68,13 @@ COMPONENTS = ['component_validate_password', 'component_log_sink_syseventlog',
               'component_audit_api_message_emit']
 
 VERSION = os.environ['VERSION']
+DEB_PERCONA_BUILD_VERSION = ''
+RPM_PERCONA_BUILD_VERSION = ''
 
-UPSTREAM_VERSION = VERSION.split('-')[0]
-
-PERCONA_VERSION = VERSION.split('-')[1]
+if re.search(r'^\d+\.\d+\.\d+-\d+\.\d+$', VERSION): # if full package VERSION 8.0.32-24.2 is passed
+    DEB_PERCONA_BUILD_VERSION = re.sub(r'.(\d+)$',r'-\g<1>', VERSION) # 8.0.32-24-2
+    RPM_PERCONA_BUILD_VERSION = VERSION # 8.0.32-24.2
+    VERSION = '.'.join(VERSION.split('.')[:-1]) # 8.0.32-24
 
 @pytest.mark.parametrize("package", DEBPACKAGES)
 def test_check_deb_package(host, package):
@@ -80,9 +83,8 @@ def test_check_deb_package(host, package):
         pytest.skip("This test only for Debian based platforms")
     pkg = host.package(package)
     assert pkg.is_installed
-    # if PERCONA_VERSION contains custom build value, convert 8.0.32-24.2 to format passed by host.package.version for deb: 8.0.32-24-2
-    if PERCONA_VERSION.count('.'):
-        assert UPSTREAM_VERSION+'-'+PERCONA_VERSION.replace('.','-') in pkg.version, pkg.version
+    if DEB_PERCONA_BUILD_VERSION:
+        assert DEB_PERCONA_BUILD_VERSION in pkg.version, pkg.version
     else:
         assert VERSION in pkg.version, pkg.version
 
@@ -93,7 +95,10 @@ def test_check_rpm_package(host, package):
         pytest.skip("This test only for RHEL based platforms")
     pkg = host.package(package)
     assert pkg.is_installed
-    assert VERSION in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
+    if RPM_PERCONA_BUILD_VERSION:
+        assert RPM_PERCONA_BUILD_VERSION in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
+    else:
+        assert VERSION in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
 
 @pytest.mark.parametrize("package", EXTRA_RPMPACKAGE)
 def test_check_shared_package(host, package):
@@ -105,7 +110,10 @@ def test_check_shared_package(host, package):
         pytest.skip("This test is for RHEL based platforms except RHEL 9")
     pkg = host.package(package)
     assert pkg.is_installed
-    assert VERSION in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
+    if RPM_PERCONA_BUILD_VERSION:
+        assert RPM_PERCONA_BUILD_VERSION in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
+    else:
+        assert VERSION in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
 
 
 def test_binary_version(host):
