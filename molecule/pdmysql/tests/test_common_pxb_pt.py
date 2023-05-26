@@ -1,6 +1,7 @@
 import os
 import pytest
 import testinfra.utils.ansible_runner
+import re
 from .settings import *
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
