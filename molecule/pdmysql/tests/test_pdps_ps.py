@@ -210,7 +210,7 @@ def test_sources_mysql_shell_version(host):
         pytest.skip("This test only for main repo")
     dist = host.system_info.distribution
     if dist.lower() in RHEL_DISTS:
-        pytest.skip("This test only for DEB distributions")  
+        pytest.skip("This test only for DEB distributions")
     cmd = "apt-cache madison percona-mysql-shell | grep Source | grep \"{}\"".format(VERSION.split('-')[0])
     result = host.run(cmd)
     assert result.rc == 0, (result.stderr, result.stdout)
