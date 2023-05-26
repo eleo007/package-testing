@@ -67,10 +67,13 @@ COMPONENTS = ['component_validate_password', 'component_log_sink_syseventlog',
               'component_audit_api_message_emit']
 
 VERSION = os.environ.get("VERSION")
+DEB_PERCONA_BUILD_VERSION = ''
+RPM_PERCONA_BUILD_VERSION = ''
 
-UPSTREAM_VERSION = VERSION.split('-')[0]
-
-PERCONA_VERSION = VERSION.split('-')[1]
+if re.search(r'^\d+\.\d+\.\d+-\d+\.\d+$', VERSION): # if full VERSION 8.0.32-24.2 is passed
+    DEB_PERCONA_BUILD_VERSION = re.sub(r'.(\d+)$',r'-\g<1>', VERSION) # 8.0.32-24-2
+    RPM_PERCONA_BUILD_VERSION = VERSION # 8.0.32-24.2
+    VERSION = '.'.join(VERSION.split('.')[:-1]) # 8.0.32-24
 
 def is_running(host):
     cmd = 'ps auxww| grep -v grep  | grep -c "mysql"'
@@ -88,13 +91,13 @@ def test_check_deb_package(host, package):
         pytest.skip("This test only for Debian based platforms")
     pkg = host.package(package)
     assert pkg.is_installed
-    # percona-mysql-shell package does not have percona version value in package version
+    # percona-mysql-shell package version does not have percona version value (it is 8.0.32)
     if package == 'percona-mysql-shell':
-        assert UPSTREAM_VERSION in pkg.version, (UPSTREAM_VERSION, pkg.version)
+        assert VERSION.split('-')[0] in pkg.version, (VERSION.split('-')[0], pkg.version)
     else:
         # if PERCONA_VERSION contains custom build value, convert 8.0.32-24.2 to format passed by host.package.version for deb: 8.0.32-24-2
-        if PERCONA_VERSION.count('.'):
-            assert UPSTREAM_VERSION+'-'+PERCONA_VERSION.replace('.','-') in pkg.version, pkg.version
+        if DEB_PERCONA_BUILD_VERSION:
+            assert DEB_PERCONA_BUILD_VERSION in pkg.version, pkg.version
         else:
             assert VERSION in pkg.version, pkg.version
 
@@ -108,9 +111,12 @@ def test_check_rpm_package(host, package):
     assert pkg.is_installed
     # percona-mysql-shell package does not have percona version
     if package == 'percona-mysql-shell':
-        assert UPSTREAM_VERSION in pkg.version, (UPSTREAM_VERSION, pkg.version)
+        assert VERSION.split('-')[0] in pkg.version, (VERSION.split('-')[0], pkg.version)
     else:
-        assert VERSION in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
+        if RPM_PERCONA_BUILD_VERSION:
+            assert RPM_PERCONA_BUILD_VERSION in pkg.version, pkg.version
+        else:
+            assert VERSION in pkg.version, pkg.version
 
 
 @pytest.mark.parametrize("binary", ['mysqlsh', 'mysql', 'mysqlrouter'])
@@ -202,9 +208,8 @@ def test_sources_mysql_shell_version(host):
         pytest.skip("This test only for main repo")
     dist = host.system_info.distribution
     if dist.lower() in RHEL_DISTS:
-        pytest.skip("This test only for DEB distributions")
-    shell_version = re.search(r'^(\d+\.\d+\.\d+)(?:-\d+)*$', VERSION)    
+        pytest.skip("This test only for DEB distributions")  
     cmd = "apt-cache madison percona-mysql-shell | grep Source | grep \"{}\"".format(shell_version[1])
     result = host.run(cmd)
     assert result.rc == 0, (result.stderr, result.stdout)
-    assert shell_version[1] in result.stdout, result.stdout
+    assert VERSION.split('-')[0] in result.stdout, result.stdout
