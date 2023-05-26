@@ -70,7 +70,7 @@ VERSION = os.environ.get("VERSION")
 DEB_PERCONA_BUILD_VERSION = ''
 RPM_PERCONA_BUILD_VERSION = ''
 
-if re.search(r'^\d+\.\d+\.\d+-\d+\.\d+$', VERSION): # if full VERSION 8.0.32-24.2 is passed
+if re.search(r'^\d+\.\d+\.\d+-\d+\.\d+$', VERSION): # if full package VERSION 8.0.32-24.2 is passed
     DEB_PERCONA_BUILD_VERSION = re.sub(r'.(\d+)$',r'-\g<1>', VERSION) # 8.0.32-24-2
     RPM_PERCONA_BUILD_VERSION = VERSION # 8.0.32-24.2
     VERSION = '.'.join(VERSION.split('.')[:-1]) # 8.0.32-24
@@ -197,7 +197,10 @@ def test_sources_ps_version(host):
     dist = host.system_info.distribution    
     if dist.lower() in RHEL_DISTS:
         pytest.skip("This test only for DEB distributions")
-    cmd = "apt-cache madison percona-server | grep Source | grep \"{}\"".format(VERSION)
+    if DEB_PERCONA_BUILD_VERSION:
+        cmd = "apt-cache madison percona-server | grep Source | grep \"{}\"".format(DEB_PERCONA_BUILD_VERSION)
+    else:
+        cmd = "apt-cache madison percona-server | grep Source | grep \"{}\"".format(VERSION)
     result = host.run(cmd)
     assert result.rc == 0, (result.stderr, result.stdout)
     assert VERSION in result.stdout, result.stdout
@@ -209,7 +212,7 @@ def test_sources_mysql_shell_version(host):
     dist = host.system_info.distribution
     if dist.lower() in RHEL_DISTS:
         pytest.skip("This test only for DEB distributions")  
-    cmd = "apt-cache madison percona-mysql-shell | grep Source | grep \"{}\"".format(shell_version[1])
+    cmd = "apt-cache madison percona-mysql-shell | grep Source | grep \"{}\"".format(VERSION.split('-')[0])
     result = host.run(cmd)
     assert result.rc == 0, (result.stderr, result.stdout)
     assert VERSION.split('-')[0] in result.stdout, result.stdout
