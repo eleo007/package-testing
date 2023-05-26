@@ -114,9 +114,9 @@ def test_check_rpm_package(host, package):
         assert VERSION.split('-')[0] in pkg.version, (VERSION.split('-')[0], pkg.version)
     else:
         if RPM_PERCONA_BUILD_VERSION:
-            assert RPM_PERCONA_BUILD_VERSION in pkg.version, pkg.version
+            assert RPM_PERCONA_BUILD_VERSION in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
         else:
-            assert VERSION in pkg.version, pkg.version
+            assert VERSION in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
 
 
 @pytest.mark.parametrize("binary", ['mysqlsh', 'mysql', 'mysqlrouter'])
