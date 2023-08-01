@@ -56,17 +56,31 @@
     - percona-vim-haproxy
   when: ansible_os_family == "Debian"
 
-- name: start mysql service
-  service: name=mysql state=started
+- name: install xinetd 8 deb packages
+  apt:
+    name: "{{ packages }}"
+    update_cache: yes
+  vars:
+    packages:
+    - xinetd
   when: ansible_os_family == "Debian"
 
-- name: Copy haproxy.cfg
-  copy:
-    src: haproxy.cfg
-    dest: /etc/haproxy/haproxy.cfg
-    owner: root
-    group: root
-    mode: 0644
+- name: bootstrap pxc node
+  service: name=mysql@bootstrap.service state=started
+  when: ansible_os_family == "Debian"
 
-- name: Start haproxy
-  shell: haproxy -f  /etc/haproxy/haproxy.cfg -D
+- name: Update haproxy config
+  blockinfile:
+    path: /etc/haproxy/haproxy.cfg
+    block: |
+      listen mysql-cluster
+          bind :9201
+          mode tcp
+          balance roundrobin
+          option  httpchk
+          server db01 localhost:3306 check port 9200 inter 12000 rise 3 fall 3
+
+- name: set mysqlchk port to 9200
+  lineinfile:
+    path: /etc/services
+    line: mysqlchk        9200/tcp                # mysqlchk
