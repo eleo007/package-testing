@@ -44,9 +44,10 @@ def test_haproxy_connect(host):
         cmd = "mysql --port=9201 -h127.0.0.1 -uhaproxy_user -p$3Kr$t -e \"SELECT VERSION();\" "
         for wait in range(1,120):
             result = host.run(cmd)
-            if "ERROR 2013 (HY000): Lost connection to MySQL server at 'reading initial communication packet', system error: 0" in result.stdout:
+            if "tratata" in result.stdout:
                 time.sleep(1)
                 wait+=1
         else:
             result = host.run(cmd)
-            assert 'my_verify_string' in result.stdout, result.stdout
+            assert result.rc == 0, result.stdout
+            assert VERSION in result.stdout, result.stdout
