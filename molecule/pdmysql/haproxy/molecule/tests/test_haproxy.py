@@ -29,14 +29,14 @@ def create_user(host):
 def test_haproxy_service(host):
     assert host.service("haproxy").is_running
 
-def test_haproxy_service(host, create_user):
+def test_haproxy_clustercheck(host, create_user):
     with host.sudo("root"):
         cmd = "/usr/bin/clustercheck"
         result = host.run(cmd)
         assert result.rc == 0, result.stdout
         assert 'Percona XtraDB Cluster Node is synced.' in result.stdout, result.stdout
 
-def test_haproxy(host):
+def test_haproxy_connect(host):
     with host.sudo("root"):
         cmd = "mysql -e \"SELECT VERSION();\""
         result = host.run(cmd)
@@ -49,4 +49,4 @@ def test_haproxy(host):
                 wait+=1
         else:
             result = host.run(cmd)
-            assert VERSION in result.stdout, result.stdout
+            assert 'my_verify_string' in result.stdout, result.stdout
