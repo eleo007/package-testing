@@ -1,6 +1,5 @@
 ---
 # tasks file for pdpxc
-
 - name: include playbook for removing Percona repo
   include: ../../../tasks/remove_percona_repository.yml
 
@@ -79,6 +78,14 @@
           balance roundrobin
           option  httpchk
           server db01 localhost:3306 check port 9200 inter 12000 rise 3 fall 3
+
+- name: Create mysqlchk cnf
+  copy:
+    src: mysqlchk
+    dest: /etc/xinetd.d/mysqlchk
+    owner: root
+    group: root
+    mode: 0644
 
 - name: set mysqlchk port to 9200
   lineinfile:
