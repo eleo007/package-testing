@@ -44,7 +44,7 @@ def test_haproxy_connect(host):
         # wait till ha-proxy is ready to send requests to mysql
         while wait < timeout:
             result = host.run(cmd)
-            if "tratata" not in result.stdout:
+            if "ERROR 2013 (HY000): Lost connection to MySQL server at 'reading initial communication packet', system error: 0" not in result.stdout:
                 break
             time.sleep(1)
             wait+=1
