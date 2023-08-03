@@ -9,9 +9,9 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 
 VERSION = os.getenv("VERSION")
 
-
+# Prepare for the test: create users, restart services
 @pytest.fixture
-def create_user(host):
+def prepare_test(host):
     with host.sudo("root"):
         cmd = "mysql -e \"CREATE USER 'clustercheckuser'@'%' IDENTIFIED WITH mysql_native_password by 'clustercheckpassword!';\
             GRANT PROCESS ON *.* TO 'clustercheckuser'@'%';\
@@ -29,7 +29,7 @@ def create_user(host):
 def test_haproxy_service(host):
     assert host.service("haproxy").is_running
 
-def test_haproxy_clustercheck(host, create_user):
+def test_haproxy_clustercheck(host, prepare_test):
     with host.sudo("root"):
         cmd = "/usr/bin/clustercheck"
         result = host.run(cmd)
@@ -38,16 +38,16 @@ def test_haproxy_clustercheck(host, create_user):
 
 def test_haproxy_connect(host):
     with host.sudo("root"):
-        cmd = "mysql -e \"SELECT VERSION();\""
+        wait=0
+        timeout=10
+        cmd = "mysql --port=9202 -h127.0.0.1 -uhaproxy_user -p$3Kr$t -e \"SELECT VERSION();\" "
+        # wait till ha-proxy is ready to send requests to mysql
+        while wait < timeout:
+            result = host.run(cmd)
+            if "tratata" not in result.stdout:
+                break
+            time.sleep(1)
+            wait+=1
         result = host.run(cmd)
         assert result.rc == 0, result.stdout
-        cmd = "mysql --port=9201 -h127.0.0.1 -uhaproxy_user -p$3Kr$t -e \"SELECT VERSION();\" "
-        for wait in range(1,120):
-            result = host.run(cmd)
-            if "tratata" in result.stdout:
-                time.sleep(1)
-                wait+=1
-        else:
-            result = host.run(cmd)
-            assert result.rc == 0, result.stdout
-            assert VERSION in result.stdout, result.stdout
+        assert VERSION in result.stdout, result.stdout
