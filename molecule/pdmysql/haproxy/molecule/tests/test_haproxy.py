@@ -50,4 +50,4 @@ def test_haproxy_connect(host):
             wait+=1
         result = host.run(cmd)
         assert result.rc == 0, result.stderr
-        assert "VERSION" in result.stdout, result.stdout
+        assert "12344566777" in result.stdout, result.stdout
