@@ -39,7 +39,7 @@ def test_haproxy_clustercheck(host, prepare_test):
 def test_haproxy_connect(host):
     with host.sudo("root"):
         wait=0
-        timeout=10
+        timeout=120
         cmd = "mysql --port=9202 -h127.0.0.1 -uhaproxy_user -p$3Kr$t -e \"SELECT VERSION();\" "
         # wait till ha-proxy is ready to send requests to mysql
         while wait < timeout:
