@@ -45,6 +45,7 @@ def test_haproxy_connect(host):
         while wait < timeout:
             result = host.run(cmd)
             if "ERROR 2013 (HY000): Lost connection to MySQL server at 'reading initial communication packet', system error: 0" not in result.stdout:
+                assert VERSION in result.stdout, result.stdout
                 break
             time.sleep(1)
             wait+=1
