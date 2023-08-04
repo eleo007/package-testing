@@ -28,5 +28,4 @@ def test_sources_version(host):
         pytest.skip("This test only for DEB distributions")
     cmd = "apt-cache madison proxysql2 | grep Source | grep \"{}\"".format(VERSION)
     result = host.run(cmd)
-    assert result.rc == 0, (result.stderr, result.stdout)
     assert VERSION in result.stdout, result.stdout
