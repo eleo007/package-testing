@@ -59,6 +59,22 @@
   - name: install Percona Server 8.0 packages
     include_tasks: ../tasks/telemetry_install_ps80.yml
 
+  - name: check uuid file content
+    command: cat /usr/local/percona/telemetry_uuid
+    register: uuid_output
+
+  - name: check uuid_output
+    debug:
+      var: uuid_output
+
+  - name: check date
+    command: date
+    register: date_output
+
+  - name: check date output
+    debug:
+      var: date_output
+
 #   - name: install sysbench new deb packages
 #     include_tasks: ../tasks/install_sysbench.yml
 #     when: lookup('env', 'install_repo') != "experimental"
@@ -67,16 +83,16 @@
 #     include_tasks: ../tasks/install_pxb80.yml
 #     when: lookup('env', 'install_repo') != "experimental"
 
-#   - name: list installed packages
-#     include_tasks: ../tasks/list_installed_packages.yml
+  - name: list installed packages
+    include_tasks: ../tasks/list_installed_packages.yml
 
-#   - name: start mysql service with service command
-#     command: service mysql start
-#     when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "6"
+  # - name: start mysql service with service command
+  #   command: service mysql start
+  #   when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "6"
 
-#   - name: start mysql service with systemctl command
-#     command: systemctl start mysql
-#     when: (ansible_distribution == "Amazon") or (ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7)
+  # - name: start mysql service with systemctl command
+  #   command: systemctl start mysql
+  #   when: (ansible_distribution == "Amazon") or (ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7)
 
 #   - name: set root password on centos
 #     command: /package-testing/setpass_57.sh
@@ -179,8 +195,8 @@
 #   - name: run bats tests for mysql init scripts
 #     command: /usr/local/bin/bats /package-testing/bats/mysql-init-scripts.bats
 
-#   - name: start mysql service
-#     service: name=mysql state=started
+  - name: start mysql service
+    service: name=mysql state=started
 
 #     #  - name: check that mysqladmin shutdown works correctly
 #     #    command: /package-testing/madmin_check.sh
