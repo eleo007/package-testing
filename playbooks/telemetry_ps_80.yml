@@ -59,6 +59,9 @@
   - name: install Percona Server 8.0 packages
     include_tasks: ../tasks/telemetry_install_ps80.yml
 
+  - name: list installed packages
+    include_tasks: ../tasks/list_installed_packages.yml
+
   - name: check uuid file content
     command: cat /usr/local/percona/telemetry_uuid
     register: uuid_output
@@ -82,9 +85,6 @@
 #   - name: install Percona XtraBackup 8.0 packages
 #     include_tasks: ../tasks/install_pxb80.yml
 #     when: lookup('env', 'install_repo') != "experimental"
-
-  - name: list installed packages
-    include_tasks: ../tasks/list_installed_packages.yml
 
   # - name: start mysql service with service command
   #   command: service mysql start
