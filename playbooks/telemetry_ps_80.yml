@@ -19,6 +19,16 @@
   - name: include tasks for test env setup
     include_tasks: ../tasks/telemetry_test_prep.yml
 
+
+  - name: check udate output
+    command: date -u '+%Y-%m-%dT%H:%M:%SZ'
+    register: formated_date
+
+  - name: check formated date
+    debug:
+      var: formated_date
+
+
   # - name: enforce SELinux on CentOS
   #   selinux:
   #     policy: targeted
@@ -82,7 +92,7 @@
       var: uuid_output
 
   - name: check date
-    command: date
+    command: date --iso-8601='seconds'
     register: date_output
 
   - name: check date output
