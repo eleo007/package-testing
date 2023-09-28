@@ -56,15 +56,15 @@
 #  - name: install Percona Toolkit new deb packages
 #    include_tasks: ../tasks/install_pt.yml
   - name: use laboratory repo for deb
-    command: sudo sed -i 's/experimental/laboratory/g' /etc/apt/sources.list.d/percona-ps-80-experimental.list && sudo apt update
+    command: sed -i 's/experimental/laboratory/g' /etc/apt/sources.list.d/percona-ps-80-experimental.list
     when: ansible_os_family == "Debian"
 
   - name: update cashe
-    command: sudo apt update
+    command: apt update
     when: ansible_os_family == "Debian"
 
   - name: use laboratory repo for yum
-    command: sudo sed -i 's/experimental/laboratory/g' /etc/yum.repos.d/percona-ps-80-experimental.repo
+    command: sed -i 's/experimental/laboratory/g' /etc/yum.repos.d/percona-ps-80-experimental.repo
     when: ansible_os_family == "RedHat"
 
   - name: install Percona Server 8.0 packages
