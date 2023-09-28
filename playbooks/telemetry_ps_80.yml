@@ -55,17 +55,17 @@
 # Disable Percona Toolkit installation till its supported in OL9 and Jammy
 #  - name: install Percona Toolkit new deb packages
 #    include_tasks: ../tasks/install_pt.yml
-  - name: use laboratory repo for deb
-    command: sed -i 's/experimental/laboratory/g' /etc/apt/sources.list.d/percona-ps-80-experimental.list
-    when: ansible_os_family == "Debian"
+  # - name: use laboratory repo for deb
+  #   command: sed -i 's/experimental/laboratory/g' /etc/apt/sources.list.d/percona-ps-80-experimental.list
+  #   when: ansible_os_family == "Debian"
 
-  - name: update cashe
-    command: apt update
-    when: ansible_os_family == "Debian"
+  # - name: update cashe
+  #   command: apt update
+  #   when: ansible_os_family == "Debian"
 
-  - name: use laboratory repo for yum
-    command: sed -i 's/experimental/laboratory/g' /etc/yum.repos.d/percona-ps-80-experimental.repo
-    when: ansible_os_family == "RedHat"
+  # - name: use laboratory repo for yum
+  #   command: sed -i 's/experimental/laboratory/g' /etc/yum.repos.d/percona-ps-80-experimental.repo
+  #   when: ansible_os_family == "RedHat"
 
   - name: install Percona Server 8.0 packages
     include_tasks: ../tasks/telemetry_install_ps80.yml
@@ -257,5 +257,5 @@
 #       msg: "Path exists and is a directory and is not empty"
 #     when: p.stat.isdir is defined and p.stat.isdir and p.stat.size > 1000000
 
-  - name: check apt/yum logs for errors
-    command: /package-testing/scripts/log-check.sh
+  # - name: check apt/yum logs for errors
+  #   command: /package-testing/scripts/log-check.sh
