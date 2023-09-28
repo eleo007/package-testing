@@ -16,9 +16,9 @@ fi
 
 #echo ${logfile}
 
-if [ "$(egrep -c "error" ${logfile})" != 0 ];then
+if [ "$(egrep -ciw "error" ${logfile})" != 0 ];then
         echo "ERROR: Warnings or Errors found in the installation logs:\n"
-        egrep "error" ${logfile}
+        egrep -iw "error" ${logfile}
         exit 1
 else
         echo "Installation log is clean"
