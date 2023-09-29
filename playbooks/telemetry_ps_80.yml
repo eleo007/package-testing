@@ -21,7 +21,7 @@
 
 
   - name: check os output
-    shell: (grep PRETTY_NAME /etc/os-release ||  cat /etc/*release) | sed 's/PRETTY_NAME=//g;s/\"//g'| head -n1)
+    shell: (grep PRETTY_NAME /etc/os-release ||  cat /etc/*release) | sed 's/PRETTY_NAME=//g;s/\"//g'| head -n1
     register: os_output
 
   - name: check os output
@@ -29,7 +29,7 @@
       var: os_output
 
   - name: check os fail output
-    shell: (grep PRETTY_NAMEsss /etc/os-release ||  cat /etc/*release) | sed 's/PRETTY_NAME=//g;s/\"//g'| head -n1)
+    shell: (grep PRETTY_NAMEsss /etc/os-release ||  cat /etc/*release) | sed 's/PRETTY_NAME=//g;s/\"//g'| head -n1
     register: os_fail_output
 
   - name: check os fail output
