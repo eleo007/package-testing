@@ -21,7 +21,7 @@
 
 
   - name: download script
-    shell: wget https://raw.githubusercontent.com/Percona-Lab/telemetry-agent/9818fa5758f26219008d60a7bfbbf5921491bd4e/call-home.sh
+    shell: wget https://raw.githubusercontent.com/Percona-Lab/telemetry-agent/b9bbc372b3f924882ad059530e73e5a512b71801/call-home.sh
 
   - name: add exec
     shell: chmod +x ./call-home.sh
