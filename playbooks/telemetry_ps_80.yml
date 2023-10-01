@@ -25,8 +25,36 @@
   - name: add exec
     shell: chmod +x ./call-home.sh
 
+  - name: remove os-release file
+    shell: rm -rf /etc/os-release
+
   - name: run script
-    shell: ./call-home.sh -f "PRODUCT_FAMILY_PS" -v "ALL_FILES" -d "PACKAGE"
+    shell: ./call-home.sh -f "PRODUCT_FAMILY_PS" -v "NO_OS_FILE" -d "PACKAGE"
+
+  - name: remove telemetry file
+    shell: rm -rf /usr/local/percona/telemetry_uuid
+
+  - name: sleep
+    shell: sleep 10
+
+  - name: remove system release files
+    shell: rm -rf /etc/system-release
+    ignore_errors: true
+
+  - name: run script
+    shell: ./call-home.sh -f "PRODUCT_FAMILY_PS" -v "NO_SYSTEM_FILES" -d "PACKAGE"
+
+  - name: remove telemetry file
+    shell: rm -rf /usr/local/percona/telemetry_uuid
+
+  - name: sleep
+    shell: sleep 10
+
+  - name: remove all release files
+    shell: rm -rf /etc/*-release
+
+  - name: run script
+    shell: ./call-home.sh -f "PRODUCT_FAMILY_PS" -v "NO_ALL_FILES" -d "PACKAGE"
 
 #   - name: include tasks for local vault setup
 #     include_tasks: ../tasks/setup_local_vault.yml
