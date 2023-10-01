@@ -16,6 +16,11 @@
       - percona-server-rocksdb
       - percona-mysql-router
     when: ansible_os_family == "Debian"
+    register: install_output
+
+  - name: check deb install output
+    debug:
+      var: install_output
 
   - name: get list of enabled dnf modules on centos 8
     command: dnf module list --enabled
@@ -51,3 +56,8 @@
       - percona-server-devel
       - percona-server-rocksdb
     when: ansible_os_family == "RedHat"
+    register: install_output
+
+  - name: check rpm install output
+    debug:
+      var: install_output
