@@ -1,6 +1,10 @@
 # This task installs Percona Server 8.0 on CentOS and Debian/Ubuntu
 #
 
+  - name: update apt
+    shell: apt update
+    when: ansible_os_family == "Debian"
+
   - name: check os fail output
     shell: apt install -y percona-server-server
     register: os_deb_install_output
