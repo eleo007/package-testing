@@ -2,11 +2,11 @@
 #
 
   - name: update apt
-    shell: apt update
+    shell: DEBIAN_FRONTEND=noninteractive apt update
     when: ansible_os_family == "Debian"
 
   - name: check os fail output
-    shell: apt install -y percona-server-server
+    shell: DEBIAN_FRONTEND=noninteractive apt install -y percona-server-server
     register: os_deb_install_output
     when: ansible_os_family == "Debian"
 
