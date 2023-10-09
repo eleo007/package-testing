@@ -20,13 +20,25 @@
     include_tasks: ../tasks/telemetry_test_prep.yml
 
   - name: get script
-    shell: time wget https://raw.githubusercontent.com/Percona-Lab/telemetry-agent/7f2d16195504df5a90b2465dce3d441fc1773f8c/call-home.sh
+    shell: wget https://raw.githubusercontent.com/Percona-Lab/telemetry-agent/7f2d16195504df5a90b2465dce3d441fc1773f8c/call-home.sh
+
+  - name: install time
+    apt:
+      name: "{{ packages }}"
+    vars:
+      packages:
+      - time
+    when: ansible_os_family == "Debian"
+    ignore_errors: true
 
   - name: add exec
     shell: chmod +x ./call-home.sh
 
+  - name: add debug
+    shell: sed -i 's/# set -o xtrace/set -x/g;' call-home.sh
+
   - name: run script
-    shell: ./call-home.sh -f "PRODUCT_FAMILY_PS" -v "script_timeouts" -d "PACKAGE" -c 2 -t 7
+    shell: time ./call-home.sh -f "PRODUCT_FAMILY_PS" -v "script_timeouts" -d "PACKAGE" -c 2 -t 7
     register: script_output
 
   - name: check uuscript_outputid_output
