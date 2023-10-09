@@ -20,14 +20,18 @@
     include_tasks: ../tasks/telemetry_test_prep.yml
 
   - name: get script
-    shell: wget https://raw.githubusercontent.com/Percona-Lab/telemetry-agent/7f2d16195504df5a90b2465dce3d441fc1773f8c/call-home.sh
+    shell: time wget https://raw.githubusercontent.com/Percona-Lab/telemetry-agent/7f2d16195504df5a90b2465dce3d441fc1773f8c/call-home.sh
 
   - name: add exec
     shell: chmod +x ./call-home.sh
 
   - name: run script
     shell: ./call-home.sh -f "PRODUCT_FAMILY_PS" -v "script_timeouts" -d "PACKAGE" -c 2 -t 7
+    register: script_output
 
+  - name: check uuscript_outputid_output
+    debug:
+      var: script_output
 
 # #   - name: include tasks for local vault setup
 # #     include_tasks: ../tasks/setup_local_vault.yml
