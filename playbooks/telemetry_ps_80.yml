@@ -219,6 +219,26 @@
     #  - name: check that mysqladmin shutdown works correctly
     #    command: /package-testing/madmin_check.sh
 
+  - name: check curl dep
+    shell: apt show percona-server-server
+    register: curl_dep_output
+    when: ansible_os_family == "Debian"
+
+  - name: check curl_dep
+    debug:
+      var: curl_dep_output
+    when: ansible_os_family == "Debian"
+
+  - name: check curl dep
+    shell: yum deplist percona-server-server
+    register: curl_dep_output
+    when: ansible_os_family == "RedHat"
+
+  - name: check curl_dep
+    debug:
+      var: curl_dep_output
+    when: ansible_os_family == "RedHat"
+
   - name: disable all percona repos
     command: percona-release disable all
 
@@ -271,26 +291,6 @@
   - name: check uuid_output
     debug:
       var: uuid_output
-
-  - name: check curl dep
-    shell: apt show percona-server-server|grep curl
-    register: curl_dep_output
-    when: ansible_os_family == "Debian"
-
-  - name: check curl_dep
-    debug:
-      var: curl_dep_output
-    when: ansible_os_family == "Debian"
-
-  - name: check curl dep
-    shell: yum deplist |grep curl
-    register: curl_dep_output
-    when: ansible_os_family == "RedHat"
-
-  - name: check curl_dep
-    debug:
-      var: curl_dep_output
-    when: ansible_os_family == "RedHat"
 
 # - name: check apt/yum logs for errors
 #   command: /package-testing/scripts/log-check.sh
