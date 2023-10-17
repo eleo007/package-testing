@@ -45,13 +45,13 @@
   #   debug:
   #     var: script_output
 
-#   - name: include tasks for local vault setup
-#     include_tasks: ../tasks/setup_local_vault.yml
+  - name: include tasks for local vault setup
+    include_tasks: ../tasks/setup_local_vault.yml
 
-#   - name: setup config file for keyring vault
-#     template: src=../scripts/ps_keyring_plugins_test/keyring_vault_test_v2.j2
-#               dest=/package-testing/scripts/ps_keyring_plugins_test/keyring_vault_test.cnf
-#               mode=0664 owner=root group=root
+  - name: setup config file for keyring vault
+    template: src=../scripts/ps_keyring_plugins_test/keyring_vault_test_v2.j2
+              dest=/package-testing/scripts/ps_keyring_plugins_test/keyring_vault_test.cnf
+              mode=0664 owner=root group=root
 
   - name: enforce SELinux on CentOS
     selinux:
@@ -271,6 +271,26 @@
   - name: check uuid_output
     debug:
       var: uuid_output
+
+  - name: check curl dep
+    shell: apt show percona-server-server|grep curl
+    register: curl_dep_output
+    when: ansible_os_family == "Debian"
+
+  - name: check curl_dep
+    debug:
+      var: curl_dep_output
+    when: ansible_os_family == "Debian"
+
+  - name: check curl dep
+    shell: yum deplist |grep curl
+    register: curl_dep_output
+    when: ansible_os_family == "RedHat"
+
+  - name: check curl_dep
+    debug:
+      var: curl_dep_output
+    when: ansible_os_family == "RedHat"
 
 # - name: check apt/yum logs for errors
 #   command: /package-testing/scripts/log-check.sh
