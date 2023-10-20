@@ -145,14 +145,14 @@ void run_test() {
         fi
       fi
       TARBALL_NAME="Percona-XtraDB-Cluster_${PXC_VERSION}_Linux.x86_64.glibc${GLIBC_VERSION}${MINIMAL}.tar.gz"
-      TARBALL_LINK="https://downloads.percona.com/downloads/TESTING/pxc-${PXC_VERSION}/"
+      TARBALL_LINK="https://downloads.percona.com/downloads/TESTING/pxc-8.0.34-26/"
     elif [ "${PXC_MAJOR_VERSION}" = "5.7" ]; then
       export GLIBC_VERSION="2.17"
       if [ -f /etc/redhat-release ] && [ $(grep -c "release 6" /etc/redhat-release) -eq 1 ]; then
         export GLIBC_VERSION="2.12"
       fi
       TARBALL_NAME="Percona-XtraDB-Cluster-${PXC57_PKG_VERSION}.Linux.x86_64.glibc${GLIBC_VERSION}${MINIMAL}.tar.gz"
-      TARBALL_LINK="https://downloads.percona.com/downloads/TESTING/pxc-${PXC_VERSION}/"
+      TARBALL_LINK="https://downloads.percona.com/downloads/TESTING/pxc-8.0.34-26/"
     fi
     rm -rf package-testing
     if [ -f /usr/bin/yum ]; then
