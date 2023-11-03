@@ -171,7 +171,7 @@ def test_madmin(host):
     with host.sudo("root"):
         mysql = host.service("mysql")
         if not mysql.is_running:
-            cmd = 'service mysql start'
+            cmd = 'systemctl start mysql'
             start = host.run(cmd)
             assert start.rc == 0, start.stdout
             mysql = host.service("mysql")
@@ -181,7 +181,7 @@ def test_madmin(host):
         assert shutdown.rc == 0, shutdown.stdout
         mysql = host.service("mysql")
         assert not mysql.is_running
-        cmd = 'service mysql start'
+        cmd = 'systemctl start mysql'
         start = host.run(cmd)
         assert start.rc == 0, start.stdout
         mysql = host.service("mysql")
