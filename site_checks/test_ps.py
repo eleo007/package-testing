@@ -45,7 +45,7 @@ def get_package_tuples():
                 assert "Percona-Server-" + PS_VER + "-Linux.x86_64.glibc"+glibc_version+"-minimal.tar.gz.sha256sum" in req.text
                 assert "Percona-Server-" + PS_VER + "-Linux.x86_64.glibc"+glibc_version+".tar.gz" in req.text
                 assert "Percona-Server-" + PS_VER + "-Linux.x86_64.glibc"+glibc_version+".tar.gz.sha256sum" in req.text
-                if glibc_version in ['2.34', '2.35']:
+                if glibc_version in ['2.34', '2.35'] and version.parse(PS_VER) > version.parse("8.0.0"):
                     assert "Percona-Server-" + PS_VER + "-Linux.x86_64.glibc"+glibc_version+"-zenfs-minimal.tar.gz" in req.text
                     assert "Percona-Server-" + PS_VER + "-Linux.x86_64.glibc"+glibc_version+"-zenfs-minimal.tar.gz.sha256sum" in req.text
                     assert "Percona-Server-" + PS_VER + "-Linux.x86_64.glibc"+glibc_version+"-zenfs.tar.gz" in req.text
