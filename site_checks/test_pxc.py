@@ -6,7 +6,6 @@ import re
 from packaging import version
 
 PXC_VER_FULL = os.environ.get("PXC_VER_FULL")
-PXC57_INNODB=os.environ.get("PXC57_INNODB")
 DEBUG = os.environ.get("DEBUG")
 
 assert re.search(r'^\d+\.\d+\.\d+-\d+\.\d+$', PXC_VER_FULL)
@@ -27,6 +26,8 @@ elif version.parse(PXC_VER_UPSTREAM) > version.parse("8.0.0") and version.parse(
 elif version.parse(PXC_VER_UPSTREAM) > version.parse("5.7.0") and version.parse(PXC_VER_UPSTREAM) < version.parse("8.0.0"):
     print("this is 5.7")
     DATA_VERSION='57'
+    assert os.environ.get("PXC57_INNODB"), "PXC57_INNODB parameter is not defined!"
+    PXC57_INNODB=os.environ.get("PXC57_INNODB")
     DEB_SOFTWARE_FILES=['buster','bookworm','bullseye', 'bionic','focal', 'jammy']
     RHEL_SOFTWARE_FILES=['redhat/7', 'redhat/8', 'redhat/9']
 
