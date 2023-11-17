@@ -238,3 +238,6 @@
       mode: 0744
     when: ansible_os_family == "RedHat"
     become: yes
+
+  - name: list installed packages
+    include_tasks: ../../../tasks/list_installed_packages.yml
