@@ -29,12 +29,13 @@
       version: "{{ lookup('env', 'VERSION').split('-')[0] }}"
     when: not major_repo
 
-  - name: Setup the PDMYSQL repo pdps-{{ version }}
-    command: percona-release setup -y pdps-{{ version }}
+  - name: enable the major pdps-{{ version }} {{ repo }}
+    command: percona-release enable-only pdps-{{ version }} {{ repo }}
     vars:
+      repo: "{{ lookup('env', 'REPO') }}"
       version: "{{ lookup('env', 'VERSION').split('.')[0] + '.' + lookup('env', 'VERSION').split('.')[1] }}"
-      # version: "{{ '80' if '8.0' in lookup('env', 'VERSION') else '8x-innovation' }}"
-      #version: "{{ lookup('env', 'VERSION').split('.')[:2]|join('.') if '8.0' in lookup('env', 'VERSION') else '8x-innovation' }}"
+      version: "{{ '8.0' if '8.0.' in lookup('env', 'VERSION') else '8x-innovation' }}"
+      # version: "{{ lookup('env', 'VERSION').split('.')[:2]|join('.') if '8.0' in lookup('env', 'VERSION') else '8x-innovation' }}"
     when: major_repo
 
   - name: install Percona Toolkit new deb packages

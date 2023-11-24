@@ -10,7 +10,7 @@
     command: percona-release enable-only pdps-{{ version }} {{ repo }}
     vars:
       repo: "{{ lookup('env', 'REPO') }}"
-      version: "{{ lookup('env', 'VERSION').split('.')[:2]|join('.') }}"
+      version: "{{ lookup('env', 'VERSION').split('-')[0] }}"
 
 #  - name: install Percona Toolkit
 #    include_tasks: ../../../tasks/install_pt.yml
