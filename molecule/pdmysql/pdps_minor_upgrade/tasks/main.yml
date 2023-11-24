@@ -67,7 +67,8 @@
   - name: install Percona XtraBackup {{ pxb_version }} packages
     include_tasks: ../../../tasks/install_pxb{{ pxb_version }}.yml
     vars:
-      pxb_version: "{{ lookup('env', 'FROM_VERSION').split('.')[0] + lookup('env', 'FROM_VERSION').split('.')[1] }}"
+      pxb_version: "{{ lookup('env', 'FROM_VERSION').split('.')[:2]|join('') }}"
+    when: ansible_os_family == "Debian" or (lookup('env', 'FROM_VERSION').split('.')[:2]|join('') == lookup('env', 'VERSION').split('.')[:2]|join('') and ansible_os_family == "RedHat")
 
 
   - name: install proxysql new deb packages
@@ -242,7 +243,7 @@
   - name: install Percona XtraBackup {{ pxb_version }} packages
     include_tasks: ../../../tasks/install_pxb{{ pxb_version }}.yml
     vars:
-      pxb_version: "{{ lookup('env', 'VERSION').split('.')[0] + lookup('env', 'VERSION').split('.')[1] }}"
+      pxb_version: "{{ lookup('env', 'VERSION').split('.')[:2]|join('') }}"
 
 
   - name: install proxysql new deb packages
