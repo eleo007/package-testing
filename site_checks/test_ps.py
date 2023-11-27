@@ -5,13 +5,15 @@ import json
 import re
 from packaging import version
 
-PS_VER_FULL = "8.0.34-26.1"
-# PS_VER_FULL = os.environ.get("PS_VER_FULL")
+PS_VER_FULL = os.environ.get("PS_VER_FULL")
 DEBUG = os.environ.get("DEBUG")
 
-assert re.search(r'^\d+\.\d+\.\d+-\d+\.\d+$', PS_VER_FULL)
+assert re.search(r'^\d+\.\d+\.\d+-\d+\.\d+$', PS_VER_FULL), "PS version is not full. Expected pattern with build: 8.0.34-26.1"
 
-PS_VER = '.'.join(PS_VER_FULL.split('.')[:-1])
+PS_VER = '.'.join(PS_VER_FULL.split('.')[:-1]) #8.0.34-26
+print(PS_VER)
+PS_BUILD_NUM = PS_VER_FULL.split('.')[-1] # "1"
+print(PS_BUILD_NUM)
 
 if version.parse(PS_VER) > version.parse("8.1.0"):
     DEB_SOFTWARE_FILES=['buster', 'bullseye', 'bookworm', 'bionic', 'focal', 'jammy']
@@ -24,6 +26,7 @@ elif version.parse(PS_VER) > version.parse("5.7.0") and version.parse(PS_VER) < 
     RHEL_SOFTWARE_FILES=['redhat/7', 'redhat/8', 'redhat/9']
 
 SOFTWARE_FILES=DEB_SOFTWARE_FILES+RHEL_SOFTWARE_FILES+['binary','source']
+RHEL_EL={'redhat/7':'el7', 'redhat/8':'el8', 'redhat/9':'el9'}
 
 def get_package_tuples():
     list = []
@@ -33,6 +36,7 @@ def get_package_tuples():
         assert req.status_code == 200
         assert req.text != '[]', software_file
         if software_file == 'binary':
+            print(f"Loop 1 {software_file}")
             if version.parse(PS_VER) < version.parse("8.0.0"):
                 glibc_versions=["2.17","2.35"]
             else:
@@ -51,46 +55,64 @@ def get_package_tuples():
                     assert "Percona-Server-" + PS_VER + "-Linux.x86_64.glibc"+glibc_version+"-zenfs.tar.gz" in req.text
                     assert "Percona-Server-" + PS_VER + "-Linux.x86_64.glibc"+glibc_version+"-zenfs.tar.gz.sha256sum" in req.text
         elif software_file == 'source':
+            print(f"Loop 2 {software_file}")
             assert "percona-server-" + PS_VER + ".tar.gz" in req.text
             assert "percona-server-" + PS_VER  + ".tar.gz.sha256sum" in req.text
             assert "percona-server_" + PS_VER  + ".orig.tar.gz" in req.text or "percona-server-5.7_" + PS_VER  + ".orig.tar.gz" in req.text
             assert "percona-server-" + PS_VER_FULL  + ".generic.src.rpm" in req.text or "Percona-Server-57-" + PS_VER_FULL + ".generic.src.rpm" in req.text
         else:
             if version.parse(PS_VER) > version.parse("8.0.0"):
-                assert "percona-server-server_" + PS_VER in req.text or "percona-server-server-" + PS_VER in req.text
-                assert "percona-server-test_" + PS_VER in req.text or "percona-server-test-" + PS_VER in req.text
-                assert "percona-server-client_" + PS_VER in req.text or "percona-server-client-" + PS_VER in req.text
-                assert "percona-server-rocksdb_" + PS_VER in req.text or "percona-server-rocksdb-" + PS_VER in req.text
-                assert "percona-mysql-router_" + PS_VER in req.text or "percona-mysql-router-" + PS_VER
-                assert "dbg" in req.text or "debug" in req.text
+                print(f"Loop 3 {software_file}")
                 if software_file in DEB_SOFTWARE_FILES:
-                    assert "libperconaserverclient21-dev_" + PS_VER in req.text
-                    assert "libperconaserverclient21_" + PS_VER in req.text
-                    assert "percona-server-source_" + PS_VER in req.text
-                    assert "percona-server-common_" + PS_VER in req.text or "percona-server-common-" + PS_VER in req.text
+                    DEB_NAME_SUFFIX=PS_VER + "-" + PS_BUILD_NUM + "." + software_file + "_amd64.deb"
+                    assert "percona-server-server_" + DEB_NAME_SUFFIX in req.text
+                    assert "percona-server-test_" + DEB_NAME_SUFFIX in req.text
+                    assert "percona-server-client_" + DEB_NAME_SUFFIX in req.text
+                    assert "percona-server-rocksdb_" + DEB_NAME_SUFFIX in req.text
+                    assert "percona-mysql-router_" + DEB_NAME_SUFFIX in req.text
+                    assert "dbg" in req.text or "debug" in req.text
+                    assert "libperconaserverclient21-dev_" + DEB_NAME_SUFFIX in req.text
+                    assert "libperconaserverclient21_" + DEB_NAME_SUFFIX in req.text
+                    assert "percona-server-source_" + DEB_NAME_SUFFIX in req.text
+                    assert "percona-server-common_" + DEB_NAME_SUFFIX in req.text
                 if software_file in RHEL_SOFTWARE_FILES:
-                    assert "percona-server-devel-" + PS_VER in req.text
-                    assert "percona-server-shared-" + PS_VER in req.text
-                    assert "percona-icu-data-files-" + PS_VER in req.text
+                    RPM_NAME_SUFFIX=PS_VER + "." + PS_BUILD_NUM + "." + RHEL_EL[software_file] + ".x86_64.rpm"
+                    assert "percona-server-server-" + RPM_NAME_SUFFIX in req.text
+                    assert "percona-server-test-" + RPM_NAME_SUFFIX in req.text
+                    assert "percona-server-client-" + RPM_NAME_SUFFIX in req.text
+                    assert "percona-server-rocksdb-" + RPM_NAME_SUFFIX in req.text
+                    assert "percona-mysql-router-" + RPM_NAME_SUFFIX in req.text
+                    assert "percona-server-devel-" + RPM_NAME_SUFFIX in req.text
+                    assert "percona-server-shared-" + RPM_NAME_SUFFIX in req.text
+                    assert "percona-icu-data-files-" + RPM_NAME_SUFFIX in req.text
+                    assert "percona-server-common-" + RPM_NAME_SUFFIX in req.text
                     if software_file != "redhat/9":
-                        assert "percona-server-shared-compat-" + PS_VER in req.text
+                        assert "percona-server-shared-compat-" + RPM_NAME_SUFFIX in req.text
             elif version.parse(PS_VER) > version.parse("5.7.0") and version.parse(PS_VER) < version.parse("8.0.0"):
-                assert "percona-server-server-5.7_" + PS_VER in req.text or "Percona-Server-server-57-" + PS_VER in req.text
-                assert "percona-server-test-5.7_"  + PS_VER in req.text or "Percona-Server-test-57-" + PS_VER in req.text
-                assert "percona-server-client-5.7_" + PS_VER in req.text or "Percona-Server-client-57-" + PS_VER in req.text
-                assert "percona-server-rocksdb-5.7_" + PS_VER in req.text or "Percona-Server-rocksdb-57-" + PS_VER in req.text
-                assert "percona-server-tokudb-5.7_" + PS_VER in req.text or "Percona-Server-tokudb-57-" + PS_VER in req.text
-                assert "dbg" in req.text or "debug" in req.text
+                print(f"Loop 3 {software_file}")
                 if software_file in DEB_SOFTWARE_FILES:
-                    assert "libperconaserverclient20-dev_" + PS_VER in req.text
-                    assert "libperconaserverclient20_" + PS_VER in req.text
-                    assert "percona-server-source-5.7_" + PS_VER in req.text
-                    assert "percona-server-common-5.7_" + PS_VER in req.text
+                    DEB_NAME_SUFFIX=PS_VER + "-" + PS_BUILD_NUM + "." + software_file + "_amd64.deb"
+                    assert "percona-server-server-5.7_" + DEB_NAME_SUFFIX in req.text
+                    assert "percona-server-test-5.7_"  + DEB_NAME_SUFFIX in req.text
+                    assert "percona-server-client-5.7_" + DEB_NAME_SUFFIX in req.text
+                    assert "percona-server-rocksdb-5.7_" + DEB_NAME_SUFFIX in req.text
+                    assert "percona-server-tokudb-5.7_" + DEB_NAME_SUFFIX in req.text
+                    assert "dbg" in req.text or "debug" in req.text
+                    assert "libperconaserverclient20-dev_" + DEB_NAME_SUFFIX in req.text
+                    assert "libperconaserverclient20_" + DEB_NAME_SUFFIX in req.text
+                    assert "percona-server-source-5.7_" + DEB_NAME_SUFFIX in req.text
+                    assert "percona-server-common-5.7_" + DEB_NAME_SUFFIX in req.text
                 if software_file in RHEL_SOFTWARE_FILES:
-                    assert "Percona-Server-devel-57-" + PS_VER in req.text
-                    assert "Percona-Server-shared-57-" + PS_VER in req.text
+                    RPM_NAME_SUFFIX=PS_VER + "." + PS_BUILD_NUM + "." + RHEL_EL[software_file] + ".x86_64.rpm"
+                    assert "Percona-Server-server-57-" + RPM_NAME_SUFFIX in req.text
+                    assert "Percona-Server-test-57-" + RPM_NAME_SUFFIX in req.text
+                    assert "Percona-Server-client-57-" + RPM_NAME_SUFFIX in req.text
+                    assert "Percona-Server-rocksdb-57-" + RPM_NAME_SUFFIX in req.text
+                    assert "Percona-Server-tokudb-57-" + RPM_NAME_SUFFIX in req.text
+                    assert "Percona-Server-devel-57-" + RPM_NAME_SUFFIX in req.text
+                    assert "Percona-Server-shared-57-" + RPM_NAME_SUFFIX in req.text
                     if software_file != "redhat/9":
-                        assert "Percona-Server-shared-compat-57-" + PS_VER in req.text
+                        assert "Percona-Server-shared-compat-57-" + RPM_NAME_SUFFIX in req.text
 
         files = json.loads(req.text)
         for file in files:
