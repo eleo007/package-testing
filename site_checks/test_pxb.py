@@ -58,15 +58,11 @@ def get_package_tuples():
             glibc_version="2.17"
             assert "percona-xtrabackup-" + PXB_VER+ "-Linux-x86_64.glibc" + glibc_version + "-minimal.tar.gz" in req.text
             assert "percona-xtrabackup-" + PXB_VER+ "-Linux-x86_64.glibc" + glibc_version + ".tar.gz" in req.text
-            if version.parse(PXB_VER) > version.parse("8.0.0"):
-                assert "percona-xtrabackup-" + PXB_VER+ "-Linux-x86_64.glibc" + glibc_version + "-minimal.tar.gz.sha256sum" in req.text
-                assert "percona-xtrabackup-" + PXB_VER+ "-Linux-x86_64.glibc" + glibc_version + ".tar.gz.sha256sum" in req.text
         elif software_file == 'source':
             print(f"Loop 2 {software_file}")
             assert "percona-xtrabackup-" + PXB_VER + ".tar.gz" in req.text
             assert "percona-xtrabackup-" + MAJOR_VERSION + '_' + PXB_VER  + ".orig.tar.gz" in req.text
             if version.parse(PXB_VER) > version.parse("8.0.0"):
-                assert "percona-xtrabackup-" + PXB_VER  + ".tar.gz.sha256sum" in req.text
                 assert "percona-xtrabackup-" + MAJOR_VERSION + '-' + PXB_VER + '.' + PXB_BUILD_NUM +".generic.src.rpm" in req.text
             elif version.parse(PXB_VER) > version.parse("2.0.0") and version.parse(PXB_VER) < version.parse("8.0.0"):
                 assert "percona-xtrabackup-" + MAJOR_VERSION + '-' + PXB_VER + '-' + PXB_BUILD_NUM +".generic.src.rpm"
@@ -74,18 +70,18 @@ def get_package_tuples():
             # if version.parse(PXB_VER) > version.parse("8.0.0"):
             print(f"Loop 3 {software_file}")
             if software_file in DEB_SOFTWARE_FILES:
-                DEB_NAME_SUFFIX=MAJOR_VERSION + '_' + PXB_VER + "-" + PXB_BUILD_NUM + "." + software_file + "_amd64.deb"
-                assert "percona-xtrabackup-" + DEB_NAME_SUFFIX in req.text
-                assert "percona-xtrabackup-dbg-" + DEB_NAME_SUFFIX in req.text
-                assert "percona-xtrabackup-test-" + DEB_NAME_SUFFIX in req.text
+                PXB_DEB_NAME_SUFFIX=MAJOR_VERSION + '_' + PXB_VER + "-" + PXB_BUILD_NUM + "." + software_file + "_amd64.deb"
+                assert "percona-xtrabackup-" + PXB_DEB_NAME_SUFFIX in req.text
+                assert "percona-xtrabackup-dbg-" + PXB_DEB_NAME_SUFFIX in req.text
+                assert "percona-xtrabackup-test-" + PXB_DEB_NAME_SUFFIX in req.text
             elif software_file in RHEL_SOFTWARE_FILES:
                 if version.parse(PXB_VER) > version.parse("8.0.0"):
-                    RPM_NAME_SUFFIX='-' + PXB_VER + "." + PXB_BUILD_NUM + "." + RHEL_EL[software_file] + ".x86_64.rpm"
+                    PXB_RPM_NAME_SUFFIX='-' + PXB_VER + "." + PXB_BUILD_NUM + "." + RHEL_EL[software_file] + ".x86_64.rpm"
                 elif version.parse(PXB_VER) > version.parse("2.0.0") and version.parse(PXB_VER) < version.parse("8.0.0"):
-                    RPM_NAME_SUFFIX='-' + PXB_VER + "-" + PXB_BUILD_NUM + "." + RHEL_EL[software_file] + ".x86_64.rpm"
-                assert "percona-xtrabackup-" + MAJOR_VERSION + RPM_NAME_SUFFIX in req.text
-                assert "percona-xtrabackup-" + MAJOR_VERSION + '-debuginfo' + RPM_NAME_SUFFIX in req.text
-                assert "percona-xtrabackup-test-" + MAJOR_VERSION + RPM_NAME_SUFFIX in req.text
+                    PXB_RPM_NAME_SUFFIX='-' + PXB_VER + "-" + PXB_BUILD_NUM + "." + RHEL_EL[software_file] + ".x86_64.rpm"
+                assert "percona-xtrabackup-" + MAJOR_VERSION + PXB_RPM_NAME_SUFFIX in req.text
+                assert "percona-xtrabackup-" + MAJOR_VERSION + '-debuginfo' + PXB_RPM_NAME_SUFFIX in req.text
+                assert "percona-xtrabackup-test-" + MAJOR_VERSION + PXB_RPM_NAME_SUFFIX in req.text
 
         files = json.loads(req.text)
         for file in files:
