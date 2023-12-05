@@ -1,4 +1,6 @@
 # Test website links for PS.
+# Expected version formats:
+# PS_VER_FULL="8.0.34-26.1"
 
 import os
 import requests
@@ -56,7 +58,6 @@ def get_package_tuples():
         # Test packages for every OS
         else:
             if version.parse(PS_VER) > version.parse("8.0.0"):
-                print(f"Loop 3 {software_file}")
                 if software_file in DEB_SOFTWARE_FILES:
                     PS_DEB_NAME_SUFFIX=PS_VER + "-" + PS_BUILD_NUM + "." + software_file + "_amd64.deb"
                     assert "percona-server-server_" + PS_DEB_NAME_SUFFIX in req.text
@@ -83,7 +84,6 @@ def get_package_tuples():
                         assert "percona-server-shared-compat-" + PS_RPM_NAME_SUFFIX in req.text
                     assert "debuginfo" in req.text
             elif version.parse(PS_VER) > version.parse("5.7.0") and version.parse(PS_VER) < version.parse("8.0.0"):
-                print(f"Loop 3 {software_file}")
                 if software_file in DEB_SOFTWARE_FILES:
                     PS_DEB_NAME_SUFFIX=PS_VER + "-" + PS_BUILD_NUM + "." + software_file + "_amd64.deb"
                     assert "percona-server-server-5.7_" + PS_DEB_NAME_SUFFIX in req.text
@@ -117,6 +117,7 @@ def get_package_tuples():
 
 LIST_OF_PACKAGES = get_package_tuples()
 
+# Check that every link from website is working (200 reply and has some content-length)
 @pytest.mark.parametrize(('software_file','filename','link'),LIST_OF_PACKAGES)
 def test_packages_site(software_file,filename,link):
     print('\nTesting ' + software_file + ', file: ' + filename)

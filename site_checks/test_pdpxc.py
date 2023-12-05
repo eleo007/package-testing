@@ -1,11 +1,11 @@
-# Test website links for Percona Distribution for PXC. Tarballs are not built for MySQL Router.
+# Test website links for Percona Distribution for PXC. Binary tarballs are not built for haproxy, Repl manager.
 # Expected version formats:
 # PXC_VER_FULL="8.0.34-26.1"
 # PXB_VER_FULL="8.0.34-29.1"
 # PT_VER="3.5.4"
 # PROXYSQL_VER="2.5.5"
-# HAPROXY_VER = "2.8.1"
-# REPL_MAN_VER='1.0'
+# HAPROXY_VER="2.8.1"
+# REPL_MAN_VER="1.0"
 
 import os
 import requests
@@ -32,25 +32,25 @@ assert re.search(r'^\d+\.\d+$', REPL_MAN_VER), "Orchestrator version format is n
 
 # Get different version formats for PXC, PXB
 # PXC
-PXC_VER_UPSTREAM = PXC_VER_FULL.split('-')[0] # 8.0.34 OR 8.1.0 OR 5.7.43
 PXC_VER_PERCONA = '.'.join(PXC_VER_FULL.split('.')[:-1]) # 8.1.0-1, 8.0.34-26, 5.7.43-31.65
+PXC_VER_UPSTREAM = PXC_VER_FULL.split('-')[0] # 8.0.34 OR 8.1.0 OR 5.7.43
 PXC_BUILD_NUM = PXC_VER_FULL.split('.')[-1] # "1"
 
 # PXB
-PXB_VER_FULL = "8.0.34-29.1"
 PXB_VER = '.'.join(PXB_VER_FULL.split('.')[:-1]) # 8.0.34-26
 PXB_MAJOR_VERSION=''.join(PXB_VER_FULL.split('.')[:2]) # 80
 PXB_BUILD_NUM = PXB_VER_FULL.split('.')[-1] # 1
 
 # Create list of supported software files
-if version.parse(PXC_VER_UPSTREAM) > version.parse("8.1.0"):
+# note: 8.1 etc (innovation releases) are not supported by PXC yest bu added in this check script.
+if version.parse(PXC_VER_PERCONA) > version.parse("8.1.0"):
     DEB_SOFTWARE_FILES=['buster', 'bullseye', 'bookworm', 'focal', 'jammy']
     RHEL_SOFTWARE_FILES=['redhat/7', 'redhat/8', 'redhat/9']
-elif version.parse(PXC_VER_UPSTREAM) > version.parse("8.0.0") and version.parse(PXC_VER_UPSTREAM) < version.parse("8.1.0"):
+elif version.parse(PXC_VER_PERCONA) > version.parse("8.0.0") and version.parse(PXC_VER_PERCONA) < version.parse("8.1.0"):
     DEB_SOFTWARE_FILES=['buster', 'bullseye', 'bookworm', 'bionic', 'focal', 'jammy']
     RHEL_SOFTWARE_FILES=['redhat/7', 'redhat/8', 'redhat/9']
-elif version.parse(PXC_VER_UPSTREAM) > version.parse("5.7.0") and version.parse(PXC_VER_UPSTREAM) < version.parse("8.0.0"):
-    assert not version.parse(PXC_VER_UPSTREAM) > version.parse("5.7.0") and version.parse(PXC_VER_UPSTREAM) < version.parse("8.0.0"), "PS 5.7 is not suported"
+elif version.parse(PXC_VER_PERCONA) > version.parse("5.7.0") and version.parse(PXC_VER_PERCONA) < version.parse("8.0.0"):
+    assert not version.parse(PXC_VER_PERCONA) > version.parse("5.7.0") and version.parse(PXC_VER_PERCONA) < version.parse("8.0.0"), "PS 5.7 is not suported"
 
 SOFTWARE_FILES=DEB_SOFTWARE_FILES+RHEL_SOFTWARE_FILES+['binary','source']
 
@@ -106,25 +106,25 @@ def get_package_tuples():
         else:
             if software_file in DEB_SOFTWARE_FILES:
                 # Check PXC deb packages:
-                PXC_DEB_NAME_SUFFIX=PXC_VER_PERCONA + "-" + PXC_BUILD_NUM + "." + software_file + "_amd64.deb"
-                assert "percona-xtradb-cluster-server_" + PXC_DEB_NAME_SUFFIX in req.text
-                assert "percona-xtradb-cluster-test_" + PXC_DEB_NAME_SUFFIX in req.text
-                assert "percona-xtradb-cluster-client_" + PXC_DEB_NAME_SUFFIX in req.text
-                assert "percona-xtradb-cluster-garbd_" + PXC_DEB_NAME_SUFFIX in req.text
-                assert "percona-xtradb-cluster_" + PXC_DEB_NAME_SUFFIX in req.text
-                assert "percona-xtradb-cluster-full_" + PXC_DEB_NAME_SUFFIX in req.text
-                assert "libperconaserverclient21-dev_" + PXC_DEB_NAME_SUFFIX in req.text
-                assert "libperconaserverclient21_" + PXC_DEB_NAME_SUFFIX in req.text
-                assert "percona-xtradb-cluster-source_" + PXC_DEB_NAME_SUFFIX in req.text
-                assert "percona-xtradb-cluster-common_" + PXC_DEB_NAME_SUFFIX in req.text
+                pxc_deb_name_suffix=PXC_VER_PERCONA + "-" + PXC_BUILD_NUM + "." + software_file + "_amd64.deb"
+                assert "percona-xtradb-cluster-server_" + pxc_deb_name_suffix in req.text
+                assert "percona-xtradb-cluster-test_" + pxc_deb_name_suffix in req.text
+                assert "percona-xtradb-cluster-client_" + pxc_deb_name_suffix in req.text
+                assert "percona-xtradb-cluster-garbd_" + pxc_deb_name_suffix in req.text
+                assert "percona-xtradb-cluster_" + pxc_deb_name_suffix in req.text
+                assert "percona-xtradb-cluster-full_" + pxc_deb_name_suffix in req.text
+                assert "libperconaserverclient21-dev_" + pxc_deb_name_suffix in req.text
+                assert "libperconaserverclient21_" + pxc_deb_name_suffix in req.text
+                assert "percona-xtradb-cluster-source_" + pxc_deb_name_suffix in req.text
+                assert "percona-xtradb-cluster-common_" + pxc_deb_name_suffix in req.text
                 assert "dbg" in req.text 
                 # Check PT deb packages:
                 assert "percona-toolkit_" + PT_VER in req.text
                 # Check PXB deb packages:
-                PXB_DEB_NAME_SUFFIX=PXB_MAJOR_VERSION + '_' + PXB_VER + "-" + PXB_BUILD_NUM + "." + software_file + "_amd64.deb"
-                assert "percona-xtrabackup-" + PXB_DEB_NAME_SUFFIX in req.text
-                assert "percona-xtrabackup-dbg-" + PXB_DEB_NAME_SUFFIX in req.text
-                assert "percona-xtrabackup-test-" + PXB_DEB_NAME_SUFFIX in req.text
+                pxb_deb_name_suffix=PXB_MAJOR_VERSION + '_' + PXB_VER + "-" + PXB_BUILD_NUM + "." + software_file + "_amd64.deb"
+                assert "percona-xtrabackup-" + pxb_deb_name_suffix in req.text
+                assert "percona-xtrabackup-dbg-" + pxb_deb_name_suffix in req.text
+                assert "percona-xtrabackup-test-" + pxb_deb_name_suffix in req.text
                 # Check haproxy deb packages:
                 assert "percona-haproxy_" + HAPROXY_VER in req.text
                 assert "percona-haproxy-doc_" + HAPROXY_VER in req.text
@@ -135,26 +135,26 @@ def get_package_tuples():
                 assert "proxysql2_" + PROXYSQL_VER in req.text
             if software_file in RHEL_SOFTWARE_FILES:
                 # Check PXC rpm packages:
-                PXC_RPM_NAME_SUFFIX=PXC_VER_PERCONA + "." + PXC_BUILD_NUM + "." + RHEL_EL[software_file] + ".x86_64.rpm"
-                assert "percona-xtradb-cluster-server-" + PXC_RPM_NAME_SUFFIX in req.text
-                assert "percona-xtradb-cluster-test-" + PXC_RPM_NAME_SUFFIX in req.text
-                assert "percona-xtradb-cluster-client-" + PXC_RPM_NAME_SUFFIX in req.text
-                assert "percona-xtradb-cluster-garbd-" + PXC_RPM_NAME_SUFFIX in req.text
-                assert "percona-xtradb-cluster-" + PXC_RPM_NAME_SUFFIX in req.text 
-                assert "percona-xtradb-cluster-full-" + PXC_RPM_NAME_SUFFIX in req.text 
-                assert "percona-xtradb-cluster-devel-" + PXC_RPM_NAME_SUFFIX in req.text
-                assert "percona-xtradb-cluster-shared-" + PXC_RPM_NAME_SUFFIX in req.text
-                assert "percona-xtradb-cluster-icu-data-files-" + PXC_RPM_NAME_SUFFIX in req.text
+                pxc_rpm_name_suffix=PXC_VER_PERCONA + "." + PXC_BUILD_NUM + "." + RHEL_EL[software_file] + ".x86_64.rpm"
+                assert "percona-xtradb-cluster-server-" + pxc_rpm_name_suffix in req.text
+                assert "percona-xtradb-cluster-test-" + pxc_rpm_name_suffix in req.text
+                assert "percona-xtradb-cluster-client-" + pxc_rpm_name_suffix in req.text
+                assert "percona-xtradb-cluster-garbd-" + pxc_rpm_name_suffix in req.text
+                assert "percona-xtradb-cluster-" + pxc_rpm_name_suffix in req.text 
+                assert "percona-xtradb-cluster-full-" + pxc_rpm_name_suffix in req.text 
+                assert "percona-xtradb-cluster-devel-" + pxc_rpm_name_suffix in req.text
+                assert "percona-xtradb-cluster-shared-" + pxc_rpm_name_suffix in req.text
+                assert "percona-xtradb-cluster-icu-data-files-" + pxc_rpm_name_suffix in req.text
                 if software_file != "redhat/9":
-                    assert "percona-xtradb-cluster-shared-compat-" + PXC_RPM_NAME_SUFFIX in req.text
+                    assert "percona-xtradb-cluster-shared-compat-" + pxc_rpm_name_suffix in req.text
                 assert "debuginfo" in req.text
                 # Check PT rpm packages:
                 assert 'percona-toolkit-' + PT_VER in req.text
                 # Check PXB rpm packages:
-                PXB_RPM_NAME_SUFFIX='-' + PXB_VER + "." + PXB_BUILD_NUM + "." + RHEL_EL[software_file] + ".x86_64.rpm"
-                assert "percona-xtrabackup-" + PXB_MAJOR_VERSION + PXB_RPM_NAME_SUFFIX in req.text
-                assert "percona-xtrabackup-" + PXB_MAJOR_VERSION + '-debuginfo' + PXB_RPM_NAME_SUFFIX in req.text
-                assert "percona-xtrabackup-test-" + PXB_MAJOR_VERSION + PXB_RPM_NAME_SUFFIX in req.text
+                pxb_rpm_name_suffix='-' + PXB_VER + "." + PXB_BUILD_NUM + "." + RHEL_EL[software_file] + ".x86_64.rpm"
+                assert "percona-xtrabackup-" + PXB_MAJOR_VERSION + pxb_rpm_name_suffix in req.text
+                assert "percona-xtrabackup-" + PXB_MAJOR_VERSION + '-debuginfo' + pxb_rpm_name_suffix in req.text
+                assert "percona-xtrabackup-test-" + PXB_MAJOR_VERSION + pxb_rpm_name_suffix in req.text
                 # Check haproxy rpm packages:
                 assert "percona-haproxy-" + HAPROXY_VER in req.text
                 assert "percona-haproxy-debuginfo-" + HAPROXY_VER in req.text
@@ -169,6 +169,7 @@ def get_package_tuples():
 
 LIST_OF_PACKAGES = get_package_tuples()
 
+# Check that every link from website is working (200 reply and has some content-length)
 @pytest.mark.parametrize(('software_file','filename','link'),LIST_OF_PACKAGES)
 def test_packages_site(software_file,filename,link):
     print('\nTesting ' + software_file + ', file: ' + filename)

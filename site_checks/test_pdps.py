@@ -39,7 +39,6 @@ PXB_MAJOR_VERSION=''.join(PXB_VER_FULL.split('.')[:2]) # 80
 PXB_BUILD_NUM = PXB_VER_FULL.split('.')[-1] # 1
 
 # ORCH
-ORCH_VER_FULL = "3.2.6-10"
 ORCH_VER = ORCH_VER_FULL.split('-')[0]
 
 # Create list of supported software files
@@ -115,16 +114,16 @@ def get_package_tuples():
             if version.parse(PS_VER) > version.parse("8.0.0"):
                 if software_file in DEB_SOFTWARE_FILES:
                     # Check PS deb packages:
-                    PS_DEB_NAME_SUFFIX=PS_VER + "-" + PS_BUILD_NUM + "." + software_file + "_amd64.deb"
-                    assert "percona-server-server_" + PS_DEB_NAME_SUFFIX in req.text
-                    assert "percona-server-test_" + PS_DEB_NAME_SUFFIX in req.text
-                    assert "percona-server-client_" + PS_DEB_NAME_SUFFIX in req.text
-                    assert "percona-server-rocksdb_" + PS_DEB_NAME_SUFFIX in req.text
-                    assert "percona-mysql-router_" + PS_DEB_NAME_SUFFIX in req.text
-                    assert "libperconaserverclient21-dev_" + PS_DEB_NAME_SUFFIX in req.text or "libperconaserverclient22-dev_" + PS_DEB_NAME_SUFFIX in req.text
-                    assert "libperconaserverclient21_" + PS_DEB_NAME_SUFFIX in req.text or "libperconaserverclient22_" + PS_DEB_NAME_SUFFIX in req.text
-                    assert "percona-server-source_" + PS_DEB_NAME_SUFFIX in req.text
-                    assert "percona-server-common_" + PS_DEB_NAME_SUFFIX in req.text
+                    ps_deb_name_suffix=PS_VER + "-" + PS_BUILD_NUM + "." + software_file + "_amd64.deb"
+                    assert "percona-server-server_" + ps_deb_name_suffix in req.text
+                    assert "percona-server-test_" + ps_deb_name_suffix in req.text
+                    assert "percona-server-client_" + ps_deb_name_suffix in req.text
+                    assert "percona-server-rocksdb_" + ps_deb_name_suffix in req.text
+                    assert "percona-mysql-router_" + ps_deb_name_suffix in req.text
+                    assert "libperconaserverclient21-dev_" + ps_deb_name_suffix in req.text or "libperconaserverclient22-dev_" + ps_deb_name_suffix in req.text
+                    assert "libperconaserverclient21_" + ps_deb_name_suffix in req.text or "libperconaserverclient22_" + ps_deb_name_suffix in req.text
+                    assert "percona-server-source_" + ps_deb_name_suffix in req.text
+                    assert "percona-server-common_" + ps_deb_name_suffix in req.text
                     assert "dbg" in req.text
                     # Check mysql-shell deb packages:
                     assert "percona-mysql-shell_" + PS_VER_UPSTREAM in req.text
@@ -135,25 +134,25 @@ def get_package_tuples():
                     # Check PT deb packages:
                     assert "percona-toolkit_" + PT_VER in req.text
                     # Check PXB deb packages:
-                    PXB_DEB_NAME_SUFFIX=PXB_MAJOR_VERSION + '_' + PXB_VER + "-" + PXB_BUILD_NUM + "." + software_file + "_amd64.deb"
-                    assert "percona-xtrabackup-" + PXB_DEB_NAME_SUFFIX in req.text
-                    assert "percona-xtrabackup-dbg-" + PXB_DEB_NAME_SUFFIX in req.text
-                    assert "percona-xtrabackup-test-" + PXB_DEB_NAME_SUFFIX in req.text
+                    pxb_deb_name_suffix=PXB_MAJOR_VERSION + '_' + PXB_VER + "-" + PXB_BUILD_NUM + "." + software_file + "_amd64.deb"
+                    assert "percona-xtrabackup-" + pxb_deb_name_suffix in req.text
+                    assert "percona-xtrabackup-dbg-" + pxb_deb_name_suffix in req.text
+                    assert "percona-xtrabackup-test-" + pxb_deb_name_suffix in req.text
                     # Check proxysql deb packages:
                     assert "proxysql2_" + PROXYSQL_VER in req.text
                 if software_file in RHEL_SOFTWARE_FILES:
                     # Check PS rpm packages:
-                    PS_RPM_NAME_SUFFIX=PS_VER + "." + PS_BUILD_NUM + "." + RHEL_EL[software_file] + ".x86_64.rpm"
-                    assert "percona-server-server-" + PS_RPM_NAME_SUFFIX in req.text
-                    assert "percona-server-test-" + PS_RPM_NAME_SUFFIX in req.text
-                    assert "percona-server-client-" + PS_RPM_NAME_SUFFIX in req.text
-                    assert "percona-server-rocksdb-" + PS_RPM_NAME_SUFFIX in req.text
-                    assert "percona-mysql-router-" + PS_RPM_NAME_SUFFIX in req.text
-                    assert "percona-server-devel-" + PS_RPM_NAME_SUFFIX in req.text
-                    assert "percona-server-shared-" + PS_RPM_NAME_SUFFIX in req.text
-                    assert "percona-icu-data-files-" + PS_RPM_NAME_SUFFIX in req.text
+                    ps_rpm_name_suffix=PS_VER + "." + PS_BUILD_NUM + "." + RHEL_EL[software_file] + ".x86_64.rpm"
+                    assert "percona-server-server-" + ps_rpm_name_suffix in req.text
+                    assert "percona-server-test-" + ps_rpm_name_suffix in req.text
+                    assert "percona-server-client-" + ps_rpm_name_suffix in req.text
+                    assert "percona-server-rocksdb-" + ps_rpm_name_suffix in req.text
+                    assert "percona-mysql-router-" + ps_rpm_name_suffix in req.text
+                    assert "percona-server-devel-" + ps_rpm_name_suffix in req.text
+                    assert "percona-server-shared-" + ps_rpm_name_suffix in req.text
+                    assert "percona-icu-data-files-" + ps_rpm_name_suffix in req.text
                     if software_file != "redhat/9":
-                        assert "percona-server-shared-compat-" + PS_RPM_NAME_SUFFIX in req.text
+                        assert "percona-server-shared-compat-" + ps_rpm_name_suffix in req.text
                     assert "debuginfo" in req.text
                     # Check mysql rpm packages:
                     assert 'percona-mysql-shell-' + PS_VER_UPSTREAM in req.text
@@ -164,10 +163,10 @@ def get_package_tuples():
                     # Check PT rpm packages:
                     assert 'percona-toolkit-' + PT_VER in req.text
                     # Check PXB rpm packages:
-                    PXB_RPM_NAME_SUFFIX='-' + PXB_VER + "." + PXB_BUILD_NUM + "." + RHEL_EL[software_file] + ".x86_64.rpm"
-                    assert "percona-xtrabackup-" + PXB_MAJOR_VERSION + PXB_RPM_NAME_SUFFIX in req.text
-                    assert "percona-xtrabackup-" + PXB_MAJOR_VERSION + '-debuginfo' + PXB_RPM_NAME_SUFFIX in req.text
-                    assert "percona-xtrabackup-test-" + PXB_MAJOR_VERSION + PXB_RPM_NAME_SUFFIX in req.text
+                    pxb_rpm_name_suffix='-' + PXB_VER + "." + PXB_BUILD_NUM + "." + RHEL_EL[software_file] + ".x86_64.rpm"
+                    assert "percona-xtrabackup-" + PXB_MAJOR_VERSION + pxb_rpm_name_suffix in req.text
+                    assert "percona-xtrabackup-" + PXB_MAJOR_VERSION + '-debuginfo' + pxb_rpm_name_suffix in req.text
+                    assert "percona-xtrabackup-test-" + PXB_MAJOR_VERSION + pxb_rpm_name_suffix in req.text
                     # Check proxysql rpm packages:
                     assert "proxysql2-" + PROXYSQL_VER in req.text
         files = json.loads(req.text)
@@ -178,6 +177,7 @@ def get_package_tuples():
 
 LIST_OF_PACKAGES = get_package_tuples()
 
+# Check that every link from website is working (200 reply and has some content-length)
 @pytest.mark.parametrize(('software_file','filename','link'),LIST_OF_PACKAGES)
 def test_packages_site(software_file,filename,link):
     print('\nTesting ' + software_file + ', file: ' + filename)
