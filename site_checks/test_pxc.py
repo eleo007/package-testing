@@ -95,8 +95,8 @@ def get_package_tuples():
                     assert "percona-xtradb-cluster-test-" + pxc_rpm_name_suffix in req.text
                     assert "percona-xtradb-cluster-client-" + pxc_rpm_name_suffix in req.text
                     assert "percona-xtradb-cluster-garbd-" + pxc_rpm_name_suffix in req.text
-                    assert "percona-xtradb-cluster-" + pxc_rpm_name_suffix in req.text 
-                    assert "percona-xtradb-cluster-full-" + pxc_rpm_name_suffix in req.text 
+                    assert "percona-xtradb-cluster-" + pxc_rpm_name_suffix in req.text
+                    assert "percona-xtradb-cluster-full-" + pxc_rpm_name_suffix in req.text
                     assert "percona-xtradb-cluster-devel-" + pxc_rpm_name_suffix in req.text
                     assert "percona-xtradb-cluster-shared-" + pxc_rpm_name_suffix in req.text
                     assert "percona-xtradb-cluster-icu-data-files-" + pxc_rpm_name_suffix in req.text
