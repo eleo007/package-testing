@@ -111,64 +111,63 @@ def get_package_tuples():
             assert re.search(rf'proxysql2-{PROXYSQL_VER}-\d+\.\d+\.generic\.src\.rpm', req.text)
         # Test packages for every OS
         else:
-            if version.parse(PS_VER) > version.parse("8.0.0"):
-                if software_file in DEB_SOFTWARE_FILES:
-                    # Check PS deb packages:
-                    ps_deb_name_suffix=PS_VER + "-" + PS_BUILD_NUM + "." + software_file + "_amd64.deb"
-                    assert "percona-server-server_" + ps_deb_name_suffix in req.text
-                    assert "percona-server-test_" + ps_deb_name_suffix in req.text
-                    assert "percona-server-client_" + ps_deb_name_suffix in req.text
-                    assert "percona-server-rocksdb_" + ps_deb_name_suffix in req.text
-                    assert "percona-mysql-router_" + ps_deb_name_suffix in req.text
-                    assert "libperconaserverclient21-dev_" + ps_deb_name_suffix in req.text or "libperconaserverclient22-dev_" + ps_deb_name_suffix in req.text
-                    assert "libperconaserverclient21_" + ps_deb_name_suffix in req.text or "libperconaserverclient22_" + ps_deb_name_suffix in req.text
-                    assert "percona-server-source_" + ps_deb_name_suffix in req.text
-                    assert "percona-server-common_" + ps_deb_name_suffix in req.text
-                    assert "percona-server-dbg_" + ps_deb_name_suffix in req.text
-                    # Check mysql-shell deb packages:
-                    assert "percona-mysql-shell_" + PS_VER_UPSTREAM in req.text
-                    # Check orchestrator deb packages:
-                    assert "percona-orchestrator-client_" + ORCH_VER in req.text
-                    assert "percona-orchestrator-cli_" + ORCH_VER in req.text
-                    assert "percona-orchestrator_" + ORCH_VER in req.text
-                    # Check PT deb packages:
-                    assert "percona-toolkit_" + PT_VER in req.text
-                    # Check PXB deb packages:
-                    pxb_deb_name_suffix=PXB_MAJOR_VERSION + '_' + PXB_VER + "-" + PXB_BUILD_NUM + "." + software_file + "_amd64.deb"
-                    assert "percona-xtrabackup-" + pxb_deb_name_suffix in req.text
-                    assert "percona-xtrabackup-dbg-" + pxb_deb_name_suffix in req.text
-                    assert "percona-xtrabackup-test-" + pxb_deb_name_suffix in req.text
-                    # Check proxysql deb packages:
-                    assert "proxysql2_" + PROXYSQL_VER in req.text
-                if software_file in RHEL_SOFTWARE_FILES:
-                    # Check PS rpm packages:
-                    ps_rpm_name_suffix=PS_VER + "." + PS_BUILD_NUM + "." + RHEL_EL[software_file] + ".x86_64.rpm"
-                    assert "percona-server-server-" + ps_rpm_name_suffix in req.text
-                    assert "percona-server-test-" + ps_rpm_name_suffix in req.text
-                    assert "percona-server-client-" + ps_rpm_name_suffix in req.text
-                    assert "percona-server-rocksdb-" + ps_rpm_name_suffix in req.text
-                    assert "percona-mysql-router-" + ps_rpm_name_suffix in req.text
-                    assert "percona-server-devel-" + ps_rpm_name_suffix in req.text
-                    assert "percona-server-shared-" + ps_rpm_name_suffix in req.text
-                    assert "percona-icu-data-files-" + ps_rpm_name_suffix in req.text
-                    if software_file != "redhat/9":
-                        assert "percona-server-shared-compat-" + ps_rpm_name_suffix in req.text
-                    assert "percona-server-debuginfo-" + ps_rpm_name_suffix in req.text
-                    # Check mysql rpm packages:
-                    assert 'percona-mysql-shell-' + PS_VER_UPSTREAM in req.text
-                    # Check orchestrator rpm packages:
-                    assert 'percona-orchestrator-' + ORCH_VER in req.text
-                    assert 'percona-orchestrator-cli-' + ORCH_VER in req.text
-                    assert 'percona-orchestrator-client-' + ORCH_VER in req.text
-                    # Check PT rpm packages:
-                    assert 'percona-toolkit-' + PT_VER in req.text
-                    # Check PXB rpm packages:
-                    pxb_rpm_name_suffix='-' + PXB_VER + "." + PXB_BUILD_NUM + "." + RHEL_EL[software_file] + ".x86_64.rpm"
-                    assert "percona-xtrabackup-" + PXB_MAJOR_VERSION + pxb_rpm_name_suffix in req.text
-                    assert "percona-xtrabackup-" + PXB_MAJOR_VERSION + '-debuginfo' + pxb_rpm_name_suffix in req.text
-                    assert "percona-xtrabackup-test-" + PXB_MAJOR_VERSION + pxb_rpm_name_suffix in req.text
-                    # Check proxysql rpm packages:
-                    assert "proxysql2-" + PROXYSQL_VER in req.text
+            if software_file in DEB_SOFTWARE_FILES:
+                # Check PS deb packages:
+                ps_deb_name_suffix=PS_VER + "-" + PS_BUILD_NUM + "." + software_file + "_amd64.deb"
+                assert "percona-server-server_" + ps_deb_name_suffix in req.text
+                assert "percona-server-test_" + ps_deb_name_suffix in req.text
+                assert "percona-server-client_" + ps_deb_name_suffix in req.text
+                assert "percona-server-rocksdb_" + ps_deb_name_suffix in req.text
+                assert "percona-mysql-router_" + ps_deb_name_suffix in req.text
+                assert "libperconaserverclient21-dev_" + ps_deb_name_suffix in req.text or "libperconaserverclient22-dev_" + ps_deb_name_suffix in req.text
+                assert "libperconaserverclient21_" + ps_deb_name_suffix in req.text or "libperconaserverclient22_" + ps_deb_name_suffix in req.text
+                assert "percona-server-source_" + ps_deb_name_suffix in req.text
+                assert "percona-server-common_" + ps_deb_name_suffix in req.text
+                assert "percona-server-dbg_" + ps_deb_name_suffix in req.text
+                # Check mysql-shell deb packages:
+                assert "percona-mysql-shell_" + PS_VER_UPSTREAM in req.text
+                # Check orchestrator deb packages:
+                assert "percona-orchestrator-client_" + ORCH_VER in req.text
+                assert "percona-orchestrator-cli_" + ORCH_VER in req.text
+                assert "percona-orchestrator_" + ORCH_VER in req.text
+                # Check PT deb packages:
+                assert "percona-toolkit_" + PT_VER in req.text
+                # Check PXB deb packages:
+                pxb_deb_name_suffix=PXB_MAJOR_VERSION + '_' + PXB_VER + "-" + PXB_BUILD_NUM + "." + software_file + "_amd64.deb"
+                assert "percona-xtrabackup-" + pxb_deb_name_suffix in req.text
+                assert "percona-xtrabackup-dbg-" + pxb_deb_name_suffix in req.text
+                assert "percona-xtrabackup-test-" + pxb_deb_name_suffix in req.text
+                # Check proxysql deb packages:
+                assert "proxysql2_" + PROXYSQL_VER in req.text
+            if software_file in RHEL_SOFTWARE_FILES:
+                # Check PS rpm packages:
+                ps_rpm_name_suffix=PS_VER + "." + PS_BUILD_NUM + "." + RHEL_EL[software_file] + ".x86_64.rpm"
+                assert "percona-server-server-" + ps_rpm_name_suffix in req.text
+                assert "percona-server-test-" + ps_rpm_name_suffix in req.text
+                assert "percona-server-client-" + ps_rpm_name_suffix in req.text
+                assert "percona-server-rocksdb-" + ps_rpm_name_suffix in req.text
+                assert "percona-mysql-router-" + ps_rpm_name_suffix in req.text
+                assert "percona-server-devel-" + ps_rpm_name_suffix in req.text
+                assert "percona-server-shared-" + ps_rpm_name_suffix in req.text
+                assert "percona-icu-data-files-" + ps_rpm_name_suffix in req.text
+                if software_file != "redhat/9":
+                    assert "percona-server-shared-compat-" + ps_rpm_name_suffix in req.text
+                assert "percona-server-debuginfo-" + ps_rpm_name_suffix in req.text
+                # Check mysql rpm packages:
+                assert 'percona-mysql-shell-' + PS_VER_UPSTREAM in req.text
+                # Check orchestrator rpm packages:
+                assert 'percona-orchestrator-' + ORCH_VER in req.text
+                assert 'percona-orchestrator-cli-' + ORCH_VER in req.text
+                assert 'percona-orchestrator-client-' + ORCH_VER in req.text
+                # Check PT rpm packages:
+                assert 'percona-toolkit-' + PT_VER in req.text
+                # Check PXB rpm packages:
+                pxb_rpm_name_suffix='-' + PXB_VER + "." + PXB_BUILD_NUM + "." + RHEL_EL[software_file] + ".x86_64.rpm"
+                assert "percona-xtrabackup-" + PXB_MAJOR_VERSION + pxb_rpm_name_suffix in req.text
+                assert "percona-xtrabackup-" + PXB_MAJOR_VERSION + '-debuginfo' + pxb_rpm_name_suffix in req.text
+                assert "percona-xtrabackup-test-" + PXB_MAJOR_VERSION + pxb_rpm_name_suffix in req.text
+                # Check proxysql rpm packages:
+                assert "proxysql2-" + PROXYSQL_VER in req.text
         files = json.loads(req.text)
         for file in files:
             list.append( (software_file,file['filename'],file['link']) )
