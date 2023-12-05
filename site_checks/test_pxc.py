@@ -2,6 +2,7 @@
 # Expected version format:
 # PXC_VER_FULL="8.0.34-26.1"
 # PXC_VER_FULL="5.7.43-31.65.1"
+# PXC57_INNODB="47"
 
 import os
 import requests
@@ -26,10 +27,10 @@ PXC_BUILD_NUM = PXC_VER_FULL.split('.')[-1] # 1
 DATA_VERSION=''.join(PXC_VER_FULL.split('.')[:2])
 
 # Create list of supported software files and PXC 57 specific version numbers
-if version.parse(PXC_VER_PERCONA) > version.parse("8.1.0"):
+if version.parse(PXC_VER_UPSTREAM) >= version.parse("8.1.0"):
     DEB_SOFTWARE_FILES=['buster','bullseye', 'bookworm', 'focal', 'jammy']
     RHEL_SOFTWARE_FILES=['redhat/7', 'redhat/8', 'redhat/9']
-elif version.parse(PXC_VER_PERCONA) > version.parse("8.0.0") and version.parse(PXC_VER_PERCONA) < version.parse("8.1.0"):
+elif version.parse(PXC_VER_UPSTREAM) > version.parse("8.0.0") and version.parse(PXC_VER_UPSTREAM) < version.parse("8.1.0"):
     DEB_SOFTWARE_FILES=['buster','bullseye', 'bookworm', 'bionic','focal', 'jammy']
     RHEL_SOFTWARE_FILES=['redhat/7', 'redhat/8', 'redhat/9']
 elif version.parse(PXC_VER_UPSTREAM) > version.parse("5.7.0") and version.parse(PXC_VER_UPSTREAM) < version.parse("8.0.0"):
@@ -83,11 +84,11 @@ def get_package_tuples():
                     assert "percona-xtradb-cluster-garbd_" + pxc_deb_name_suffix in req.text
                     assert "percona-xtradb-cluster_" + pxc_deb_name_suffix in req.text
                     assert "percona-xtradb-cluster-full_" + pxc_deb_name_suffix in req.text
-                    assert "dbg" in req.text or "debug" in req.text
                     assert "libperconaserverclient21-dev_" + pxc_deb_name_suffix in req.text
                     assert "libperconaserverclient21_" + pxc_deb_name_suffix in req.text
                     assert "percona-xtradb-cluster-source_" + pxc_deb_name_suffix in req.text
                     assert "percona-xtradb-cluster-common_" + pxc_deb_name_suffix in req.text
+                    assert "percona-xtradb-cluster-dbg_" + pxc_deb_name_suffix in req.text
                 if software_file in RHEL_SOFTWARE_FILES:
                     pxc_rpm_name_suffix=PXC_VER_PERCONA + "." + PXC_BUILD_NUM + "." + RHEL_EL[software_file] + ".x86_64.rpm"
                     assert "percona-xtradb-cluster-server-" + pxc_rpm_name_suffix in req.text
@@ -96,12 +97,12 @@ def get_package_tuples():
                     assert "percona-xtradb-cluster-garbd-" + pxc_rpm_name_suffix in req.text
                     assert "percona-xtradb-cluster-" + pxc_rpm_name_suffix in req.text 
                     assert "percona-xtradb-cluster-full-" + pxc_rpm_name_suffix in req.text 
-                    assert "dbg" in req.text or "debug" in req.text
                     assert "percona-xtradb-cluster-devel-" + pxc_rpm_name_suffix in req.text
                     assert "percona-xtradb-cluster-shared-" + pxc_rpm_name_suffix in req.text
                     assert "percona-xtradb-cluster-icu-data-files-" + pxc_rpm_name_suffix in req.text
                     if software_file != "redhat/9":
                         assert "percona-xtradb-cluster-shared-compat-" + pxc_rpm_name_suffix in req.text
+                    assert "percona-xtradb-cluster-debuginfo-" + pxc_rpm_name_suffix in req.text
             elif version.parse(PXC_VER_UPSTREAM) > version.parse("5.7.0") and version.parse(PXC_VER_UPSTREAM) < version.parse("8.0.0"):
                 assert "dbg" in req.text or "debug" in req.text
                 if software_file in DEB_SOFTWARE_FILES:
@@ -116,6 +117,7 @@ def get_package_tuples():
                     assert "percona-xtradb-cluster-client-5.7_" + pxc_deb_name_suffix in req.text
                     assert "percona-xtradb-cluster-garbd-5.7_" + pxc_deb_name_suffix in req.text
                     assert "percona-xtradb-cluster-full-57_" + pxc_deb_name_suffix in req.text
+                    assert "percona-xtradb-cluster-5.7-dbg_" + pxc_deb_name_suffix in req.text
                 if software_file in RHEL_SOFTWARE_FILES:
                     pxc_rpm_name_suffix=PXC_VER_PERCONA + "." + PXC_BUILD_NUM + "." + RHEL_EL[software_file] + ".x86_64.rpm"
                     assert "Percona-XtraDB-Cluster-server-57-" + pxc_rpm_name_suffix in req.text
@@ -127,6 +129,7 @@ def get_package_tuples():
                     assert "Percona-XtraDB-Cluster-shared-57-" + pxc_rpm_name_suffix in req.text
                     if software_file == "redhat/7":
                         assert "Percona-XtraDB-Cluster-shared-compat-57-" + pxc_rpm_name_suffix in req.text
+                    assert "Percona-XtraDB-Cluster-57-debuginfo-" + pxc_rpm_name_suffix in req.text
 
         files = json.loads(req.text)
         for file in files:

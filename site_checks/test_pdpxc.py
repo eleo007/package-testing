@@ -26,7 +26,7 @@ REPL_MAN_VER = os.environ.get("REPL_MAN_VER")
 assert re.search(r'^\d+\.\d+\.\d+-\d+\.\d+$', PXC_VER_FULL), "PS version format is not correct. Expected pattern with build: 8.0.34-26.1"
 assert re.search(r'^\d+\.\d+\.\d+-\d+\.\d+$', PXB_VER_FULL), "PXB version format is not correct. Expected pattern with build: 8.0.34-29.1"
 assert re.search(r'^\d+\.\d+\.\d+$', PT_VER), "PT version format is not correct. Expected pattern: 3.5.5"
-assert re.search(r'^\d+\.\d+\.\d+$', PROXYSQL_VER), "PROXYSQL version format is not correct. Expected pattern with build: 2.5.5"
+assert re.search(r'^\d+\.\d+\.\d+$', PROXYSQL_VER), "PROXYSQL version format is not correct. Expected pattern: 2.5.5"
 assert re.search(r'^\d+\.\d+\.\d+$', HAPROXY_VER), "Orchestrator version format is not correct. Expected pattern: 3.2.6-10"
 assert re.search(r'^\d+\.\d+$', REPL_MAN_VER), "Orchestrator version format is not correct. Expected pattern: 3.2.6-10"
 
@@ -117,7 +117,7 @@ def get_package_tuples():
                 assert "libperconaserverclient21_" + pxc_deb_name_suffix in req.text
                 assert "percona-xtradb-cluster-source_" + pxc_deb_name_suffix in req.text
                 assert "percona-xtradb-cluster-common_" + pxc_deb_name_suffix in req.text
-                assert "dbg" in req.text 
+                assert "percona-xtradb-cluster-dbg_" + pxc_deb_name_suffix in req.text
                 # Check PT deb packages:
                 assert "percona-toolkit_" + PT_VER in req.text
                 # Check PXB deb packages:
@@ -147,7 +147,7 @@ def get_package_tuples():
                 assert "percona-xtradb-cluster-icu-data-files-" + pxc_rpm_name_suffix in req.text
                 if software_file != "redhat/9":
                     assert "percona-xtradb-cluster-shared-compat-" + pxc_rpm_name_suffix in req.text
-                assert "debuginfo" in req.text
+                assert "percona-xtradb-cluster-debuginfo-" + pxc_rpm_name_suffix in req.text
                 # Check PT rpm packages:
                 assert 'percona-toolkit-' + PT_VER in req.text
                 # Check PXB rpm packages:

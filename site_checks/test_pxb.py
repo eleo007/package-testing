@@ -17,15 +17,10 @@ MAJOR_VERSION=''.join(PXB_VER_FULL.split('.')[:2]) # 80
 if version.parse(PXB_VER_UPSTREAM) > version.parse("8.0.0"):
     assert re.search(r'^\d+\.\d+\.\d+-\d+\.\d+$', PXB_VER_FULL), "PXB 8.0/8.1 version is not full. Pass '8.1.0-1.1' / '8.0.34-26.1'" # 8.1.0-1.1 or  8.0.34-26.1
     PXB_VER = '.'.join(PXB_VER_FULL.split('.')[:-1]) #8.0.34-26
-    print("PXB_VER " + PXB_VER)
     PXB_BUILD_NUM = PXB_VER_FULL.split('.')[-1] # "1"
-    print("PXB_BUILD_NUM " + PXB_BUILD_NUM)
 elif version.parse(PXB_VER_UPSTREAM) > version.parse("2.0.0") and version.parse(PXB_VER_UPSTREAM) < version.parse("8.0.0"):
-    print("PXB_VER_UPSTREAM IS OK" + PXB_VER_UPSTREAM)
     PXB_VER = PXB_VER_UPSTREAM #2.4.28-26
-    print("PXB_VER " + PXB_VER)
     PXB_BUILD_NUM = PXB_VER_FULL.split('-')[-1] # "1"
-    print("PXB_BUILD_NUM " + PXB_BUILD_NUM)
     assert re.search(r'^\d+\.\d+\.\d+-\d+$', PXB_VER_FULL), "PXB 2.4 version is not full.  Pass '2.4.28-1'" # 2.4.28-26
 
 # Create list of supported software files
@@ -40,26 +35,23 @@ elif version.parse(PXB_VER) > version.parse("2.0.0") and version.parse(PXB_VER) 
     RHEL_SOFTWARE_FILES=['redhat/7', 'redhat/8', 'redhat/9']
 
 SOFTWARE_FILES=['binary','source']+DEB_SOFTWARE_FILES+RHEL_SOFTWARE_FILES
-# SOFTWARE_FILES=RHEL_SOFTWARE_FILES+["binary",'source']
+
 RHEL_EL={'redhat/7':'el7', 'redhat/8':'el8', 'redhat/9':'el9'}
 
 def get_package_tuples():
     list = []
     for software_file in SOFTWARE_FILES:
         data = 'version_files=Percona-XtraBackup-' + PXB_VER + '&software_files=' + software_file
-        print(data)
         req = requests.post("https://www.percona.com/products-api.php",data=data,headers = {"content-type": "application/x-www-form-urlencoded; charset=UTF-8"})
         assert req.status_code == 200
         assert req.text != '[]', software_file
         # Check binary tarballs
         if software_file == 'binary':
-            print(f"Loop 1 {software_file}")
             glibc_version="2.17"
             assert "percona-xtrabackup-" + PXB_VER+ "-Linux-x86_64.glibc" + glibc_version + "-minimal.tar.gz" in req.text
             assert "percona-xtrabackup-" + PXB_VER+ "-Linux-x86_64.glibc" + glibc_version + ".tar.gz" in req.text
         # Check source tarballs
         elif software_file == 'source':
-            print(f"Loop 2 {software_file}")
             assert "percona-xtrabackup-" + PXB_VER + ".tar.gz" in req.text
             assert "percona-xtrabackup-" + MAJOR_VERSION + '_' + PXB_VER  + ".orig.tar.gz" in req.text
             if version.parse(PXB_VER) > version.parse("8.0.0"):

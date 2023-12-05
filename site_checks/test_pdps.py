@@ -124,7 +124,7 @@ def get_package_tuples():
                     assert "libperconaserverclient21_" + ps_deb_name_suffix in req.text or "libperconaserverclient22_" + ps_deb_name_suffix in req.text
                     assert "percona-server-source_" + ps_deb_name_suffix in req.text
                     assert "percona-server-common_" + ps_deb_name_suffix in req.text
-                    assert "dbg" in req.text
+                    assert "percona-server-dbg_" + ps_deb_name_suffix in req.text
                     # Check mysql-shell deb packages:
                     assert "percona-mysql-shell_" + PS_VER_UPSTREAM in req.text
                     # Check orchestrator deb packages:
@@ -153,7 +153,7 @@ def get_package_tuples():
                     assert "percona-icu-data-files-" + ps_rpm_name_suffix in req.text
                     if software_file != "redhat/9":
                         assert "percona-server-shared-compat-" + ps_rpm_name_suffix in req.text
-                    assert "debuginfo" in req.text
+                    assert "percona-server-debuginfo-" + ps_rpm_name_suffix in req.text
                     # Check mysql rpm packages:
                     assert 'percona-mysql-shell-' + PS_VER_UPSTREAM in req.text
                     # Check orchestrator rpm packages:
