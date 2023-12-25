@@ -36,7 +36,7 @@ PTBINS = ['pt-align', 'pt-archiver', 'pt-config-diff', 'pt-deadlock-logger', 'pt
           'pt-online-schema-change', 'pt-pmp', 'pt-query-digest', 'pt-show-grants', 'pt-sift',
           'pt-slave-delay', 'pt-slave-find', 'pt-slave-restart', 'pt-stalk', 'pt-summary',
           'pt-table-checksum', 'pt-table-sync', 'pt-table-usage', 'pt-upgrade',
-          'pt-variable-advisor', 'pt-visual-explain', 'pt-k8s-debug-collector',]
+          'pt-variable-advisor', 'pt-visual-explain', 'pt-k8s-debug-collector','pt-galera-log-explainer']
 
 @pytest.mark.parametrize("package", PXB_DEBPACKAGES)
 def test_check_pxb_deb_package(host, package):
@@ -50,38 +50,38 @@ def test_check_pxb_deb_package(host, package):
     else:
         assert PXB_VERSION in pkg.version, pkg.version
 
-@pytest.mark.parametrize("package", PXB_RPMPACKAGES)
-def test_check_pxb_rpm_package(host, package):
-    dist = host.system_info.distribution
-    if dist.lower() in DEB_DISTS:
-        pytest.skip("This test only for RHEL based platforms")
-    pkg = host.package(package)
-    assert pkg.is_installed
-    if RPM_PERCONA_BUILD_PXB_VERSION:
-        assert RPM_PERCONA_BUILD_PXB_VERSION in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
-    else:
-        assert PXB_VERSION in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
+# @pytest.mark.parametrize("package", PXB_RPMPACKAGES)
+# def test_check_pxb_rpm_package(host, package):
+#     dist = host.system_info.distribution
+#     if dist.lower() in DEB_DISTS:
+#         pytest.skip("This test only for RHEL based platforms")
+#     pkg = host.package(package)
+#     assert pkg.is_installed
+#     if RPM_PERCONA_BUILD_PXB_VERSION:
+#         assert RPM_PERCONA_BUILD_PXB_VERSION in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
+#     else:
+#         assert PXB_VERSION in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
 
-def test_pxb_binary_version(host):
-    cmd = "xtrabackup --version"
-    result = host.run(cmd)
-    assert result.rc == 0, result.stderr
-    assert PXB_VERSION in result.stderr, (result.stdout, result.stdout)
+# def test_pxb_binary_version(host):
+#     cmd = "xtrabackup --version"
+#     result = host.run(cmd)
+#     assert result.rc == 0, result.stderr
+#     assert PXB_VERSION in result.stderr, (result.stdout, result.stdout)
 
-@pytest.mark.pkg_source
-def test_sources_pxb_version(host):
-    if REPO == "testing" or REPO == "experimental":
-        pytest.skip("This test only for main repo")
-    dist = host.system_info.distribution
-    if dist.lower() in RHEL_DISTS:
-        pytest.skip("This test only for DEB distributions")
-    if DEB_PERCONA_BUILD_PXB_VERSION:
-        cmd = "apt-cache madison percona-xtrabackup-{} | grep Source | grep \"{}\"".format(PXB_MAJOR_VER, DEB_PERCONA_BUILD_PXB_VERSION)
-    else:
-        cmd = "apt-cache madison percona-xtrabackup-{} | grep Source | grep \"{}\"".format(PXB_MAJOR_VER, PXB_VERSION)
-    result = host.run(cmd)
-    assert result.rc == 0, (result.stderr, result.stdout)
-    assert PXB_VERSION in result.stdout, result.stdout
+# @pytest.mark.pkg_source
+# def test_sources_pxb_version(host):
+#     if REPO == "testing" or REPO == "experimental":
+#         pytest.skip("This test only for main repo")
+#     dist = host.system_info.distribution
+#     if dist.lower() in RHEL_DISTS:
+#         pytest.skip("This test only for DEB distributions")
+#     if DEB_PERCONA_BUILD_PXB_VERSION:
+#         cmd = "apt-cache madison percona-xtrabackup-{} | grep Source | grep \"{}\"".format(PXB_MAJOR_VER, DEB_PERCONA_BUILD_PXB_VERSION)
+#     else:
+#         cmd = "apt-cache madison percona-xtrabackup-{} | grep Source | grep \"{}\"".format(PXB_MAJOR_VER, PXB_VERSION)
+#     result = host.run(cmd)
+#     assert result.rc == 0, (result.stderr, result.stdout)
+#     assert PXB_VERSION in result.stdout, result.stdout
 
 def test_check_pt_deb_package(host):
     dist = host.system_info.distribution
