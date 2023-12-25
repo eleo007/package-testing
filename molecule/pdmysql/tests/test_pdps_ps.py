@@ -198,7 +198,8 @@ def test_mysql_version(host, component):
 def test_plugins(host, plugin_command):
     dist = host.system_info.distribution
     release = host.system_info.release
-    if dist.lower() in RHEL_DISTS and release in ['7.0','2.0]'] and plugin_command == 'authentication_fido.so':
+    major_version=version.parse(release).major
+    if dist.lower() in RHEL_DISTS and major_version in [7, 2] and plugin_command == 'authentication_fido.so':
         pytest.skip("authentication_fido.so is not supported on Enterprize Linux 7 and Amazon Linux2 from 8.0.35")
     with host.sudo("root"):
         result = host.run(plugin_command)
