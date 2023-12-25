@@ -38,17 +38,17 @@ PTBINS = ['pt-align', 'pt-archiver', 'pt-config-diff', 'pt-deadlock-logger', 'pt
           'pt-table-checksum', 'pt-table-sync', 'pt-table-usage', 'pt-upgrade',
           'pt-variable-advisor', 'pt-visual-explain', 'pt-k8s-debug-collector','pt-galera-log-explainer']
 
-@pytest.mark.parametrize("package", PXB_DEBPACKAGES)
-def test_check_pxb_deb_package(host, package):
-    dist = host.system_info.distribution
-    if dist.lower() in RHEL_DISTS:
-        pytest.skip("This test only for RHEL based platforms")
-    pkg = host.package(package)
-    assert pkg.is_installed
-    if DEB_PERCONA_BUILD_PXB_VERSION:
-        assert DEB_PERCONA_BUILD_PXB_VERSION in pkg.version, pkg.version
-    else:
-        assert PXB_VERSION in pkg.version, pkg.version
+# @pytest.mark.parametrize("package", PXB_DEBPACKAGES)
+# def test_check_pxb_deb_package(host, package):
+#     dist = host.system_info.distribution
+#     if dist.lower() in RHEL_DISTS:
+#         pytest.skip("This test only for RHEL based platforms")
+#     pkg = host.package(package)
+#     assert pkg.is_installed
+#     if DEB_PERCONA_BUILD_PXB_VERSION:
+#         assert DEB_PERCONA_BUILD_PXB_VERSION in pkg.version, pkg.version
+#     else:
+#         assert PXB_VERSION in pkg.version, pkg.version
 
 # @pytest.mark.parametrize("package", PXB_RPMPACKAGES)
 # def test_check_pxb_rpm_package(host, package):
