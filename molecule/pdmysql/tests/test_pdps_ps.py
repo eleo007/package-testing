@@ -199,7 +199,7 @@ def test_plugins(host, plugin_command):
     dist = host.system_info.distribution
     release = host.system_info.release
     major_version=version.parse(release).major
-    if dist.lower() in RHEL_DISTS and major_version in [7, 2] and plugin_command == 'authentication_fido.so':
+    if dist.lower() in RHEL_DISTS and major_version in [7, 2] and 'authentication_fido.so' in plugin_command:
         pytest.skip("authentication_fido.so is not supported on Enterprize Linux 7 and Amazon Linux2 from 8.0.35")
     with host.sudo("root"):
         result = host.run(plugin_command)
