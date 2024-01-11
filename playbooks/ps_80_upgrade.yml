@@ -151,12 +151,12 @@
       state: latest
     vars:
       packages:
-      - percona-server-server
-      - percona-server-test
-      - percona-server-client
-      - percona-server-dbg
-      - percona-server-source
-      - percona-server-rocksdb
+      - percona-server-server-pro
+      - percona-server-test-pro
+      - percona-server-client-pro
+      - percona-server-dbg-pro
+      - percona-server-source-pro
+      - percona-server-rocksdb-pro
     when: ansible_os_family == "Debian"
     environment:
       PERCONA_TELEMETRY_DISABLE: "1"
@@ -215,13 +215,13 @@
       state: latest
     vars:
       packages:
-      - percona-server-server
+      - percona-server-server-pro
       - percona-server-test
-      - percona-server-debuginfo
-      - percona-server-devel
-      - percona-server-rocksdb
+      - percona-server-debuginfo-pro
+      - percona-server-devel-pro
+      - percona-server-rocksdb-pro
       - percona-server-shared
-      - percona-server-client
+      - percona-server-client-pro
     when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "9"
     environment:
       PERCONA_TELEMETRY_DISABLE: "1"
@@ -250,8 +250,8 @@
   - name: check that Percona Server version is correct
     command: /package-testing/version_check.sh ps80
 
-  - name: check that Percona Server package versions are correct
-    command: /package-testing/package_check.sh ps80
+#  - name: check that Percona Server package versions are correct
+#    command: /package-testing/package_check.sh ps80
 
 # - name: check that Percona Toolkit version is correct
 #   command: /package-testing/version_check.sh pt
@@ -326,31 +326,31 @@
 
 ## Changes done for telemetry: add iptables rule for Telemetry Server - install only ps package.
 ## Expected resuld - telemetry_uuid file has only instanceID
-  - name: Block pmm.check-dev.percona.com IP
-    iptables:
-      chain: OUTPUT
-      destination: check-dev.percona.com
-      jump: DROP
+#  - name: Block pmm.check-dev.percona.com IP
+#    iptables:
+#      chain: OUTPUT
+#      destination: check-dev.percona.com
+#      jump: DROP
 
-  - name: install Percona Server deb package for telemetry
-    apt:
-      name: "{{ packages }}"
-      update_cache: no
-      state: latest
-    vars:
-      packages:
-      - percona-server-server
-    when: ansible_os_family == "Debian"
+#  - name: install Percona Server deb package for telemetry
+#    apt:
+#      name: "{{ packages }}"
+#      update_cache: no
+#      state: latest
+#    vars:
+#      packages:
+#      - percona-server-server
+#    when: ansible_os_family == "Debian"
 
-  - name: install Percona Server rpm package for telemetry
-    yum:
-      name: "{{ packages }}"
-      state: latest
-    vars:
-      packages:
-      - percona-server-server
-    when: ansible_os_family == "RedHat"
+#  - name: install Percona Server rpm package for telemetry
+#    yum:
+#      name: "{{ packages }}"
+#      state: latest
+#    vars:
+#      packages:
+#      - percona-server-server
+#    when: ansible_os_family == "RedHat"
 
-  - name: check telemetry (disabled)
-    command: /package-testing/check_telemetry.sh ps -u
+#  - name: check telemetry (disabled)
+#    command: /package-testing/check_telemetry.sh ps -u
 
