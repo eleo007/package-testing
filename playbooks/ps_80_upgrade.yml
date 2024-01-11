@@ -37,6 +37,17 @@
 
   - name: include tasks for enabling PS 8 main repo
     include: ../tasks/enable_ps8_main_repo.yml
+    when: lookup('env', 'install_8035') == "yes"
+
+  - name: include tasks for enabling PS 8 main repo
+    shell: percona-release enable pdps-8.0.34
+    when: lookup('env', 'install_8035') != "yes"
+
+  - name: clean and update yum cache
+    shell: |
+      yum clean all
+      yum makecache
+    when: ansible_os_family == "RedHat"
 
   - name: download and extract world database
     command: "{{ item }}"
@@ -129,8 +140,23 @@
 #
 # Enable testing repository
 #
-  - name: include tasks for enabling PS 8 testing repo
-    include: ../tasks/enable_ps8_testing_repo.yml
+  - name: Creating a pro repo file for RHEL
+    copy:
+      dest: "/etc/yum.repos.d/psmysql-pro.repo"
+      content: |
+        [ps-80-pro]
+        name=PSMYSQL_8.0_PRO
+        baseurl=http://repo.percona.com/private/eleonorazinchenko-XXXXXXXXXXXX/ps-80-pro/yum/testing/$releasever/RPMS/x86_64
+        enabled=1
+        gpgkey = https://repo.percona.com/yum/PERCONA-PACKAGING-KEY
+    when: ansible_os_family == "RedHat"
+
+  - name: Creating a pro repo file for RHEL
+    copy:
+      dest: "/etc/apt/sources.list.d/ps-80-pro.list"
+      content: |
+        deb http://repo.percona.com/private/eleonorazinchenko-XXXXXXXXXXXXX/ps-80-pro/apt jammy testing
+    when: ansible_os_family == "Debian"
 
 # Upgrade packages
 #
