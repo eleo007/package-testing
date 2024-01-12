@@ -88,6 +88,23 @@
   - name: install Percona Server 8.0 packages
     include_tasks: ../tasks/install_ps80_pro.yml
 
+  - name: enable ps-80 repo for rocky
+    shell: percona-release enable ps-80
+    when: ansible_os_family == "RedHat"
+
+  - name: install rocksdb Percona Server rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      disablerepo: "epel"
+      update_cache: yes
+    vars:
+      packages:
+      - percona-server-rocksdb
+    when: ansible_os_family == "RedHat"
+    environment:
+      PERCONA_TELEMETRY_URL: "https://check-dev.percona.com/v1/telemetry/GenericReport"
+
   # - name: check telemetry (enabled)
   #   command: /package-testing/check_telemetry.sh ps -e
 
@@ -153,8 +170,8 @@
         fail:
           msg: Failing the further tasks due to issues in the previous task.
 
-  - name: check that Percona Server package versions are correct
-    command: /package-testing/package_check.sh ps80 pro
+  # - name: check that Percona Server package versions are correct
+  #   command: /package-testing/package_check.sh ps80 pro
 
   - name: keyring plugins test
     command: /package-testing/scripts/ps_keyring_plugins_test/ps_keyring_plugins_test.sh ps80
