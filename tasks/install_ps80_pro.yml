@@ -1,0 +1,57 @@
+# This task installs Percona Server 8.0 on CentOS and Debian/Ubuntu
+#
+
+  - name: install Percona Server deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - percona-server-server-pro
+      - percona-server-test-pro
+      - percona-server-client-pro
+      - percona-server-pro-dbg
+      - percona-server-pro-source
+      - percona-server-rocksdb-pro
+      - percona-mysql-router-pro
+    when: ansible_os_family == "Debian"
+    environment:
+      PERCONA_TELEMETRY_URL: "https://check-dev.percona.com/v1/telemetry/GenericReport"
+
+  - name: get list of enabled dnf modules on centos 8
+    command: dnf module list --enabled
+    register: enabled_dnf_modules
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version >= "8"
+
+  - name: list enabled dnf modules on centos 8
+    debug:
+      var: enabled_dnf_modules
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version >= "8"
+
+  - name: disable the mysql module on RHEL/CentOS 8
+    command: yum module disable mysql -y
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
+
+  - name: disable the mariadb module on RHEL/CentOS 8
+    command: yum module disable mariadb -y
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
+
+  - name: install Percona Server rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      disablerepo: "epel"
+      update_cache: yes
+    vars:
+      packages:
+      - percona-server-server-pro
+      - percona-server-test
+      - percona-server-debuginfo-pro
+      - percona-server-devel-pro
+      #- percona-server-rocksdb-pro
+      - percona-server-shared
+      - percona-server-client-pro
+    when: ansible_os_family == "RedHat"
+    environment:
+      PERCONA_TELEMETRY_URL: "https://check-dev.percona.com/v1/telemetry/GenericReport"

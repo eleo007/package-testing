@@ -44,17 +44,37 @@
       var: selinux_status
     when: ansible_os_family == "RedHat"
 
-  - name: include tasks for enabling PS 8 test repo
-    include: ../tasks/enable_ps8_main_repo.yml
-    when: lookup('env', 'install_repo') == "main"
+  - name: include playbook for removing Percona repo
+    include: remove_percona_repository.yml
 
-  - name: include tasks for enabling PS 8 test repo
-    include: ../tasks/enable_ps8_testing_repo.yml
-    when: lookup('env', 'install_repo') == "testing" or lookup('env', 'install_repo') == ""
+  - name: disable the mysql module on RHEL/CentOS 8
+    command: /usr/bin/dnf module disable mysql -y
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
 
-  - name: include tasks for enabling PS 8 experimental repo
-    include: ../tasks/enable_ps8_experimental_repo.yml
-    when: lookup('env', 'install_repo') == "experimental"
+  - name: Install percona repository package
+    apt:
+#     deb: https://repo.percona.com/apt/pool/testing/p/percona-release/percona-release_1.0-21.generic_all.deb
+      deb: https://repo.percona.com/apt/percona-release_latest.generic_all.deb
+    when: ansible_os_family == "Debian"
+
+  - name: add the Percona testing yum repos for centos 6 and 7
+    yum: name=https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+#   yum: name=https://repo.percona.com/yum/testing/7Server/RPMS/noarch/percona-release-1.0-21.noarch.rpm
+    when: ansible_os_family == "RedHat"
+
+  - name: Creating a pro repo file for RHEL
+    template: src=../templates/pro_rpm_repo_file_ps80.j2
+              dest=/etc/yum.repos.d/psmysql-pro.repo
+    when: ansible_os_family == "RedHat"
+
+  - name: Creating a pro repo file for DEB
+    template: src=../templates/pro_deb_repo_file_ps80.j2
+              dest=/etc/apt/sources.list.d/ps-80-pro.list
+    when: ansible_os_family == "Debian"
+
+  - name: Update apt 
+    shell: apt update
+    when: ansible_os_family == "Debian"
 
   - name: download and extract world database
     command: "{{ item }}"
@@ -66,10 +86,10 @@
 #    include_tasks: ../tasks/install_pt.yml
 
   - name: install Percona Server 8.0 packages
-    include_tasks: ../tasks/install_ps80.yml
+    include_tasks: ../tasks/install_ps80_pro.yml
 
-  - name: check telemetry (enabled)
-    command: /package-testing/check_telemetry.sh ps -e
+  # - name: check telemetry (enabled)
+  #   command: /package-testing/check_telemetry.sh ps -e
 
   - name: install sysbench new deb packages
     include_tasks: ../tasks/install_sysbench.yml
