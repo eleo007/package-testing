@@ -10,9 +10,9 @@
       packages:
       - percona-server-server-pro
       - percona-server-test-pro
-      - percona-server-client-pro
       - percona-server-pro-dbg
       - percona-server-pro-source
+      - percona-server-client-pro
       - percona-server-rocksdb-pro
       - percona-mysql-router-pro
     when: ansible_os_family == "Debian"
