@@ -102,6 +102,24 @@
   - name: list installed packages
     include_tasks: ../tasks/list_installed_packages.yml
 
+  - name: Add fips_mode option
+    blockinfile:
+      path: /etc/my.cnf
+      insertafter: EOF
+      block: |
+        ssl-fips-mode=ON
+        log-error-verbosity=3
+    when: ansible_os_family == "RedHat"
+
+  - name: Add fips_mode option
+    blockinfile:
+      path: /etc/mysql/mysql.conf.d/mysqld.cnf
+      insertafter: EOF
+      block: |
+        ssl-fips-mode=ON
+        log-error-verbosity=3
+    when: ansible_os_family == "Debian"
+
   - name: start mysql service with service command
     command: service mysql start
     when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "6"

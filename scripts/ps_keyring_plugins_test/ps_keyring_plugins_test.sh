@@ -39,6 +39,8 @@ sed -i '/\[mysqld\]/a early_plugin_load=keyring_file.so' ${MYCNF}
 #sed -i "/\[mysqld\]/a ${binlog_enc}" ${MYCNF}
 sed -i '/\[mysqld\]/a master_verify_checksum=ON' ${MYCNF}
 sed -i '/\[mysqld\]/a binlog_checksum=CRC32' ${MYCNF}
+sed -i '/\[mysqld\]/a ssl-fips-mode=ON' ${MYCNF}
+sed -i '/\[mysqld\]/a log-error-verbosity=3' ${MYCNF}
 systemctl start mysql
 sleep 10
 

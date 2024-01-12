@@ -4,7 +4,8 @@ server_id=1
 gtid_mode=ON
 enforce_gtid_consistency=ON
 binlog_checksum=NONE
-
+ssl-fips-mode=ON
+log-error-verbosity=3
 
 plugin_load_add='group_replication.so'
 group_replication_group_name="aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
