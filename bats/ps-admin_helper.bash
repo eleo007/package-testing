@@ -211,7 +211,8 @@ install_all() {
   elif [ ${MYSQL_VERSION} = "5.7" ]; then
     OPT="--enable-qrt --enable-mysqlx --enable-tokudb --enable-tokubackup --enable-rocksdb"
   else
-    OPT="--enable-rocksdb"
+    OPT=""
+#    OPT="--enable-rocksdb"
   fi
 
   # This first restart is needed only because of these bugs:

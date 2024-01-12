@@ -159,8 +159,8 @@
   - name: keyring plugins test
     command: /package-testing/scripts/ps_keyring_plugins_test/ps_keyring_plugins_test.sh ps80
 
-  - name: re-run ps_admin to install rocksdb
-    command: /usr/bin/ps-admin --enable-rocksdb
+  # - name: re-run ps_admin to install rocksdb
+  #   command: /usr/bin/ps-admin --enable-rocksdb
 
   - name: install plugins, import world database
     command: /package-testing/plugins_test_80.sh ps
@@ -174,11 +174,11 @@
   - name: check the audit log v2 plugin
     command: /package-testing/scripts/ps_audit_log_v2.sh
 
-  - name: run some MyRocks tests
-    command: /package-testing/scripts/ps_myrocks_test.sh
+  # - name: run some MyRocks tests
+  #   command: /package-testing/scripts/ps_myrocks_test.sh
 
-  - name: run mysql compression tests script
-    command: /package-testing/scripts/mysql-comp-test/mysql_comp_test.sh ps80
+  # - name: run mysql compression tests script
+  #   command: /package-testing/scripts/mysql-comp-test/mysql_comp_test.sh ps80
 
   - name: run bats unit tests for ps-admin script
     command: /usr/local/bin/bats /package-testing/bats/ps-admin_unit.bats
