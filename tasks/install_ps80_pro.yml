@@ -9,7 +9,7 @@
     vars:
       packages:
       - percona-server-server-pro
-      - percona-server-test-pro
+      # - percona-server-test-pro
       - percona-server-pro-dbg
       - percona-server-pro-source
       - percona-server-client-pro
