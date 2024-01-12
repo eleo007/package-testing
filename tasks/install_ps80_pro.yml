@@ -47,7 +47,7 @@
       packages:
       - percona-server-server-pro
       - percona-server-test
-      - percona-server-debuginfo-pro
+      - percona-server-pro-debuginfo
       - percona-server-devel-pro
       #- percona-server-rocksdb-pro
       - percona-server-shared
