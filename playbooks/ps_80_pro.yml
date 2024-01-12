@@ -154,7 +154,7 @@
           msg: Failing the further tasks due to issues in the previous task.
 
   - name: check that Percona Server package versions are correct
-    command: /package-testing/package_check.sh ps80
+    command: /package-testing/package_check.sh ps80 pro
 
   - name: keyring plugins test
     command: /package-testing/scripts/ps_keyring_plugins_test/ps_keyring_plugins_test.sh ps80
