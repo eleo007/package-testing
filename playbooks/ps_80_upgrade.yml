@@ -155,7 +155,7 @@
     copy:
       dest: "/etc/apt/sources.list.d/ps-80-pro.list"
       content: |
-        deb http://repo.percona.com/private/eleonorazinchenko-XXXXXXXXXXXXX/ps-80-pro/apt jammy testing
+        deb http://repo.percona.com/private/eleonorazinchenko-XXXXXXXXXXXX/ps-80-pro/apt jammy testing
     when: ansible_os_family == "Debian"
 
   - name: Creating a pro repo file for DEB
