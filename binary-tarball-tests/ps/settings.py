@@ -55,6 +55,9 @@ ps80_symlinks = (
   ('lib/libperconaserverclient.so','lib/libperconaserverclient.so.21.2.35'),('lib/mysql/libjemalloc.so','lib/mysql/libjemalloc.so.1')
 )
 
+ps80_openssl_symlinks = ('lib/libcrypto.so', 'lib/libk5crypto.so', 'lib/libssl.so', 'lib/libsasl2.so')
+
+
 # 5.7
 ps57_binaries = [
   'bin/mysql', 'bin/mysqld', 'bin/mysqladmin', 'bin/mysqlbinlog',
@@ -182,6 +185,7 @@ elif ps_version_major == '8.0':
     ps_files = ps80_files
     ps_symlinks = ps80_symlinks
     ps_components = ps80_components
+    ps_openssl_symlinks=ps80_openssl_symlinks
 elif ps_version_major == '5.7':
     ps_binaries = ps57_binaries
     ps_executables = ps57_executables

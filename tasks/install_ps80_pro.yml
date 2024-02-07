@@ -9,7 +9,7 @@
     vars:
       packages:
       - percona-server-server-pro
-      # - percona-server-test-pro
+      - percona-server-test-pro
       - percona-server-pro-dbg
       - percona-server-pro-source
       - percona-server-client-pro
@@ -46,11 +46,11 @@
     vars:
       packages:
       - percona-server-server-pro
-      - percona-server-test
+      - percona-server-test-pro
       - percona-server-pro-debuginfo
       - percona-server-devel-pro
-      #- percona-server-rocksdb-pro
-      - percona-server-shared
+      - percona-server-rocksdb-pro
+      - percona-server-shared-pro
       - percona-server-client-pro
     when: ansible_os_family == "RedHat"
     environment:

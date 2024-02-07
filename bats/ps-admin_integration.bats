@@ -14,7 +14,7 @@ load ps-admin_helper
 # check_pam_compat_notexists
   if [ ${MYSQL_VERSION} != "5.6" -a ${MYSQL_VERSION} != "8.0" -a ${MYSQL_VERSION} != "8.1" ]; then
     check_mysqlx_notexists
-    #check_rocksdb_notexists
+    check_rocksdb_notexists
   fi
 }
 
@@ -126,21 +126,21 @@ load ps-admin_helper
   check_tokudb_notexists
 }
 
-#@test "install RocksDB plugin" {
-#  if [ ${MYSQL_VERSION} = "5.6" ]; then
-#    skip "MySQL version is not 5.7+"
-#  fi
-#  install_rocksdb
-#  check_rocksdb_exists
-#}
+@test "install RocksDB plugin" {
+  if [ ${MYSQL_VERSION} = "5.6" ]; then
+    skip "MySQL version is not 5.7+"
+  fi
+  install_rocksdb
+  check_rocksdb_exists
+}
 
-#@test "uninstall RocksDB plugin" {
-#  if [ ${MYSQL_VERSION} = "5.6" ]; then
-#    skip "MySQL version is not 5.7+"
-#  fi
-#  uninstall_rocksdb
-#  check_rocksdb_notexists
-#}
+@test "uninstall RocksDB plugin" {
+  if [ ${MYSQL_VERSION} = "5.6" ]; then
+    skip "MySQL version is not 5.7+"
+  fi
+  uninstall_rocksdb
+  check_rocksdb_notexists
+}
 
 @test "install ALL plugins at once" {
   install_all
@@ -156,7 +156,7 @@ load ps-admin_helper
 # check_pam_compat_exists
   if [ ${MYSQL_VERSION} != "5.6" ]; then
     check_mysqlx_exists
-#    check_rocksdb_exists
+    check_rocksdb_exists
   fi
 }
 
@@ -190,6 +190,6 @@ load ps-admin_helper
 # check_pam_compat_exists
   if [ ${MYSQL_VERSION} != "5.6" ]; then
     check_mysqlx_exists
-    #check_rocksdb_exists
+    check_rocksdb_exists
   fi
 }

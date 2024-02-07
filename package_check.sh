@@ -138,7 +138,7 @@ if [ ${product} = "ps56" -o ${product} = "ps57" -o ${product} = "ps80" -o ${prod
     fi
     if [ "${product}" = "ps80" -o "${product}" = "ps81" ]; then
       ps_name="percona-server"
-      rpm_pkgs_list="${ps_name}-server${pro_suf} ${ps_name}-test ${ps_name}${pro_suf}-debuginfo ${ps_name}-devel${pro_suf} ${ps_name}-shared ${ps_name}-client${pro_suf}"
+      rpm_pkgs_list="${ps_name}-server${pro_suf} ${ps_name}-test${pro_suf} ${ps_name}${pro_suf}-debuginfo ${ps_name}-devel${pro_suf} ${ps_name}-shared${pro_suf} ${ps_name}-client${pro_suf}"
     else
       ps_name="Percona-Server"
       rpm_pkgs_list="${ps_name}-server-${rpm_maj_version} ${ps_name}-test-${rpm_maj_version} ${ps_name}-${rpm_maj_version}-debuginfo ${ps_name}-devel-${rpm_maj_version} ${ps_name}-shared-${rpm_maj_version} ${ps_name}-client-${rpm_maj_version}"
@@ -178,8 +178,8 @@ if [ ${product} = "ps56" -o ${product} = "ps57" -o ${product} = "ps80" -o ${prod
     if [ "$(dpkg -l | grep percona-server | grep -c ${version})" == "${deb_num_pkgs}" ]; then
       echo "all packages are installed"
     else
-      # for package in percona-server-server${pro_suf} percona-server-client${pro_suf} percona-server-test${pro_suf} ${deb_dbg_pkg} percona-server${pro_suf}-source percona-server${pro_suf}-common ${deb_opt_package}; do
-      for package in percona-server-server${pro_suf} percona-server-client${pro_suf} ${deb_dbg_pkg} percona-server${pro_suf}-source percona-server${pro_suf}-common ${deb_opt_package}; do
+      for package in percona-server-server${pro_suf} percona-server-client${pro_suf} percona-server-test${pro_suf} ${deb_dbg_pkg} percona-server${pro_suf}-source percona-server${pro_suf}-common ${deb_opt_package}; do
+      # for package in percona-server-server${pro_suf} percona-server-client${pro_suf} ${deb_dbg_pkg} percona-server${pro_suf}-source percona-server${pro_suf}-common ${deb_opt_package}; do
         if [ "$(dpkg -l | grep ${package} | grep -c ${version})" != 0 ]; then
           echo "$(date +%Y%m%d%H%M%S): ${package} is installed"
         else

@@ -212,7 +212,7 @@ install_all() {
     OPT="--enable-qrt --enable-mysqlx --enable-tokudb --enable-tokubackup --enable-rocksdb"
   else
     OPT=""
-#    OPT="--enable-rocksdb"
+   OPT="--enable-rocksdb"
   fi
 
   # This first restart is needed only because of these bugs:
