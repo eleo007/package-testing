@@ -141,21 +141,13 @@
 # Enable testing repository
 #
   - name: Creating a pro repo file for RHEL
-    copy:
-      dest: "/etc/yum.repos.d/psmysql-pro.repo"
-      content: |
-        [ps-80-pro]
-        name=PSMYSQL_8.0_PRO
-        baseurl=http://repo.percona.com/private/eleonorazinchenko-XXXXXXXXXXXX/ps-80-pro/yum/testing/$releasever/RPMS/x86_64
-        enabled=1
-        gpgkey = https://repo.percona.com/yum/PERCONA-PACKAGING-KEY
+    template: src=../templates/pro_rpm_repo_file_ps80.j2
+              dest=/etc/yum.repos.d/psmysql-pro.repo
     when: ansible_os_family == "RedHat"
 
   - name: Creating a pro repo file for DEB
-    copy:
-      dest: "/etc/apt/sources.list.d/ps-80-pro.list"
-      content: |
-        deb http://repo.percona.com/private/eleonorazinchenko-XXXXXXXXXXXX/ps-80-pro/apt jammy testing
+    template: src=../templates/pro_deb_repo_file_ps80.j2
+              dest=/etc/apt/sources.list.d/ps-80-pro.list
     when: ansible_os_family == "Debian"
 
   - name: Creating a pro repo file for DEB
@@ -227,14 +219,14 @@
       state: latest
     vars:
       packages:
-      - percona-server-server
-      - percona-server-test
-      - percona-server-debuginfo
-      - percona-server-devel
-      - percona-server-rocksdb
-      - percona-server-shared
-      - percona-server-shared-compat
-      - percona-server-client
+      - percona-server-server-pro
+      - percona-server-test-pro
+      - percona-server-pro-debuginfo
+      - percona-server-devel-pro
+      - percona-server-rocksdb-pro
+      - percona-server-shared-pro
+      - percona-server-shared-compat-pro
+      - percona-server-client-pro
     when: ansible_os_family == "RedHat" and ansible_distribution_major_version != "9"
     environment:
       PERCONA_TELEMETRY_DISABLE: "1"
@@ -246,11 +238,11 @@
     vars:
       packages:
       - percona-server-server-pro
-      - percona-server-test
+      - percona-server-test-pro
       - percona-server-debuginfo-pro
       - percona-server-devel-pro
       - percona-server-rocksdb-pro
-      - percona-server-shared
+      - percona-server-shared-pro
       - percona-server-client-pro
     when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "9"
     environment:
@@ -278,10 +270,10 @@
     include_tasks: ../tasks/list_installed_packages.yml
 
   - name: check that Percona Server version is correct
-    command: /package-testing/version_check.sh ps80
+    command: /package-testing/version_check.sh ps80 
 
-#  - name: check that Percona Server package versions are correct
-#    command: /package-testing/package_check.sh ps80
+ - name: check that Percona Server package versions are correct
+   command: /package-testing/package_check.sh ps80 pro
 
 # - name: check that Percona Toolkit version is correct
 #   command: /package-testing/version_check.sh pt
