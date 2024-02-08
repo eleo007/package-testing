@@ -101,6 +101,24 @@
               mode=0640 owner=root group=root
     when: ansible_os_family == "RedHat"
 
+  - name: Add fips_mode option
+    blockinfile:
+      path: /etc/my.cnf
+      insertafter: EOF
+      block: |
+        ssl-fips-mode=ON
+        log-error-verbosity=3
+    when: ansible_os_family == "RedHat"
+
+  - name: Add fips_mode option
+    blockinfile:
+      path: /etc/mysql/mysql.conf.d/mysqld.cnf
+      insertafter: EOF
+      block: |
+        ssl-fips-mode=ON
+        log-error-verbosity=3
+    when: ansible_os_family == "Debian"
+
   - name: disable selinux on centos7 for TokuDB to work
     shell: setenforce 0 || true
     when: ansible_os_family == "RedHat"
