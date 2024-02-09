@@ -206,6 +206,7 @@
 
   - name: upgrade Percona release to new rpm packages
     yum:
+      allowerasing: true
       name: "{{ packages }}"
       state: latest
     vars:
