@@ -130,7 +130,7 @@ if [ ${product} = "ps56" -o ${product} = "ps57" -o ${product} = "ps80" -o ${prod
     elif [ "${product}" = "ps80" -o "${product}" = "ps81" ]; then
       if [ "${centos_maj_version}" == "9" ]; then
         rpm_num_pkgs="7"
-        rpm_opt_package="percona-server${pro_suf}-rocksdb"
+        rpm_opt_package="percona-server-rocksdb${pro_suf}"
       else
         rpm_num_pkgs="8"
         rpm_opt_package="percona-server-rocksdb percona-server-shared-compat"

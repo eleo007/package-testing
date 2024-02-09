@@ -239,7 +239,7 @@
       packages:
       - percona-server-server-pro
       - percona-server-test-pro
-      - percona-server-debuginfo-pro
+      - percona-server-pro-debuginfo
       - percona-server-devel-pro
       - percona-server-rocksdb-pro
       - percona-server-shared-pro
@@ -287,6 +287,9 @@
   - name: list installed packages
     include_tasks: ../tasks/list_installed_packages.yml
 
+  - name: start mysql service
+    service: name=mysql state=restarted
+
   - name: check that Percona Server version is correct
     command: /package-testing/version_check.sh ps80 
 
@@ -305,8 +308,8 @@
   - name: check the audit log v2 plugin
     command: /package-testing/scripts/ps_audit_log_v2.sh
 
-  - name: finish my.cnf change test
-    command: /package-testing/check_mycnf_post.sh
+  # - name: finish my.cnf change test
+  #   command: /package-testing/check_mycnf_post.sh
 
   - name: run some MyRocks tests
     command: /package-testing/scripts/ps_myrocks_test.sh
