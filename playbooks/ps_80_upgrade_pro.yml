@@ -32,16 +32,16 @@
 
 # Install from main repository
 
-  - name: include tasks for enabling main repo
-    include: ../tasks/enable_main_repo.yml
+  # - name: include tasks for enabling main repo
+  #   include: ../tasks/enable_main_repo.yml
 
-  - name: include tasks for enabling PS 8 main repo
-    include: ../tasks/enable_ps8_main_repo.yml
-    when: lookup('env', 'install_8035') == "yes"
+  # - name: include tasks for enabling PS 8 main repo
+  #   include: ../tasks/enable_ps8_main_repo.yml
+  #   when: lookup('env', 'install_8035') == "yes"
 
-  - name: include tasks for enabling PS 8 main repo
-    shell: percona-release enable pdps-8.0.34
-    when: lookup('env', 'install_8035') != "yes"
+  # - name: include tasks for enabling PS 8 main repo
+  #   shell: percona-release enable pdps-8.0.34
+  #   when: lookup('env', 'install_8035') != "yes"
 
   - name: clean and update yum cache
     shell: |
@@ -100,24 +100,6 @@
               dest=/root/.my.cnf
               mode=0640 owner=root group=root
     when: ansible_os_family == "RedHat"
-
-  - name: Add fips_mode option
-    blockinfile:
-      path: /etc/my.cnf
-      insertafter: EOF
-      block: |
-        ssl-fips-mode=ON
-        log-error-verbosity=3
-    when: ansible_os_family == "RedHat"
-
-  - name: Add fips_mode option
-    blockinfile:
-      path: /etc/mysql/mysql.conf.d/mysqld.cnf
-      insertafter: EOF
-      block: |
-        ssl-fips-mode=ON
-        log-error-verbosity=3
-    when: ansible_os_family == "Debian"
 
   - name: disable selinux on centos7 for TokuDB to work
     shell: setenforce 0 || true
@@ -266,8 +248,26 @@
     environment:
       PERCONA_TELEMETRY_DISABLE: "1"
 
-  - name: check telemetry (disabled)
-    command: /package-testing/check_telemetry.sh ps -d
+  - name: Add fips_mode option
+    blockinfile:
+      path: /etc/my.cnf
+      insertafter: EOF
+      block: |
+        ssl-fips-mode=ON
+        log-error-verbosity=3
+    when: ansible_os_family == "RedHat"
+
+  - name: Add fips_mode option
+    blockinfile:
+      path: /etc/mysql/mysql.conf.d/mysqld.cnf
+      insertafter: EOF
+      block: |
+        ssl-fips-mode=ON
+        log-error-verbosity=3
+    when: ansible_os_family == "Debian"
+
+  # - name: check telemetry (disabled)
+  #   command: /package-testing/check_telemetry.sh ps -d
 
   - name: upgrade Percona XtraBackup to new rpm packages
     yum:
@@ -314,9 +314,6 @@
 # - name: run bats tests for PAM
 #   command: /usr/local/bin/bats /package-testing/scripts/ps_pam_test/ps_pam_test.bats
 
-  - name: keyring plugins test
-    command: /package-testing/scripts/ps_keyring_plugins_test/ps_keyring_plugins_test.sh ps80
-
   - name: check that Percona XtraBackup version is correct
     command: /package-testing/version_check.sh pxb80
 
@@ -342,6 +339,9 @@
       packages:
       - percona-server-server-pro
     when: ansible_os_family == "Debian"
+
+  - name: keyring plugins test
+    command: /package-testing/scripts/ps_keyring_plugins_test/ps_keyring_plugins_test.sh ps80
 
   - name: remove Percona Server rpm packages
     yum:
