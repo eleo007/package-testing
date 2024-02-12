@@ -156,8 +156,8 @@
 # - name: check that mysqladmin shutdown works correctly
 #   command: /package-testing/madmin_check.sh
 
-  - name: disable all percona repos
-    command: percona-release disable all
+  # - name: disable all percona repos
+  #   command: percona-release disable all
 
   - name: get my.cnf stats
     stat: path=/etc/my.cnf
