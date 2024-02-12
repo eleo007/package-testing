@@ -24,11 +24,11 @@
       disablerepo: "epel"
     vars:
       packages:
-      - percona-server-server
-      - percona-server-client
-      - percona-server-test
-      - percona-server-debuginfo
-      - percona-server-devel
-      - percona-server-tokudb
-      - percona-server-rocksdb
+      - percona-server-server-pro
+      - percona-server-client-pro
+      - percona-server-test-pro
+      - percona-server-pro-debuginfo
+      - percona-server-devel-pro
+      - percona-server-tokudb-pro
+      - percona-server-rocksdb-pro
     when: ansible_os_family == "RedHat"
