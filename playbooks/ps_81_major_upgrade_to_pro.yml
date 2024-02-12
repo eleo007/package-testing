@@ -199,6 +199,10 @@
   #     - percona-release
   #   when: ansible_os_family == "RedHat"
 
+  - name: remove percona server pro packages
+    command: yum remove -y percona-server-*
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "9"
+
   - name: upgrade Percona Server to new rpm packages on CentOS
     yum:
       name: "{{ packages }}"
