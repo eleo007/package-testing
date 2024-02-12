@@ -114,12 +114,23 @@ if [ "${product}" = "ps56" -o "${product}" = "ps57" -o "${product}" = "ps80" -o 
     exit 1
   fi
 
-  if [ "$(mysql -e "SELECT @@VERSION_COMMENT;" | grep "Percona Server Pro" | grep -c ${release})" = 1 ]; then
-    echo "@@VERSION COMMENT is correct" >> "${log}"
+  if [ "${product}" = "ps56" -o "${product}" = "ps57" ]; then
+    if [ "$(mysql -e "SELECT @@VERSION_COMMENT;" | grep "Percona Server" | grep -c ${release})" = 1 ]; then
+      echo "@@VERSION COMMENT is correct" >> "${log}"
+    else
+      echo "@@VERSION_COMMENT is incorrect. Pro is missing. Current comment is: $(mysql -e "SELECT @@VERSION_COMMENT;") . Revision is ${revision}. Release is ${release}"
+      exit 1
+    fi
   else
-    echo "@@VERSION_COMMENT is incorrect. Pro is missing. Current comment is: $(mysql -e "SELECT @@VERSION_COMMENT;") . Revision is ${revision}. Release is ${release}"
-    exit 1
+    if [ "$(mysql -e "SELECT @@VERSION_COMMENT;" | grep "Percona Server Pro" | grep -c ${release})" = 1 ]; then
+      echo "@@VERSION COMMENT is correct" >> "${log}"
+    else
+      echo "@@VERSION_COMMENT is incorrect. Pro is missing. Current comment is: $(mysql -e "SELECT @@VERSION_COMMENT;") . Revision is ${revision}. Release is ${release}"
+      exit 1
+    fi
   fi
+
+
 
   if [ ${product} = "ps80" -o ${product} = "ps81" ]; then
     if [ -z ${install_mysql_shell} ] || [ ${install_mysql_shell} = "yes" ] ; then

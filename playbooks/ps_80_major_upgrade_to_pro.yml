@@ -32,17 +32,17 @@
               dest=/package-testing/scripts/ps_keyring_plugins_test/keyring_vault_test.cnf
               mode=0664 owner=root group=root
 
-  - name: include tasks for enabling test repo
-    include: ../tasks/enable_testing_repo.yml
-    when: lookup('env', 'install_repo') == "testing" or lookup('env', 'install_repo') == ""
+  # - name: include tasks for enabling test repo
+  #   include: ../tasks/enable_testing_repo.yml
+  #   when: lookup('env', 'install_repo') == "testing" or lookup('env', 'install_repo') == ""
 
-  - name: include tasks for enabling main repo
-    include: ../tasks/enable_main_repo.yml
-    when: lookup('env', 'install_repo') == "main"
+  # - name: include tasks for enabling main repo
+  #   include: ../tasks/enable_main_repo.yml
+  #   when: lookup('env', 'install_repo') == "main"
 
-  - name: include tasks for enabling experimental repo
-    include: ../tasks/enable_experimental_repo.yml
-    when: lookup('env', 'install_repo') == "experimental"
+  # - name: include tasks for enabling experimental repo
+  #   include: ../tasks/enable_experimental_repo.yml
+  #   when: lookup('env', 'install_repo') == "experimental"
 
   - name: download and extract world database
     command: "{{ item }}"
@@ -240,6 +240,24 @@
   - name: list installed packages
     include_tasks: ../tasks/list_installed_packages.yml
 
+  - name: Add fips_mode option
+    blockinfile:
+      path: /etc/my.cnf
+      insertafter: EOF
+      block: |
+        ssl-fips-mode=ON
+        log-error-verbosity=3
+    when: ansible_os_family == "RedHat"
+
+  - name: Add fips_mode option
+    blockinfile:
+      path: /etc/mysql/mysql.conf.d/mysqld.cnf
+      insertafter: EOF
+      block: |
+        ssl-fips-mode=ON
+        log-error-verbosity=3
+    when: ansible_os_family == "Debian"
+
   - name: start mysql service
     service: name=mysql state=started
 
@@ -247,7 +265,7 @@
     command: /package-testing/version_check.sh ps80
 
   - name: check that Percona Server package versions are correct
-    command: /package-testing/package_check.sh ps80
+    command: /package-testing/package_check.sh ps80 pro
  
 #  - name: run bats tests for PAM
 #    command: /usr/local/bin/bats /package-testing/scripts/ps_pam_test/ps_pam_test.bats
