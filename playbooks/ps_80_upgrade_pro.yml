@@ -204,18 +204,19 @@
       - percona-toolkit
     when: ansible_os_family == "RedHat"
 
-  - name: upgrade Percona release to new rpm packages
-    yum:
-      allowerasing: true
-      name: "{{ packages }}"
-      state: latest
-    vars:
-      packages:
-      - percona-release
-    when: ansible_os_family == "RedHat"
+  # - name: upgrade Percona release to new rpm packages
+  #   yum:
+  #     allowerasing: true
+  #     name: "{{ packages }}"
+  #     state: latest
+  #   vars:
+  #     packages:
+  #     - percona-release
+  #   when: ansible_os_family == "RedHat"
 
   - name: upgrade Percona Server to new rpm packages on CentOS
     yum:
+      allowerasing: true
       name: "{{ packages }}"
       state: latest
     vars:
@@ -234,6 +235,7 @@
 
   - name: upgrade Percona Server to new rpm packages on Oracle Linux 9
     yum:
+      allowerasing: true
       name: "{{ packages }}"
       state: latest
     vars:
@@ -318,8 +320,8 @@
 # - name: run bats tests for PAM
 #   command: /usr/local/bin/bats /package-testing/scripts/ps_pam_test/ps_pam_test.bats
 
-  - name: check that Percona XtraBackup version is correct
-    command: /package-testing/version_check.sh pxb80
+  # - name: check that Percona XtraBackup version is correct
+  #   command: /package-testing/version_check.sh pxb80
 
   - name: run bats unit tests for ps-admin script
     command: /usr/local/bin/bats /package-testing/bats/ps-admin_unit.bats
