@@ -336,6 +336,9 @@
   - name: start mysql service
     service: name=mysql state=started
 
+  - name: keyring plugins test
+    command: /package-testing/scripts/ps_keyring_plugins_test/ps_keyring_plugins_test.sh ps80
+    
   - name: remove Percona Server deb packages
     apt:
       name: "{{ packages }}"
@@ -346,8 +349,7 @@
       - percona-server-server-pro
     when: ansible_os_family == "Debian"
 
-  - name: keyring plugins test
-    command: /package-testing/scripts/ps_keyring_plugins_test/ps_keyring_plugins_test.sh ps80
+
 
   - name: remove Percona Server rpm packages
     yum:

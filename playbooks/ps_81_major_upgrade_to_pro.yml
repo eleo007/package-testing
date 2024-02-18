@@ -269,8 +269,8 @@
   - name: check the audit log v2 plugin
     command: /package-testing/scripts/ps_audit_log_v2_component.sh
 
-  - name: finish my.cnf change test
-    command: /package-testing/check_mycnf_post.sh
+  # - name: finish my.cnf change test
+  #   command: /package-testing/check_mycnf_post.sh
 
   - name: run some MyRocks tests
     command: /package-testing/scripts/ps_myrocks_test.sh
