@@ -8,13 +8,13 @@
       state: latest
     vars:
       packages:
-      - percona-server-server
-      - percona-server-test
-      - percona-server-dbg
-      - percona-server-source
-      - percona-server-client
-      - percona-server-rocksdb
-      - percona-mysql-router
+      - percona-server-server{{ pro_suf }}
+      - percona-server-test{{ pro_suf }}
+      - percona-server{{ pro_suf }}-dbg
+      - percona-server-source{{ pro_suf }}
+      - percona-server-client{{ pro_suf }}
+      - percona-server-rocksdb{{ pro_suf }}
+      - percona-mysql-router{{ pro_suf }}
     when: ansible_os_family == "Debian"
     environment:
       PERCONA_TELEMETRY_URL: "https://check-dev.percona.com/v1/telemetry/GenericReport"
@@ -45,13 +45,13 @@
       update_cache: yes
     vars:
       packages:
-      - percona-server-server
-      - percona-mysql-router
-      - percona-server-client
-      - percona-server-test
-      - percona-server-debuginfo
-      - percona-server-devel
-      - percona-server-rocksdb
+      - percona-server-server{{ pro_suf }}
+      - percona-mysql-router{{ pro_suf }}
+      - percona-server-client{{ pro_suf }}
+      - percona-server-test{{ pro_suf }}
+      - percona-server{{ pro_suf }}-debuginfo
+      - percona-server-devel{{ pro_suf }}
+      - percona-server-rocksdb{{ pro_suf }}
     when: ansible_os_family == "RedHat"
     environment:
       PERCONA_TELEMETRY_URL: "https://check-dev.percona.com/v1/telemetry/GenericReport"

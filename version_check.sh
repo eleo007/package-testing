@@ -1,8 +1,15 @@
 #!/bin/bash
 
-if [ "$#" -ne 1 ]; then
+if [ "$#" = 2 ]; then
+  if [ $2 = "pro" ]; then
+    pro_suf="-pro"
+  else
+    echo "Wrong second argument! It is not pro!"
+    exit 1
+  fi
+elif [ "$#" -ne 1 ]; then
   echo "This script requires product parameter: ps56, ps57, ps80, ps81 !"
-  echo "Usage: ./version_check.sh <prod>"
+  echo "Usage: ./version_check.sh <prod> [pro]"
   exit 1
 fi
 
@@ -19,9 +26,15 @@ elif [ "$1" = "ps57" ]; then
   release=${PS57_VER#*-}
   revision=${PS57_REV}
 elif [ "$1" = "ps80" ]; then
-  version=${PS80_VER}
-  release=${PS80_VER#*-}
-  revision=${PS80_REV}
+  if [ "$2" = "pro" ]; then
+    version=${PS80_PRO_VER}
+    release=${PS80_PRO_VER#*-}
+    revision=${PS80_PRO_REV}
+  else
+    version=${PS80_VER}
+    release=${PS80_VER#*-}
+    revision=${PS80_REV}
+  fi
 elif [[ $1 =~ ^ps8[1-9]{1}$ ]]; then
   version=${PS_INN_LTS_VER}
   release=${PS_INN_LTS_VER#*-}

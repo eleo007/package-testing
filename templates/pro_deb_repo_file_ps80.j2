@@ -1,0 +1,1 @@
+deb http://repo.percona.com/private/jenkins-{{ lookup('env', 'pro_token') }}/ps-80-pro/apt {{ ansible_distribution_release }} {{ lookup('env', 'install_repo' | default("testing") }}
