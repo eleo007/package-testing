@@ -2,7 +2,7 @@
 
 if [ "$#" = 2 ]; then
   if [ $2 = "pro" ]; then
-    pro_suf="-pro"
+    pro="yes"
   else
     echo "Wrong second argument! It is not pro!"
     exit 1
@@ -102,10 +102,6 @@ else
 fi
 
 product=$1
-
-if [ "$2" = "pro" ]; then
-  pro='yes'
-fi
 
 log="/tmp/${product}_version_check.log"
 echo -n > "${log}"

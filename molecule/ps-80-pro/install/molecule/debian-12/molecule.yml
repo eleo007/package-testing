@@ -20,7 +20,6 @@ provisioner:
   playbooks:
     create: ../../../../playbooks/create.yml
     destroy: ../../../../playbooks/destroy.yml
-    prepare: ../../../../playbooks/prepare.yml
     cleanup: ../../playbooks/cleanup.yml
     converge: ../../playbooks/playbook.yml
 verifier:
@@ -41,7 +40,6 @@ scenario:
   test_sequence:
     - destroy
     - create
-    - prepare
     - converge
     - verify
     - cleanup

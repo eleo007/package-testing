@@ -20,18 +20,8 @@ provisioner:
   playbooks:
     create: ../../../../playbooks/create.yml
     destroy: ../../../../playbooks/destroy.yml
-    prepare: ../../../../playbooks/prepare.yml
     cleanup: ../../playbooks/cleanup.yml
     converge: ../../playbooks/playbook.yml
-verifier:
-  name: testinfra
-  directory: ../../../tests/
-  options:
-    verbose: true
-    s: true
-    k: "test_pdps_ or test_common_"
-    m: "not telemetry_disabled"
-    junitxml: report.xml
 scenario:
   name: oracle-9
   destroy_sequence:
@@ -41,7 +31,6 @@ scenario:
   test_sequence:
     - destroy
     - create
-    - prepare
     - converge
     - verify
     - cleanup

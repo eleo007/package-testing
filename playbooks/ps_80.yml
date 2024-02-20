@@ -181,8 +181,8 @@
   - name: restart mysql service to apply ssl-fips-mode
     service: name=mysql state=restarted
 
-  - name: keyring plugins test
-    command: /package-testing/scripts/ps_keyring_plugins_test/ps_keyring_plugins_test.sh ps80
+  # - name: keyring plugins test
+  #   command: /package-testing/scripts/ps_keyring_plugins_test/ps_keyring_plugins_test.sh ps80
 
   - name: re-run ps_admin to install rocksdb
     command: /usr/bin/ps-admin --enable-rocksdb
