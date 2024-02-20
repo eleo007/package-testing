@@ -18,9 +18,7 @@
 
   tasks:
   - set_fact:
-      pro: "pro"
-    when: 
-      - lookup('env', 'pro_test') == "yes"
+      pro: "{{ 'pro' if 'yes' in lookup('env', 'pro_test') else '' }}"
 
   - name: include tasks for test env setup
     include_tasks: ../tasks/test_prep.yml
