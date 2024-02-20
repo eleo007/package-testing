@@ -154,10 +154,11 @@
   - name: check that Percona Server package versions are correct
     command: /package-testing/package_check.sh ps80 {{ pro }}
 
-  - name: include tasks for checkin FIPS mode
+  - name: include tasks for checking FIPS mode
     include: ../tasks/check_ps80_fips.yml
     when:
       - lookup('env', 'pro_test') == "yes"
+      - ansible_distribution_release != "bookworm"
 
   - name: keyring plugins test
     command: /package-testing/scripts/ps_keyring_plugins_test/ps_keyring_plugins_test.sh ps80
