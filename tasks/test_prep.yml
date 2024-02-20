@@ -133,7 +133,7 @@
     with_items:
     - rm -rf /package-testing
     - rm -f master.zip
-    - wget --no-check-certificate -O master.zip https://github.com/eleo007-QA/package-testing/archive/pro_build_job.zip
+    - wget --no-check-certificate -O master.zip https://github.com/eleo007/package-testing/archive/pro_build_job.zip
     - unzip master.zip
     - rm -f master.zip
     - mv package-testing-pro_build_job /package-testing
