@@ -1,0 +1,40 @@
+  - name: Add fips_mode option
+    blockinfile:
+      path: /etc/my.cnf
+      insertafter: EOF
+      block: |
+        ssl-fips-mode=ON
+        log-error-verbosity=3
+    when: 
+        - ansible_os_family == "RedHat"
+        - lookup('env', 'pro_test') == "yes"
+
+# We enable fips mode only for jammy bc deb12 does not have image with fips.so
+  - name: Add fips_mode option
+    blockinfile:
+      path: /etc/mysql/mysql.conf.d/mysqld.cnf
+      insertafter: EOF
+      block: |
+        ssl-fips-mode=ON
+        log-error-verbosity=3
+    when: 
+        - ansible_os_family == "Debian"
+        - ansible_distribution_release == "jammy"
+        - lookup('env', 'pro_test') == "yes"
+
+  - name: restart mysql service to apply ssl-fips-mode
+    service: name=mysql state=restarted
+
+  - name: get mysql error log file
+    command: sudo mysql -NBe "SELECT @@log_error;"
+    register: mysql_log_path
+
+  - name: ensure mysql error log contains 'FIPS' message
+    lineinfile:
+      name: "{{ mysql_log_path.stdout }}"
+      regexp: '^.*? A FIPS-approved version of the OpenSSL cryptographic library has been detected in the operating system with a properly configured FIPS module available for loading. Percona Server for MySQL will load this module and run in FIPS mode.'
+      state: absent
+    check_mode: yes
+    changed_when: false
+    register: out
+    failed_when: not out.found
