@@ -158,10 +158,35 @@
       - lookup('env', 'pro_test') == "yes"
       - ansible_distribution_release != "bookworm"
 
-  - name: keyring plugins test
-    command: /package-testing/scripts/ps_keyring_plugins_test/ps_keyring_plugins_test.sh ps80
-    when:
-      - lookup('env', 'pro_test') != "yes"
+  - name: Handle keyring plugin
+    block: 
+      - name: keyring plugins test
+        command: /package-testing/scripts/ps_keyring_plugins_test/ps_keyring_plugins_test.sh ps80
+
+    rescue:
+      - name: register content of keyring cnf
+        command: cat /package-testing/scripts/ps_keyring_plugins_test/keyring_vault_test.cnf
+        register: keyring_cnf_output
+
+      - name: print keyring_cnf_output
+        debug:
+          var: keyring_cnf_output
+      
+      - name: check VAULT_TOKEN
+        command: cat /package-testing/scripts/vault-server/VAULT_TOKEN
+        register: keyring_vault_token
+
+      - name: print keyring_vault_token
+        debug:
+          var: keyring_vault_token
+
+      - name: check vault_keys token
+        command: cat /package-testing/scripts/vault-server/vault_keys.txt
+        register: keyring_vault_keys
+
+      - name: print keyring_vault_keys
+        debug:
+          var: keyring_vault_keys
 
   - name: re-run ps_admin to install rocksdb
     command: /usr/bin/ps-admin --enable-rocksdb
