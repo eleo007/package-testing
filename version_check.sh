@@ -102,6 +102,11 @@ else
 fi
 
 product=$1
+
+if [ "$2" = "pro" ]; then
+  pro='yes'
+fi
+
 log="/tmp/${product}_version_check.log"
 echo -n > "${log}"
 
@@ -113,8 +118,8 @@ if [[ ${product} = "ps56" || ${product} = "ps57" ]] || [[ ${product} =~ ^ps8[0-9
       echo "${i} is incorrect it shows $(mysql -e "SELECT ${i};")"
       exit 1
     fi
- done
- if [ "${product}" = "ps56" -o "${product}" = "ps57" ]; then
+  done
+  if [ "${product}" = "ps56" -o "${product}" = "ps57" ]; then
     if [ "$(mysql -e "SELECT @@TOKUDB_VERSION; "| grep -c "${version}")" = 1 ]; then
       echo "@@TOKUDB_VERSION is correct" >> "${log}"
     else
@@ -125,8 +130,23 @@ if [[ ${product} = "ps56" || ${product} = "ps57" ]] || [[ ${product} =~ ^ps8[0-9
   if [ "$(mysql -e "SELECT @@VERSION_COMMENT;" | grep ${revision} | grep -c ${release})" = 1 ]; then
     echo "@@VERSION COMMENT is correct" >> "${log}"
   else
-    echo "@@VERSION_COMMENT is incorrect. It is: $(mysql -e "SELECT @@VERSION_COMMENT;") . Revision is ${revision}. Release is ${release}"
+    echo "@@VERSION_COMMENT is incorrect. Server comment is: $(mysql -e "SELECT @@VERSION_COMMENT;") . VERSION's revision is ${revision}. VERSION's release is ${release}"
     exit 1
+  fi
+
+  if [ "${pro}" = 'yes' ]; then
+    if [ "$(mysql -e "SELECT @@VERSION_COMMENT;" | grep -c 'Percona Server Pro (GPL)')" = 1 ]; then
+      echo "@@VERSION COMMENT is correct with Pro" >> "${log}"
+    else
+      echo "@@VERSION_COMMENT is incorrect. Pro is missing. Server comment is: $(mysql -e "SELECT @@VERSION_COMMENT;") ."
+      exit 1
+    fi
+    if [ "$(mysql --version | grep -c 'Percona Server Pro (GPL)')"  = 1 ]; then
+      echo "mysql --version is correct with Pro" >> "${log}"
+    else
+      echo "mysql --version is incorrect. Pro is missing. mysql --version: $(mysql --version) ."
+      exit 1
+    fi
   fi
 
   if [[ ${product} =~ ^ps8[0-9]{1}$ ]]; then
