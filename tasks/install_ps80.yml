@@ -11,7 +11,7 @@
       - percona-server-server{{ pro_suf }}
       - percona-server-test{{ pro_suf }}
       - percona-server{{ pro_suf }}-dbg
-      - percona-server-source{{ pro_suf }}
+      - percona-server{{ pro_suf }}-source
       - percona-server-client{{ pro_suf }}
       - percona-server-rocksdb{{ pro_suf }}
       - percona-mysql-router{{ pro_suf }}
