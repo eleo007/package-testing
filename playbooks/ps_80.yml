@@ -67,40 +67,9 @@
       - lookup('env', 'install_repo') == "experimental"
       - lookup('env', 'pro_test') == "no"
 
-  - name: Add an Apt signing key for deb
-    apt_key:
-      url: https://github.com/percona/percona-repositories/raw/main/deb/percona-keyring.gpg
-      state: present
+  - name: include tasks for enabling PS 80 pro repo
+    include: ..//tasks/enable_ps80_pro_tools_repo,yml
     when:
-      - ansible_os_family == "Debian"
-      - lookup('env', 'pro_test') == "yes"
-
-  - name: add pro repository on debian
-    template: src=../templates/pro_deb_repo_file_ps80.j2
-              dest=/etc/apt/sources.list.d/psmysql-pro.list
-    vars:
-      client_id: "{{ lookup('env', 'USERNAME') }}"
-      client_token: "{{ lookup('env', 'PASSWORD') }}"
-      repo: "{{ lookup('env', 'install_repo') | default("testing") }}"
-    when:
-      - ansible_os_family == "Debian"
-      - lookup('env', 'pro_test') == "yes"
-
-  - name: update deb cache
-    command: apt update
-    when:
-      - ansible_os_family == "Debian"
-      - lookup('env', 'pro_test') == "yes"
-
-  - name: add pro repository on rmp
-    template: src=../templates/pro_rpm_repo_file_ps80.j2
-             dest=/etc/yum.repos.d/psmysql-pro.repo
-    vars:
-      client_id: "{{ lookup('env', 'USERNAME') }}"
-      client_token: "{{ lookup('env', 'PASSWORD') }}"
-      repo: "{{ lookup('env', 'install_repo') | default("testing") }}"
-    when:
-      - ansible_os_family == "RedHat"
       - lookup('env', 'pro_test') == "yes"
 
   - name: download and extract world database
@@ -184,6 +153,33 @@
 
   - name: check that Percona Server package versions are correct
     command: /package-testing/package_check.sh ps80 {{ pro }}
+
+  - name: Add fips_mode option
+    blockinfile:
+      path: /etc/my.cnf
+      insertafter: EOF
+      block: |
+        ssl-fips-mode=ON
+        log-error-verbosity=3
+    when: 
+        - ansible_os_family == "RedHat"
+        - lookup('env', 'pro_test') == "yes"
+
+# We enable fips mode only for jammy bc deb12 does not have image with fips.so
+  - name: Add fips_mode option
+    blockinfile:
+      path: /etc/mysql/mysql.conf.d/mysqld.cnf
+      insertafter: EOF
+      block: |
+        ssl-fips-mode=ON
+        log-error-verbosity=3
+    when: 
+        - ansible_os_family == "Debian"
+        - ansible_distribution_release == "jammy"
+        - lookup('env', 'pro_test') == "yes"
+
+  - name: restart mysql service to apply ssl-fips-mode
+    service: name=mysql state=restarted
 
   - name: keyring plugins test
     command: /package-testing/scripts/ps_keyring_plugins_test/ps_keyring_plugins_test.sh ps80
