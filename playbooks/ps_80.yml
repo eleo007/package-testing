@@ -82,8 +82,14 @@
       - ansible_os_family == "Debian"
       - lookup('env', 'pro_test') == "yes"
 
+  - name: add pro repository on debian
+    command: apt update
+    when:
+      - ansible_os_family == "Debian"
+      - lookup('env', 'pro_test') == "yes"
+
   - name: add pro repository on rmp
-   template: src=../templates/pro_rpm_repo_file_ps80.j2
+    template: src=../templates/pro_rpm_repo_file_ps80.j2
              dest=/etc/yum.repos.d/psmysql-pro.repo
     when:
       - ansible_os_family == "RedHat"
