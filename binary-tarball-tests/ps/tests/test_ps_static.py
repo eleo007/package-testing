@@ -41,11 +41,11 @@ def test_binaries_linked_libraries(host):
 
 ps80_openssl_symlinks = ('libcrypto.so', 'libk5crypto.so', 'libssl.so', 'libsasl2.so')
 
-path = pathlib.Path('/home/vagrant/Percona-Server-Pro-8.0.35-27-Linux.x86_64.glibc2.35/bin/mysqld')
-deps = lddwrap.list_dependencies(path=path)
-for dep in deps:
-#  print(dep.soname)
-  if dep.soname is not None:
-    for openssl_so in ps80_openssl_symlinks:
-      if openssl_so in dep.soname:
-        print(dep.path)
+# path = pathlib.Path('/home/vagrant/Percona-Server-Pro-8.0.35-27-Linux.x86_64.glibc2.35/bin/mysqld')
+# deps = lddwrap.list_dependencies(path=path)
+# for dep in deps:
+# #  print(dep.soname)
+#   if dep.soname is not None:
+#     for openssl_so in ps80_openssl_symlinks:
+#       if openssl_so in dep.soname:
+#         print(dep.path)
