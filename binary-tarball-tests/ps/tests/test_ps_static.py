@@ -31,15 +31,20 @@ def test_symlinks(host):
         assert host.file(base_dir+'/'+symlink[0]).linked_to == base_dir+'/'+symlink[1]
         assert host.file(base_dir+'/'+symlink[1]).exists
 
-def test_openssl_symlinks_not_exist(host):
-    for openssl_symlink in ps_openssl_symlinks:
-        assert not host.file(base_dir+'/'+openssl_symlink).exists
-
 def test_binaries_linked_libraries(host):
     for binary in ps_binaries:
         assert '=> not found' not in host.check_output('ldd ' + base_dir + '/' + binary)
 
-ps80_openssl_symlinks = ('libcrypto.so', 'libk5crypto.so', 'libssl.so', 'libsasl2.so')
+def test_fips_non_shared_openssl_not_exist(host):
+    for openssl_file in ps_openssl_files:
+        assert not host.file(base_dir+'/lib/'+openssl_file).exists
+
+# def test_fips_mysqld_use_openssl_shared(host):
+#     mysqld_linked_libs = host.check_output('ldd ' + base_dir + '/bin/mysqld')
+#     for openssl_file in ps_openssl_files:
+
+
+# ps80_openssl_symlinks = ('libcrypto.so', 'libk5crypto.so', 'libssl.so', 'libsasl2.so')
 
 # path = pathlib.Path('/home/vagrant/Percona-Server-Pro-8.0.35-27-Linux.x86_64.glibc2.35/bin/mysqld')
 # deps = lddwrap.list_dependencies(path=path)
