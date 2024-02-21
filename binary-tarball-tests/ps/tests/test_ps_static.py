@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import pytest
 import testinfra
-import pathlib
-import lddwrap
+# import pathlib
+# import lddwrap
 
 from settings import *
 
