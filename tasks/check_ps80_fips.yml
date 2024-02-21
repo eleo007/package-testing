@@ -7,7 +7,6 @@
         log-error-verbosity=3
     when: 
         - ansible_os_family == "RedHat"
-        - lookup('env', 'pro_test') == "yes"
 
 # We enable fips mode only for jammy bc deb12 does not have image with fips.so
   - name: Add fips_mode option
@@ -19,8 +18,6 @@
         log-error-verbosity=3
     when: 
         - ansible_os_family == "Debian"
-        - ansible_distribution_release == "jammy"
-        - lookup('env', 'pro_test') == "yes"
 
   - name: restart mysql service to apply ssl-fips-mode
     service: name=mysql state=restarted
@@ -38,3 +35,27 @@
     changed_when: false
     register: out
     failed_when: not out.found
+
+  # - name: ensure mysql error log does not contain SSL error
+  #   lineinfile:
+  #     name: "{{ mysql_log_path.stdout }}"
+  #     regexp: '^.*? SSL error: Unable to get certificate from 'server-cert.pem'.'
+  #     state: absent
+  #   check_mode: yes
+  #   changed_when: false
+  #   register: out
+  #   failed_when: not out.found
+
+  - name: Check MD5 output with ssl used for connetion
+    command: mysql -uroot --ssl-mode=require -NBe "select MD5('foo')";
+    register: md5_result
+    failed_when: "md5_result.stdout != '00000000000000000000000000000000'"
+    when: 
+        - ansible_os_family == "Debian"
+
+  - name: Check MD5 output with ssl used for connetion
+    command: mysql -uroot -p'U?fY)9s7|3gxUm' --ssl-mode=require -NBe "select MD5('foo')";
+    register: md5_result
+    failed_when: "md5_result.stdout != '00000000000000000000000000000000'"
+    when: 
+        - ansible_os_family == "RedHat"
