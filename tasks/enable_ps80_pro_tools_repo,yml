@@ -37,7 +37,7 @@
   - name: enable the tools {{ repo }}
     command: percona-release enable tools {{ repo }}
     vars:
-      repo: "{{ lookup('env', 'install_repo') | default('testing') }}"
+      repo: "{{ 'release' if 'main' in lookup('env', 'install_repo') else lookup('env', 'install_repo') | default('testing') }}"
 
   - name: clean and update yum cache
     shell: |
