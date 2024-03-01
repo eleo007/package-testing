@@ -9,14 +9,15 @@ from packaging import version
 from settings import *
 
 @pytest.fixture(scope='module')
-def mysql_server(request, enable_fips=False):
+def mysql_server(request):
     # dist = host.system_info.distribution
     # major_version = version.parse(host.system_info.release).major
-    if enable_fips:
-        mysql_server = mysql.MySQL(base_dir, '--ssl-fips-mode=ON, --log-error-verbosity=3')
-    else:
-        mysql_server = mysql.MySQL(base_dir)
-    mysql_server.start()
+    # if enable_fips:
+    #     mysql_server = mysql.MySQL(base_dir, '--ssl-fips-mode=ON, --log-error-verbosity=3')
+    # else:
+    #     mysql_server = mysql.MySQL(base_dir)
+    # mysql_server.start()
+    mysql_server = mysql.MySQL(base_dir, '--ssl-fips-mode=ON, --log-error-verbosity=3')
     time.sleep(10)
     yield mysql_server
     mysql_server.purge()
@@ -26,7 +27,7 @@ def test_fips_md5(host, mysql_server):
     major_version = version.parse(host.system_info.release).major
     if pro and fips_supported_os[dist] == major_version:
         query="SELECT MD5('foo');"
-        output = mysql_server.run_query(query, True)
+        output = mysql_server.run_query(query)
         assert '00000000000000000000000000000000' in output
     else:
         pytest.skip("This test is only for PRO tarballs. Skipping")
