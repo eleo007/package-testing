@@ -30,6 +30,7 @@ def mysql_server(request):
 
 def test_fips_md5(host, mysql_server):
     dist = host.system_info.distribution
+    print(dist)
     major_version = version.parse(host.system_info.release).major
     if pro and fips_supported_os[dist] == major_version:
         query="SELECT MD5('foo');"
