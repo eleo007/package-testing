@@ -5,7 +5,7 @@ import os
 import shlex
 
 class MySQL:
-    def __init__(self, base_dir,extra_param=''):
+    def __init__(self, base_dir,extra_param=None):
         self.basedir = base_dir
         self.port = '3306'
         self.datadir = base_dir+'/data'
