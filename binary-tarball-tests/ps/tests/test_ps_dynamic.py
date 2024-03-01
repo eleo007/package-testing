@@ -29,10 +29,8 @@ def mysql_server(request):
     mysql_server.purge()
 
 def test_fips_md5(host, mysql_server):
-    dist = host.system_info.distribution
-    major_version = version.parse(host.system_info.release).major
-    print(dist, major_version)
-    if pro and fips_supported_os[dist] == major_version:
+    fips_supported=check_fips_compliance
+    if fips_supported:
         query="SELECT MD5('foo');"
         output = mysql_server.run_query(query)
         assert '00000000000000000000000000000000' in output
