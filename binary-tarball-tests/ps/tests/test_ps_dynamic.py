@@ -18,11 +18,11 @@ def check_fips_compliance(host):
 
 @pytest.fixture(scope='module')
 def mysql_server(request):
+    features=[]
     fips_supported=check_fips_compliance
     if fips_supported:
-        mysql_server = mysql.MySQL(base_dir, ['--ssl-fips-mode=ON', '--log-error-verbosity=3'])
-    else:
-        mysql_server = mysql.MySQL(base_dir)
+        features.append('fips')
+    mysql_server = mysql.MySQL(base_dir, features)
     mysql_server.start()
     time.sleep(10)
     yield mysql_server

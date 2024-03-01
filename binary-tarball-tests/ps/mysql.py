@@ -5,7 +5,8 @@ import os
 import shlex
 
 class MySQL:
-    def __init__(self, base_dir, extra_param=[]):
+    # def __init__(self, base_dir, extra_param=[]):
+    def __init__(self, base_dir, features=[]):
         self.basedir = base_dir
         self.port = '3306'
         self.datadir = base_dir+'/data'
@@ -16,7 +17,12 @@ class MySQL:
         self.mysqladmin = base_dir+'/bin/mysqladmin'
         self.pidfile = base_dir+'/mysql.pid'
         self.mysql_install_db = base_dir+'/scripts/mysql_install_db'
-        self.extra_param=extra_param
+        self.features=features
+
+        if 'fips' in self.features:
+            self.extra_param=['--ssl-fips-mode=ON', '--log-error-verbosity=3']
+        else:
+            self.extra_param=[]
 
         subprocess.call(['rm','-Rf',self.datadir])
         subprocess.call(['rm','-f',self.logfile])
