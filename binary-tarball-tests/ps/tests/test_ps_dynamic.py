@@ -8,15 +8,21 @@ from packaging import version
 
 from settings import *
 
+def check_fips_compliance(host):
+    dist = host.system_info.distribution
+    major_version = version.parse(host.system_info.release).major
+    if pro and fips_supported_os[dist] == major_version:
+        return True
+    else:
+        return False
+
 @pytest.fixture(scope='module')
 def mysql_server(request):
-    # dist = host.system_info.distribution
-    # major_version = version.parse(host.system_info.release).major
-    # if enable_fips:
-    #     mysql_server = mysql.MySQL(base_dir, '--ssl-fips-mode=ON, --log-error-verbosity=3')
-    # else:
-    #     mysql_server = mysql.MySQL(base_dir)
-    mysql_server = mysql.MySQL(base_dir)
+    fips_supported=check_fips_compliance
+    if fips_supported:
+        mysql_server = mysql.MySQL(base_dir, ['--ssl-fips-mode=ON', '--log-error-verbosity=3'])
+    else:
+        mysql_server = mysql.MySQL(base_dir)
     mysql_server.start()
     time.sleep(10)
     yield mysql_server
