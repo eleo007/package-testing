@@ -16,8 +16,8 @@ def mysql_server(request):
     #     mysql_server = mysql.MySQL(base_dir, '--ssl-fips-mode=ON, --log-error-verbosity=3')
     # else:
     #     mysql_server = mysql.MySQL(base_dir)
-    # mysql_server.start()
     mysql_server = mysql.MySQL(base_dir)
+    mysql_server.start()
     time.sleep(10)
     yield mysql_server
     mysql_server.purge()
