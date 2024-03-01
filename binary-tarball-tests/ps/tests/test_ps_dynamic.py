@@ -41,7 +41,7 @@ def test_fips_value(host,mysql_server):
     fips_supported=check_fips_compliance
     if fips_supported:
         query="select @@ssl_fips_mode;"
-        output = mysql_server.run_query(query, True)
+        output = mysql_server.run_query(query)
         assert 'ON' in output
     else:
         pytest.skip("This test is only for PRO tarballs. Skipping")
@@ -52,7 +52,7 @@ def test_fips_in_log(host, mysql_server):
     if fips_supported:
         with host.sudo():
             query="SELECT @@log_error;"
-            error_log = mysql_server.run_query(query, True)
+            error_log = mysql_server.run_query(query)
             logs=host.check_output(f'head -n30 {error_log}')
             assert "A FIPS-approved version of the OpenSSL cryptographic library has been detected in the operating system with a properly configured FIPS module available for loading. Percona Server for MySQL will load this module and run in FIPS mode." in logs
     else:
