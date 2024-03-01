@@ -11,7 +11,7 @@ from settings import *
 def check_fips_compliance(host):
     dist = host.system_info.distribution
     major_version = version.parse(host.system_info.release).major
-    if pro and fips_supported_os[dist] == major_version:
+    if pro and major_version in fips_supported_os[dist]:
         return True
     else:
         return False
