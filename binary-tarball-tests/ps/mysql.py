@@ -5,7 +5,7 @@ import os
 import shlex
 
 class MySQL:
-    def __init__(self, base_dir,extra_param=None):
+    def __init__(self, base_dir, extra_param=[]):
         self.basedir = base_dir
         self.port = '3306'
         self.datadir = base_dir+'/data'
@@ -38,7 +38,8 @@ class MySQL:
             subprocess.check_call([self.mysqld, '--no-defaults', '--initialize-insecure','--basedir='+self.basedir,'--datadir='+self.datadir])
 
     def start(self):
-        subprocess.Popen([self.mysqld,'--no-defaults','--basedir='+self.basedir,'--datadir='+self.datadir,'--tmpdir='+self.datadir,'--socket='+self.socket,'--port='+self.port,'--log-error='+self.logfile,'--pid-file='+self.pidfile,'--server-id=1','--master-info-repository=table','--relay-log-info-repository=table', self.extra_param], env=os.environ)
+        self.basic_param=['--no-defaults','--basedir='+self.basedir,'--datadir='+self.datadir,'--tmpdir='+self.datadir,'--socket='+self.socket,'--port='+self.port,'--log-error='+self.logfile,'--pid-file='+self.pidfile,'--server-id=1','--master-info-repository=table','--relay-log-info-repository=table']
+        subprocess.Popen([self.mysqld]+ self.basic_param + self.extra_param, env=os.environ)
         subprocess.call(['sleep','5'])
 
     def stop(self):
