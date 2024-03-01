@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import os
 import re
+import testinfra
+import pytest
 
 base_dir = os.getenv('BASE_DIR')
 ps_version = os.getenv('PS_VERSION')
@@ -41,6 +43,7 @@ ps80_functions = (
 ps80_components = (
   'component_masking_functions',
 )
+
 ps80_files = (
   'lib/libcoredumper.a', 
   'lib/mysqlrouter/private/libmysqlrouter_http.so.1', 'lib/mysqlrouter/private/libmysqlrouter.so.1', 'lib/libmysqlservices.a',
@@ -55,6 +58,8 @@ ps80_symlinks = (
   ('lib/libperconaserverclient.so.21','lib/libperconaserverclient.so.21.2.35'),
   ('lib/libperconaserverclient.so','lib/libperconaserverclient.so.21.2.35'),('lib/mysql/libjemalloc.so','lib/mysql/libjemalloc.so.1')
 )
+
+ps80_openssl_files = ('lib/libcrypto.so', 'lib/libk5crypto.so', 'lib/libssl.so', 'lib/libsasl2.so')
 
 # 5.7
 ps57_binaries = [
@@ -182,6 +187,7 @@ elif ps_version_major == '8.0':
     ps_files = ps80_files
     ps_symlinks = ps80_symlinks
     ps_components = ps80_components
+    ps_openssl_files=ps80_openssl_files
 elif ps_version_major == '5.7':
     ps_binaries = ps57_binaries
     ps_executables = ps57_executables
@@ -196,3 +202,10 @@ elif ps_version_major == '5.6':
     ps_functions = ps56_functions
     ps_files = ps56_files
     ps_symlinks = ps56_symlinks
+
+if os.getenv('PRO'):
+  pro='Pro' 
+else:
+  pro=None
+
+fips_supported_os={"redhat":"9.0", "centos":"9.0", "rhel":"9.0", "oracleserver":"9.0", "ol":"9.0", "ubuntu":"22"}
