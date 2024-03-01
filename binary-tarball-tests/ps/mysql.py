@@ -5,7 +5,6 @@ import os
 import shlex
 
 class MySQL:
-    # def __init__(self, base_dir, extra_params=''):
     def __init__(self, base_dir):
         self.basedir = base_dir
         self.port = '3306'
@@ -17,7 +16,6 @@ class MySQL:
         self.mysqladmin = base_dir+'/bin/mysqladmin'
         self.pidfile = base_dir+'/mysql.pid'
         self.mysql_install_db = base_dir+'/scripts/mysql_install_db'
-        # self.extra_params = extra_params
 
         subprocess.call(['rm','-Rf',self.datadir])
         subprocess.call(['rm','-f',self.logfile])
@@ -87,4 +85,3 @@ class MySQL:
             return True
         else:
             return False
-
