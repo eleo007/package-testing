@@ -203,14 +203,15 @@ elif ps_version_major == '5.6':
     ps_files = ps56_files
     ps_symlinks = ps56_symlinks
 
-if os.getenv('PRO') == True:
+if os.getenv('PRO') == "YES":
   pro='Pro' 
 else:
   pro=''
 
-# fips_supported_os={"redhat":"9.0", "centos":"9.0", "rhel":"9.0", "oracleserver":"9.0", "ol":"9.0", "ubuntu":"22"}
-
-if os.getenv('FIPS_SUPPORTED') == True:
+if os.getenv('FIPS_SUPPORTED') == "YES":
   fips_supported=True
 else:
   fips_supported=False
+
+
+# fips_supported_os={"redhat":"9.0", "centos":"9.0", "rhel":"9.0", "oracleserver":"9.0", "ol":"9.0", "ubuntu":"22"}
