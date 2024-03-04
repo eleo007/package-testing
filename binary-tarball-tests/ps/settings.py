@@ -213,4 +213,4 @@ else:
 if os.getenv('FIPS_SUPPORTED') == True:
   fips_supported=True
 else:
-  fips_supported=''
+  fips_supported=False

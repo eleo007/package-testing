@@ -11,7 +11,7 @@ from settings import *
 @pytest.fixture(scope='module')
 def mysql_server(request):
     features=[]
-    if fips_supported:
+    if pro and fips_supported:
         features.append('fips')
     mysql_server = mysql.MySQL(base_dir, features)
     mysql_server.start()
@@ -20,7 +20,7 @@ def mysql_server(request):
     mysql_server.purge()
 
 def test_fips_md5(host, mysql_server):
-    if fips_supported:
+    if pro and fips_supported:
         query="SELECT MD5('foo');"
         output = mysql_server.run_query(query)
         assert '00000000000000000000000000000000' in output
@@ -28,7 +28,7 @@ def test_fips_md5(host, mysql_server):
         pytest.skip("This test is only for PRO tarballs. Skipping")
 
 def test_fips_value(host,mysql_server):
-    if fips_supported:
+    if pro and fips_supported:
         query="select @@ssl_fips_mode;"
         output = mysql_server.run_query(query)
         assert 'ON' in output
@@ -37,7 +37,7 @@ def test_fips_value(host,mysql_server):
 
 
 def test_fips_in_log(host, mysql_server):
-    if fips_supported:
+    if pro and fips_supported:
         with host.sudo():
             query="SELECT @@log_error;"
             error_log = mysql_server.run_query(query)
