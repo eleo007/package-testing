@@ -8,18 +8,9 @@ from packaging import version
 
 from settings import *
 
-def check_fips_compliance(host):
-    dist = host.system_info.distribution
-    major_version = version.parse(host.system_info.release).major
-    if pro and major_version in fips_supported_os[dist]:
-        return True
-    else:
-        return False
-
 @pytest.fixture(scope='module')
 def mysql_server(request):
     features=[]
-    fips_supported=check_fips_compliance
     if fips_supported:
         features.append('fips')
     mysql_server = mysql.MySQL(base_dir, features)
@@ -29,7 +20,6 @@ def mysql_server(request):
     mysql_server.purge()
 
 def test_fips_md5(host, mysql_server):
-    fips_supported=check_fips_compliance
     if fips_supported:
         query="SELECT MD5('foo');"
         output = mysql_server.run_query(query)
@@ -38,7 +28,6 @@ def test_fips_md5(host, mysql_server):
         pytest.skip("This test is only for PRO tarballs. Skipping")
 
 def test_fips_value(host,mysql_server):
-    fips_supported=check_fips_compliance
     if fips_supported:
         query="select @@ssl_fips_mode;"
         output = mysql_server.run_query(query)
@@ -48,7 +37,6 @@ def test_fips_value(host,mysql_server):
 
 
 def test_fips_in_log(host, mysql_server):
-    fips_supported=check_fips_compliance
     if fips_supported:
         with host.sudo():
             query="SELECT @@log_error;"

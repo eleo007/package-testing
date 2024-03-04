@@ -208,4 +208,6 @@ if os.getenv('PRO') == True:
 else:
   pro=''
 
-fips_supported_os={"redhat":"9.0", "centos":"9.0", "rhel":"9.0", "oracleserver":"9.0", "ol":"9.0", "ubuntu":"22"}
+# fips_supported_os={"redhat":"9.0", "centos":"9.0", "rhel":"9.0", "oracleserver":"9.0", "ol":"9.0", "ubuntu":"22"}
+  
+fips_supported = os.getenv('FIPS_SUPPORTED')
