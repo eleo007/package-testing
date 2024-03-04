@@ -203,9 +203,9 @@ elif ps_version_major == '5.6':
     ps_files = ps56_files
     ps_symlinks = ps56_symlinks
 
-if os.getenv('PRO'):
+if os.getenv('PRO') == True:
   pro='Pro' 
 else:
-  pro=None
+  pro=''
 
 fips_supported_os={"redhat":"9.0", "centos":"9.0", "rhel":"9.0", "oracleserver":"9.0", "ol":"9.0", "ubuntu":"22"}
