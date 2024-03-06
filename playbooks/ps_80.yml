@@ -66,7 +66,7 @@
       - lookup('env', 'pro_test') != "yes"
 
   - name: include tasks for enabling PS 80 pro repo
-    include: ..//tasks/enable_ps80_pro_tools_repo,yml
+    include: ..//tasks/enable_ps80_pro_tools_repo.yml
     when:
       - lookup('env', 'pro_test') == "yes"
 
