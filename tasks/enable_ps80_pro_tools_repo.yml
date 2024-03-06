@@ -34,10 +34,8 @@
     when:
       - ansible_os_family == "RedHat"
 
-  - name: enable the tools {{ repo }}
-    command: percona-release enable tools {{ repo }}
-    vars:
-      repo: "{{ 'release' if 'main' in lookup('env', 'install_repo') else lookup('env', 'install_repo') | default('testing') }}"
+  - name: enable the tools repo
+    command: percona-release enable tools
 
   - name: clean and update yum cache
     shell: |
