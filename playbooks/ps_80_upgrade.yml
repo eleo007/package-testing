@@ -384,3 +384,21 @@
   - name: check telemetry (disabled)
     command: /package-testing/check_telemetry.sh ps -u
 
+  - name: remove Percona Server deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: no
+      state: absent
+    vars:
+      packages:
+      - percona-server-server{{ pro_suf }}
+    when: ansible_os_family == "Debian"
+
+  - name: remove Percona Server rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: absent
+    vars:
+      packages:
+      - percona-server-server{{ pro_suf }}
+    when: ansible_os_family == "RedHat"
