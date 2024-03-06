@@ -37,7 +37,7 @@
 # Install from main repository
 
   - name: include tasks for enabling main repo
-    include: ../tasks/enable_main_repo.yml
+    include_tasks: ../tasks/enable_main_repo.yml
     when: 
       - lookup('env', 'pro_test') != "yes"
 
@@ -143,12 +143,12 @@
 # Enable testing repository
 #
   - name: include tasks for enabling PS 8 testing repo
-    include: ../tasks/enable_ps8_testing_repo.yml
+    include_tasks: ../tasks/enable_ps8_testing_repo.yml
     when:
       - lookup('env', 'pro_to_pro') != "yes"
 
   - name: include tasks for enabling PS 80 pro testing repo
-    include: ..//tasks/enable_ps80_pro_tools_repo.yml
+    include_tasks: ..//tasks/enable_ps80_pro_tools_repo.yml
     when:
       - lookup('env', 'pro_test') == "yes"
 
@@ -276,7 +276,7 @@
     command: /package-testing/package_check.sh ps80 {{ pro }}
 
   - name: include tasks for checking FIPS mode
-    include: ../tasks/check_ps80_fips.yml
+    include_tasks: ../tasks/check_ps80_fips.yml
     when:
       - lookup('env', 'pro_test') == "yes"
       - ansible_distribution_release != "bookworm"
