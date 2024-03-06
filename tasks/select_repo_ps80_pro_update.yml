@@ -9,10 +9,12 @@
     apt:
       deb: https://repo.percona.com/apt/percona-release_latest.generic_all.deb
     when: ansible_os_family == "Debian" and lookup('env', 'SCENARIO') == "not_pro_to_pro"
+    ignore_errors: true
 
   - name: install Percona repository package on centos
     yum: name=https://repo.percona.com/yum/percona-release-latest.noarch.rpm
     when: ansible_os_family == "RedHat" and lookup('env', 'SCENARIO') == "not_pro_to_pro"
+    ignore_errors: true
 
 # We are using pdps testing here for case if the pro is released much later than regular release and packages in main are of not the same release as pro
   - name: include tasks for enabling PDPS {{ version }} {{ repo }} repo
