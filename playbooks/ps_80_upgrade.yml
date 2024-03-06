@@ -148,7 +148,7 @@
       - lookup('env', 'pro_to_pro') != "yes"
 
   - name: include tasks for enabling PS 80 pro testing repo
-    include: ..//tasks/enable_ps80_pro_tools_repo.yml
+    include: ../tasks/select_repo_ps80_pro_update.yml
     when:
       - lookup('env', 'pro_test') == "yes"
 
