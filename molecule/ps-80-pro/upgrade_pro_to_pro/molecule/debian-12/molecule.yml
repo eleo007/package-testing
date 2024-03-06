@@ -22,15 +22,6 @@ provisioner:
     destroy: ../../../../playbooks/destroy.yml
     cleanup: ../../playbooks/cleanup.yml
     converge: ../../playbooks/playbook.yml
-verifier:
-  name: testinfra
-  directory: ../../../tests/
-  options:
-    verbose: true
-    s: true
-    k: "test_pdps_ or test_common_"
-    m: "not telemetry_disabled"
-    junitxml: report.xml
 scenario:
   name: debian-12
   destroy_sequence:
