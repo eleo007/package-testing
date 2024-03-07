@@ -21,6 +21,7 @@ provisioner:
     create: ../../../../playbooks/create.yml
     destroy: ../../../../playbooks/destroy.yml
     cleanup: ../../playbooks/cleanup.yml
+    prepare: ../../playbooks/prepare_pro.yml
     converge: ../../playbooks/playbook.yml
 scenario:
   name: oracle-9
@@ -31,6 +32,7 @@ scenario:
   test_sequence:
     - destroy
     - create
+    - prepare
     - converge
     - verify
     - cleanup
