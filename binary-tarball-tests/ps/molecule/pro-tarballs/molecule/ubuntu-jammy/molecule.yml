@@ -14,7 +14,6 @@ platforms:
     instance_tags:
       iit-billing-tag: jenkins-ps80-worker
       job-name: ${JOB_NAME}
-    env: FIPS_SUPPORTED="NO"
 provisioner:
   name: ansible
   log: True
