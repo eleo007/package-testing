@@ -144,7 +144,7 @@
   - name: include tasks for enabling PS 8 testing repo
     include_tasks: ../tasks/enable_ps8_testing_repo.yml
     when:
-      - lookup('env', 'pro_to_pro') != "yes"
+      - lookup('env', 'pro_test') != "yes"
 
   - name: include tasks for enabling PS 80 pro testing repo
     include_tasks: ../tasks/enable_ps80_pro_tools_repo.yml
