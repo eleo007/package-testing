@@ -38,7 +38,7 @@
     - ansible_os_family == "RedHat"
 
 - name: enable the tools repo
-  command: percona-release enable tools
+  command: percona-release enable-only tools
 
 - name: clean and update yum cache
   shell: |
