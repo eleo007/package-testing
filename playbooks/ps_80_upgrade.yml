@@ -253,6 +253,12 @@
     environment:
       PERCONA_TELEMETRY_DISABLE: "1"
 
+  - name: start mysql service with systemctl command
+    command: systemctl start mysql
+    when:
+      - lookup('env', 'cur_action_to_test') == "not_pro_to_pro"
+      - lookup('env', 'pro_test') == "yes"
+
   - name: check telemetry (disabled)
     command: /package-testing/check_telemetry.sh ps -d
 
