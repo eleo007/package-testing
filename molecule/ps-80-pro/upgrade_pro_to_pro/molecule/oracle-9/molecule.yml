@@ -17,6 +17,8 @@ platforms:
 provisioner:
   name: ansible
   log: True
+  options:
+    vvv: True
   playbooks:
     create: ../../../../playbooks/create.yml
     destroy: ../../../../playbooks/destroy.yml
