@@ -49,7 +49,7 @@
 
   - name: get GLIBC_VERSION
     set_fact:
-      GLIBC_VERSION: "{{ '2.35' if ansible_os_family == "Debian" else '2.34' }}"
+      GLIBC_VERSION: "{{ '2.35' if ansible_os_family == 'Debian' else '2.34' }}"
   
   - name: get TARBALL_NAME
     set_fact:
