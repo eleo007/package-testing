@@ -32,6 +32,7 @@
     vars:
       packages:
       - git
+      - unzip
       - wget
       - libaio
       - numactl
