@@ -21,6 +21,7 @@
   tasks:
   - set_fact:
       pro_suf: "{{ '-pro' if ('yes' in lookup('env', 'pro_test') and lookup('env', 'cur_action_to_test') != 'not_pro_to_pro') else '' }}"
+      allowerasing_value: "{{ true if 'yes' in lookup('env', 'pro_test') else false }}"
 
   - name: include tasks for test env setup
     include: ../tasks/test_prep.yml
@@ -235,7 +236,7 @@
     yum:
       name: "{{ packages }}"
       state: latest
-      allowerasing: true
+      allowerasing: "{{ allowerasing_value | default (false) }}"
     vars:
       packages:
       - percona-server-server{{ pro_suf }}
@@ -255,7 +256,7 @@
     yum:
       name: "{{ packages }}"
       state: latest
-      allowerasing: true
+      allowerasing: "{{ allowerasing_value | default (false) }}"
     vars:
       packages:
       - percona-server-server{{ pro_suf }}
@@ -401,6 +402,7 @@
     yum:
       name: "{{ packages }}"
       state: latest
+      allowerasing: "{{ allowerasing_value | default (false) }}"
     vars:
       packages:
       - percona-server-server{{ pro_suf }}
