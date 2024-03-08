@@ -58,7 +58,7 @@
 
   - name: get TARBALL_LINK
     set_fact:
-      TARBALL_LINK: "https://repo.percona.com/private/{{ lookup('env', 'USERNAME') }}-{{ lookup('env', 'PASSWORD') }}/ps-80-pro/tarballs/Percona-Server-8.0.35-27/Percona-Server-${PS_VERSION}/"
+      TARBALL_LINK: "https://repo.percona.com/private/{{ lookup('env', 'USERNAME') }}-{{ lookup('env', 'PASSWORD') }}/ps-80-pro/tarballs/Percona-Server-8.0.35-27/Percona-Server-{{ lookup('env', 'PS_VERSION')/"
 
   - name: download package-testing repo branch with wget
     command: "{{ item }}"
