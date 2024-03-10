@@ -75,8 +75,21 @@
     - rm -f master.zip
     - mv package-testing-pro_build_job package-testing
 
-  - name: Download tarball and unpack tarball
-    command: "{{ item }}"
-    with_items:
-    - wget {{ TARBALL_LINK }}
-    - tar -zxf {{ TARBALL_NAME }} -C {{ playbook_dir }}/ps-binary-tarball
+  - name: Download tarball for ol9 from url
+    get_url:
+      url: '{{ TARBALL_LINK }}'
+      dest: /tmp/percona-server-{{ lookup('env', 'PS_VERSION') }}.tar.gz
+      mode: '0644'
+
+  - name: Unpack new tarball
+    unarchive:
+      src: /tmp/percona-server-mongodb.tar.gz
+      dest: "{{ playbook_dir }}/percona-server-{{ lookup('env', 'PS_VERSION') }}"
+      remote_src: yes
+
+  # - name: Unpack tarball
+  #   command: "{{ item }}"
+  #   with_items:
+  #   - mkdir 
+  #   - wget {{ TARBALL_LINK }} -o {{ playbook_dir }}
+  #   - tar -zxf {{ TARBALL_NAME }} -C {{ playbook_dir }}/ps-binary-tarball

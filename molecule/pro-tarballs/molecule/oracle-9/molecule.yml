@@ -28,7 +28,7 @@ verifier:
   name: testinfra
   directory: ../../../../binary-tarball-tests/ps/tests/
   env:
-    BASE_DIR: "{{ playbook_dir }}/ps-binary-tarball"
+    BASE_DIR: "{{ playbook_dir }}/percona-server-{{ lookup('env', 'PS_VERSION') }}"
 scenario:
   name: oracle-9
   destroy_sequence:
