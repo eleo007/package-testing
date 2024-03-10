@@ -25,7 +25,7 @@
 
   - name: Debug cur_action_to_test
     debug:
-      msg: Current value of cur_action_to_test is lookup('env', 'cur_action_to_test')
+      msg: Current value of cur_action_to_test is {{ lookup('env', 'cur_action_to_test') }}
 
   - name: include tasks for test env setup
     include: ../tasks/test_prep.yml
