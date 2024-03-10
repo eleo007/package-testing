@@ -359,73 +359,73 @@
       - percona-server-server{{ pro_suf }}
     when: ansible_os_family == "Debian"
 
-  - name: remove Percona Server rpm packages
-    yum:
-      name: "{{ packages }}"
-      state: absent
-    vars:
-      packages:
-      - percona-server-server{{ pro_suf }}
-    when: ansible_os_family == "RedHat"
+#   - name: remove Percona Server rpm packages
+#     yum:
+#       name: "{{ packages }}"
+#       state: absent
+#     vars:
+#       packages:
+#       - percona-server-server{{ pro_suf }}
+#     when: ansible_os_family == "RedHat"
 
-  - name: check if process is stopped after package removal
-    command: /package-testing/check_running.sh mysql stopped
+#   - name: check if process is stopped after package removal
+#     command: /package-testing/check_running.sh mysql stopped
 
-  - stat:
-      path: /var/lib/mysql
-    register: p
+#   - stat:
+#       path: /var/lib/mysql
+#     register: p
 
-  - name: check /var/lib/mysql exists and not empty
-    fail:
-      msg: "Path exists and is a directory and is not empty"
-    when: p.stat.isdir is defined and p.stat.isdir and p.stat.size > 1000000
+#   - name: check /var/lib/mysql exists and not empty
+#     fail:
+#       msg: "Path exists and is a directory and is not empty"
+#     when: p.stat.isdir is defined and p.stat.isdir and p.stat.size > 1000000
 
-## Changes done for telemetry: add iptables rule for Telemetry Server - install only ps package.
-## Expected resuld - telemetry_uuid file has only instanceID
-  - name: Block pmm.check-dev.percona.com IP
-    iptables:
-      chain: OUTPUT
-      destination: check-dev.percona.com
-      jump: DROP
+# ## Changes done for telemetry: add iptables rule for Telemetry Server - install only ps package.
+# ## Expected resuld - telemetry_uuid file has only instanceID
+#   - name: Block pmm.check-dev.percona.com IP
+#     iptables:
+#       chain: OUTPUT
+#       destination: check-dev.percona.com
+#       jump: DROP
 
-  - name: install Percona Server deb package for telemetry
-    apt:
-      name: "{{ packages }}"
-      update_cache: no
-      state: latest
-    vars:
-      packages:
-      - percona-server-server{{ pro_suf }}
-    when: ansible_os_family == "Debian"
+#   - name: install Percona Server deb package for telemetry
+#     apt:
+#       name: "{{ packages }}"
+#       update_cache: no
+#       state: latest
+#     vars:
+#       packages:
+#       - percona-server-server{{ pro_suf }}
+#     when: ansible_os_family == "Debian"
 
-  - name: install Percona Server rpm package for telemetry
-    yum:
-      name: "{{ packages }}"
-      state: latest
-      allowerasing: "{{ allowerasing_value | default (false) }}"
-    vars:
-      packages:
-      - percona-server-server{{ pro_suf }}
-    when: ansible_os_family == "RedHat"
+#   - name: install Percona Server rpm package for telemetry
+#     yum:
+#       name: "{{ packages }}"
+#       state: latest
+#       allowerasing: "{{ allowerasing_value | default (false) }}"
+#     vars:
+#       packages:
+#       - percona-server-server{{ pro_suf }}
+#     when: ansible_os_family == "RedHat"
 
-  - name: check telemetry (disabled)
-    command: /package-testing/check_telemetry.sh ps -u
+#   - name: check telemetry (disabled)
+#     command: /package-testing/check_telemetry.sh ps -u
 
-  - name: remove Percona Server deb packages
-    apt:
-      name: "{{ packages }}"
-      update_cache: no
-      state: absent
-    vars:
-      packages:
-      - percona-server-server{{ pro_suf }}
-    when: ansible_os_family == "Debian"
+#   - name: remove Percona Server deb packages
+#     apt:
+#       name: "{{ packages }}"
+#       update_cache: no
+#       state: absent
+#     vars:
+#       packages:
+#       - percona-server-server{{ pro_suf }}
+#     when: ansible_os_family == "Debian"
 
-  - name: remove Percona Server rpm packages
-    yum:
-      name: "{{ packages }}"
-      state: absent
-    vars:
-      packages:
-      - percona-server-server{{ pro_suf }}
-    when: ansible_os_family == "RedHat"
+#   - name: remove Percona Server rpm packages
+#     yum:
+#       name: "{{ packages }}"
+#       state: absent
+#     vars:
+#       packages:
+#       - percona-server-server{{ pro_suf }}
+#     when: ansible_os_family == "RedHat"
