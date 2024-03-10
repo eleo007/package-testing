@@ -16,16 +16,13 @@ platforms:
       job-name: ${JOB_NAME}
 provisioner:
   name: ansible
-  options:
-    vvv: True
   log: True
   playbooks:
     create: ../../../../playbooks/create.yml
-    destroy: ../../../../../playbooks/destroy.yml
+    destroy: ../../../../playbooks/destroy.yml
     prepare: ../../playbooks/prepare-pro.yml
     cleanup: ../../playbooks/cleanup.yml
     converge: ../../playbooks/playbook.yml
-
 scenario:
   name: oracle-9
   destroy_sequence:
@@ -38,4 +35,5 @@ scenario:
     - prepare
     - converge
     - verify
-
+    - cleanup
+    - destroy
