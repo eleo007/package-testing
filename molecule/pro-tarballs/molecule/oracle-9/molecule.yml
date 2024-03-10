@@ -26,7 +26,9 @@ provisioner:
     converge: ../../playbooks/playbook.yml
 verifier:
   name: testinfra
-  directory: ../../../../tests/
+  directory: ../../../../binary-tarball-tests/ps/tests/
+  env:
+    BASE_DIR: '{{ playbook_dir }}'/ps-binary-tarball
 scenario:
   name: oracle-9
   destroy_sequence:
