@@ -23,6 +23,10 @@
       pro_suf: "{{ '-pro' if ('yes' in lookup('env', 'pro_test') and lookup('env', 'cur_action_to_test') != 'not_pro_to_pro') else '' }}"
       allowerasing_value: "{{ true if 'yes' in lookup('env', 'pro_test') else false }}"
 
+  - name: Debug cur_action_to_test
+    debug:
+      msg: Current value of cur_action_to_test is lookup('env', 'cur_action_to_test')
+
   - name: include tasks for test env setup
     include: ../tasks/test_prep.yml
 
