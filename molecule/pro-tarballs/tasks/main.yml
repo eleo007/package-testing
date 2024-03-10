@@ -89,13 +89,13 @@
 
   - name: copy settings and mysql modules to tests dir
     copy:
-      src: ../../binary-tarball-tests/ps/settings.py
-      dest: ../../binary-tarball-tests/ps/tests/settings.py
+      src: ../../../binary-tarball-tests/ps/settings.py
+      dest: ../../../binary-tarball-tests/ps/tests/settings.py
 
   - name: copy settings and mysql modules to tests dir
     copy:
-      src: ../../binary-tarball-tests/ps/mysql.py
-      dest: ../../binary-tarball-tests/ps/tests/mysql.py
+      src: ../../../binary-tarball-tests/ps/mysql.py
+      dest: ../../../binary-tarball-tests/ps/tests/mysql.py
 
   # - name: Unpack tarball
   #   command: "{{ item }}"
