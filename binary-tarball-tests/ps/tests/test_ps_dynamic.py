@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import os
 import pytest
 import subprocess
 import testinfra
@@ -7,10 +6,7 @@ import time
 import mysql
 from packaging import version
 
-if os.getenv('PRO') == "yes":
-    from .settings import *
-else:
-    from settings import *
+from settings import *
 
 @pytest.fixture(scope='module')
 def mysql_server(request):

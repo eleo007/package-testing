@@ -1,12 +1,8 @@
 #!/usr/bin/env python3
 import pytest
 import testinfra
-import os
 
-if os.getenv('PRO') == "yes":
-    from .settings import *
-else:
-    from settings import *
+from settings import *
 
 def test_executables_exist(host):
     for executable in ps_executables:
