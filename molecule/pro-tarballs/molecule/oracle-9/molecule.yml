@@ -27,6 +27,9 @@ provisioner:
 verifier:
   name: testinfra
   directory: ../../../../binary-tarball-tests/ps/tests/
+  options:
+    verbose: true
+    s: true
   env:
     BASE_DIR: "/percona-server-${PS_VERSION}"
 scenario:
