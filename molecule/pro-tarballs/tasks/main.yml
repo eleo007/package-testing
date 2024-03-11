@@ -101,9 +101,9 @@
   # - name: Rename tarball DIR
   #   command: mv /{{ TARBALL_DIR_NAME }} /percona-server-{{ lookup('env', 'PS_VERSION') }}
 
-  # - name: Pause for 1 minutes
-  #   pause:
-  #     minutes: 1
+  - name: Pause for 1 minutes
+    pause:
+      minutes: 1
 
   # - name: Unpack tarball
   #   command: "{{ item }}"
