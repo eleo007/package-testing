@@ -123,7 +123,7 @@ if [[ ${product} = "ps56" || ${product} = "ps57" ]] || [[ ${product} =~ ^ps8[0-9
     fi
   fi
 
-  if [ "$(mysql -e "SELECT @@VERSION_COMMENT;" | grep ${revision} | grep -c ${release})" = 1 ]; then
+  if [ "$(mysql -e "SELECT @@VERSION_COMMENT;" | grep -v 'Percona Server Pro' | grep ${revision} | grep -c ${release})" = 1 ]; then
     echo "@@VERSION COMMENT is correct" >> "${log}"
   else
     echo "@@VERSION_COMMENT is incorrect. Server comment is: $(mysql -e "SELECT @@VERSION_COMMENT;") . VERSION's revision is ${revision}. VERSION's release is ${release}"
