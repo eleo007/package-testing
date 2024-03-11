@@ -29,9 +29,9 @@ verifier:
   directory: ../../../../binary-tarball-tests/ps/tests/
   options:
     verbose: true
-    s: true
+    sudo: True
   env:
-    BASE_DIR: "/percona-server-${PS_VERSION}"
+    BASE_DIR: "/usr/percona-server"
 scenario:
   name: oracle-9
   destroy_sequence:

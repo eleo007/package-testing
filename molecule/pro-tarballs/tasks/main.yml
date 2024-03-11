@@ -43,6 +43,7 @@
       - python3
       - python3-pip
       - libtirpc
+      - openldap
     when: ansible_os_family == "RedHat"
 
   - name: assign minimal value
@@ -92,6 +93,9 @@
       dest: /
       remote_src: yes
       mode: '0777'
+     extra_opts:
+     - --transform
+     - 's,^/*[^/]*,/usr/percona-server,S'
 
 
   - name: Rename tarball DIR
