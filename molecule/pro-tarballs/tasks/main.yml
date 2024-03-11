@@ -52,9 +52,13 @@
     set_fact:
       GLIBC_VERSION: "{{ '2.35' if ansible_os_family == 'Debian' else '2.34' }}"
   
+  - name: get TARBALL_DIR_NAME
+    set_fact:
+      TARBALL_DIR_NAME: "Percona-Server-Pro-{{ lookup('env', 'PS_VERSION') }}-Linux.x86_64.glibc{{ GLIBC_VERSION }}{{ MINIMAL }}"
+
   - name: get TARBALL_NAME
     set_fact:
-      TARBALL_NAME: "Percona-Server-Pro-{{ lookup('env', 'PS_VERSION') }}-Linux.x86_64.glibc{{ GLIBC_VERSION }}{{ MINIMAL }}.tar.gz"
+      TARBALL_NAME: "{{ TARBALL_DIR_NAME }}.tar.gz"
 
   # - name: get main repo TARBALL_LINK
   #   set_fact:
@@ -86,6 +90,10 @@
       src: /tmp/percona-server-{{ lookup('env', 'PS_VERSION') }}.tar.gz
       dest: /
       remote_src: yes
+
+  - name: Rename tarball DIR
+    command: mv /{{ TARBALL_DIR_NAME }} /percona-server-{{ lookup('env', 'PS_VERSION') }}
+
 
   # - name: Unpack tarball
   #   command: "{{ item }}"
