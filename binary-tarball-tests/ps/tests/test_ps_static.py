@@ -40,7 +40,7 @@ def test_pro_openssl_files_not_exist(host):
         pytest.skip("This test is only for PRO tarballs. Skipping")
 
 
-def test_pro_openssl_files_not_exist(host):
+def test_pro_openssl_files_linked(host):
     if pro:
         for binary in ps_binaries:
             shared_files = host.check_output('ldd ' + base_dir + '/' + binary)
