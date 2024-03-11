@@ -14,7 +14,6 @@ platforms:
     instance_tags:
       iit-billing-tag: jenkins-ps80-worker
       job-name: ${JOB_NAME}
-    env: FIPS_SUPPORTED="NO"
 provisioner:
   name: ansible
   log: True
@@ -29,7 +28,7 @@ verifier:
   directory: ../../../../binary-tarball-tests/ps/tests/
   options:
     verbose: true
-    sudo: True
+    s: true
   env:
     BASE_DIR: "/usr/percona-server"
     FIPS_SUPPORTED: "yes"
