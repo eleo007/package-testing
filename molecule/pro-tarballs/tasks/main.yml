@@ -15,8 +15,8 @@
       packages:
       - git
       - wget
-      - python3.6 
-      - sudo python3 get-pip.py
+      - python3.6
+      - get-pip
       - libaio1 
       - libnuma1
     retries: 60
@@ -92,7 +92,6 @@
       src: /tmp/percona-server-{{ lookup('env', 'PS_VERSION') }}.tar.gz
       dest: /
       remote_src: yes
-      mode: '0777'
       extra_opts:
       - --transform
       - 's,^/*[^/]*,/usr/percona-server,S'

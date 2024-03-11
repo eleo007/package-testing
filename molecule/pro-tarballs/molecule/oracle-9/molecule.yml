@@ -32,7 +32,7 @@ verifier:
     sudo: True
   env:
     BASE_DIR: "/usr/percona-server"
-    FIPS_SUPPORTED: "yes":
+    FIPS_SUPPORTED: "yes"
 scenario:
   name: oracle-9
   destroy_sequence:
