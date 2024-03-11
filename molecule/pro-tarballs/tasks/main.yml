@@ -90,6 +90,8 @@
       src: /tmp/percona-server-{{ lookup('env', 'PS_VERSION') }}.tar.gz
       dest: /
       remote_src: yes
+      mode: '0666'
+
 
   - name: Rename tarball DIR
     command: mv /{{ TARBALL_DIR_NAME }} /percona-server-{{ lookup('env', 'PS_VERSION') }}
