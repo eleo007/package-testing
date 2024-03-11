@@ -23,6 +23,14 @@ provisioner:
     prepare: ../../playbooks/prepare-ubuntu-pro.yml
     cleanup: ../../playbooks/cleanup.yml
     converge: ../../playbooks/playbook.yml
+verifier:
+  name: testinfra
+  directory: ../../../../binary-tarball-tests/ps/tests/
+  options:
+    verbose: true
+    sudo: True
+  env:
+    BASE_DIR: "/usr/percona-server"
 scenario:
   name: ubuntu-jammy
   destroy_sequence:
