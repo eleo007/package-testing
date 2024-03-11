@@ -31,6 +31,7 @@ verifier:
     sudo: True
   env:
     BASE_DIR: "/usr/percona-server"
+    FIPS_SUPPORTED: "yes":
 scenario:
   name: ubuntu-jammy
   destroy_sequence:
