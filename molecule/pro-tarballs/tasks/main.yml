@@ -90,7 +90,7 @@
       src: /tmp/percona-server-{{ lookup('env', 'PS_VERSION') }}.tar.gz
       dest: /
       remote_src: yes
-      mode: '0666'
+      mode: '0777'
 
 
   - name: Rename tarball DIR
