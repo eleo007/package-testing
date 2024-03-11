@@ -47,7 +47,7 @@ ps80_components = (
 ps80_files = (
   'lib/libcoredumper.a', 
   'lib/mysqlrouter/private/libmysqlrouter_http.so.1', 'lib/mysqlrouter/private/libmysqlrouter.so.1', 'lib/libmysqlservices.a',
-  'lib/libperconaserverclient.a', 'lib/libperconaserverclient.so.21.2.35' ,'lib/mysql/libjemalloc.so.1',
+  'lib/libperconaserverclient.a', 'lib/libperconaserverclient.so.21.2.36' ,'lib/mysql/libjemalloc.so.1',
   'lib/plugin/ha_rocksdb.so', 'lib/plugin/audit_log.so',
   'lib/plugin/auth_pam.so', 'lib/plugin/auth_pam_compat.so', 'lib/plugin/data_masking.so',
   'lib/plugin/data_masking.ini','lib/plugin/keyring_file.so',
@@ -55,8 +55,8 @@ ps80_files = (
   'lib/plugin/audit_log_filter.so', 'lib/plugin/component_masking_functions.so'
 )
 ps80_symlinks = (
-  ('lib/libperconaserverclient.so.21','lib/libperconaserverclient.so.21.2.35'),
-  ('lib/libperconaserverclient.so','lib/libperconaserverclient.so.21.2.35'),('lib/mysql/libjemalloc.so','lib/mysql/libjemalloc.so.1')
+  ('lib/libperconaserverclient.so.21','lib/libperconaserverclient.so.21.2.36'),
+  ('lib/libperconaserverclient.so','lib/libperconaserverclient.so.21.2.36'),('lib/mysql/libjemalloc.so','lib/mysql/libjemalloc.so.1')
 )
 
 ps80_openssl_files = ('lib/libcrypto.so', 'lib/libk5crypto.so', 'lib/libssl.so', 'lib/libsasl2.so')
@@ -203,12 +203,12 @@ elif ps_version_major == '5.6':
     ps_files = ps56_files
     ps_symlinks = ps56_symlinks
 
-if os.getenv('PRO') == "YES":
+if os.getenv('PRO') == "yes":
   pro='Pro' 
 else:
   pro=''
 
-if os.getenv('FIPS_SUPPORTED') == "YES":
+if os.getenv('FIPS_SUPPORTED') == "yes":
   fips_supported=True
 else:
   fips_supported=False
