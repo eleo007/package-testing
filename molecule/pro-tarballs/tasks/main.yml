@@ -93,9 +93,9 @@
       dest: /
       remote_src: yes
       mode: '0777'
-     extra_opts:
-     - --transform
-     - 's,^/*[^/]*,/usr/percona-server,S'
+      extra_opts:
+      - --transform
+      - 's,^/*[^/]*,/usr/percona-server,S'
 
 
   - name: Rename tarball DIR
