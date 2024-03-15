@@ -56,8 +56,10 @@ cd package-testing/binary-tarball-tests/ps/
 
 user_group=$(groups $USER | awk -F' ' '{print $1$2$3}')
 
+echo $user_group
+
 sudo chown -R ${user_group} ./package-testing
-sudo chown -R ${user_group} ./usr/percona-server
+sudo chown -R ${user_group} /usr/percona-server
 
 echo "Running tests..."
 python3 -m pytest -v --junit-xml report.xml $@
