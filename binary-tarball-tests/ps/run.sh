@@ -51,18 +51,18 @@ fi
 # PS_DIR_NAME=$(echo "${TARBALL_NAME}"|sed 's/.tar.gz$//'|sed 's/.deb$//'|sed 's/.rpm$//')
 # export BASE_DIR="${PWD}/${PS_DIR_NAME}"
 
-export PS_VERSION='8.0.36-28' && export PS_REVISION='47601f19' && export PRO='yes' && export FIPS_SUPPORTED=yes && export BASE_DIR="/usr/percona-server"
+# export PS_VERSION='8.0.36-28' && export PS_REVISION='47601f19' && export PRO='yes' && export FIPS_SUPPORTED=yes && export BASE_DIR="/usr/percona-server"
 
-cd package-testing/binary-tarball-tests/ps/
+# cd package-testing/binary-tarball-tests/ps/
 
-if [ -f './envfile.sh' ]; then
-  echo "Adding env file"
-  chmod +x ./envfile.sh
-  ./envfile.sh
-else
-  echo "Empty env file"
-  env_command=""
-fi
+# if [ -f './envfile.sh' ]; then
+#   echo "Adding env file"
+#   chmod +x ./envfile.sh
+#   ./envfile.sh
+# else
+#   echo "Empty env file"
+#   env_command=""
+# fi
 
 echo "Running tests..."
 python3 -m pytest -v --junit-xml report.xml $@
