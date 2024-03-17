@@ -51,17 +51,7 @@ fi
 # PS_DIR_NAME=$(echo "${TARBALL_NAME}"|sed 's/.tar.gz$//'|sed 's/.deb$//'|sed 's/.rpm$//')
 # export BASE_DIR="${PWD}/${PS_DIR_NAME}"
 
-# export PS_VERSION='8.0.36-28' && export PS_REVISION='47601f19' && export PRO='yes' && export FIPS_SUPPORTED=yes && export BASE_DIR="/usr/percona-server"
-
-# user_group=$(groups $USER | awk -F' ' '{print $1$2$3}')
-
-# echo $user_group
-
-# echo "sudo chown -R ${user_group} ./package-testing"
-# echo $PWD
-
-# sudo chown -R ${user_group} ./package-testing
-# sudo chown -R ${user_group} /usr/percona-server
+export PS_VERSION='8.0.36-28' && export PS_REVISION='47601f19' && export PRO='yes' && export FIPS_SUPPORTED=yes && export BASE_DIR="/usr/percona-server"
 
 cd package-testing/binary-tarball-tests/ps/
 
