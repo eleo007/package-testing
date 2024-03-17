@@ -65,7 +65,13 @@ fi
 
 cd package-testing/binary-tarball-tests/ps/
 
+if [ -f './envfile' ]; then
+  env_command="-e ./envfile"
+else
+  env_command=""
+fi
+
 echo "Running tests..."
-python3 -m pytest -v --junit-xml report.xml $@
+python3 -m pytest ${env_command} -v --junit-xml report.xml $@
 
 # --testdata="PS_VERSION:$PS_VERSION,PS_REVISION:$PS_REVISION,PRO:$PRO,FIPS_SUPPORTED:$FIPS_SUPPORTED,BASE_DIR:$BASE_DIR" --junit-xml report.xml $@
