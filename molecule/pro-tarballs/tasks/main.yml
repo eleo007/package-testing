@@ -57,7 +57,7 @@
 
   - name: assign minimal value
     set_fact:
-      MINIMAL:  "{{ '-minimal' if lookup('env', 'BUILD_TYPE_MINIMAL') == true else '' }}"
+      MINIMAL:  "{{ '-minimal' if lookup('env', 'BUILD_TYPE_MINIMAL') == 'true' else '' }}"
 
 
   - name: get GLIBC_VERSION
