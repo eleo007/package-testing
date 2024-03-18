@@ -44,4 +44,5 @@ scenario:
     - converge
     - verify
     - cleanup
+    - destroy
 
