@@ -21,11 +21,19 @@ provisioner:
   playbooks:
     create: ../../../playbooks/create.yml
     destroy: ../../../playbooks/destroy.yml
-    cleanup: ../../playbooks/cleanup.yml
-    prepare: ../../playbooks/prepare_pro.yml
+    prepare: ../../playbooks/prepare-pro.yml
     converge: ../../playbooks/playbook.yml
+verifier:
+  name: testinfra
+  directory: ../../tests/
+  options:
+    verbose: true
+    s: true
+  env:
+    BASE_DIR: "/usr/percona-server"
+    FIPS_SUPPORTED: "no"
 scenario:
-  name: debian-12
+  name: oracle-9
   destroy_sequence:
     - destroy
   clenup_sequence:
@@ -37,4 +45,4 @@ scenario:
     - converge
     - verify
     - cleanup
-    - destroy
+
