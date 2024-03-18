@@ -3,7 +3,6 @@ import pytest
 import subprocess
 import testinfra
 import time
-import mysql
 from packaging import version
 import os
 import stat
