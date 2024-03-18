@@ -37,7 +37,7 @@ def test_load_env_vars_define_in_test(host):
 
 
 def test_bats(host, test_load_env_vars_define_in_test):
-    cmd = f"{vars} ./package-testing/binary-tarball-tests/ps/run.sh"
+    cmd = "./package-testing/binary-tarball-tests/ps/run.sh"
 # with host.sudo():
     result = host.run(cmd)
     print(result.stdout)
