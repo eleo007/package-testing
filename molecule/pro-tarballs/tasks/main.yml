@@ -47,8 +47,8 @@
       # - epel-release
       # - libselinux-python3
       - python3-pip
-      # - libtirpc
-      # - openldap
+      - libtirpc
+      - openldap
     when: ansible_os_family == "RedHat"
 
   - name: assign minimal value
