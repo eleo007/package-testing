@@ -25,6 +25,8 @@
       - get-pip
       - libaio1 
       - libnuma1
+      - tar
+      - gawk
     retries: 60
     delay: 10
     register: result
