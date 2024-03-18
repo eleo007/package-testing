@@ -20,7 +20,7 @@ def test_load_env_vars_define_in_test(host):
     # pro = os.getenv('PRO')
     # print(base_dir, ps_version, ps_revision, fips_supported, pro)
     with host.sudo():
-        vars={'BASE_DIR':'/usr/percona-server','PS_VERSION':os.getenv('PS_VERSION'),'PS_REVISION':os.getenv('PS_REVISION'),'PRO':os.getenv('PRO'),'FIPS_SUPPORTED':os.getenv('FIPS_SUPPORTED')}
+        vars={'BASE_DIR':os.getenv('BASE_DIR'),'PS_VERSION':os.getenv('PS_VERSION'),'PS_REVISION':os.getenv('PS_REVISION'),'PRO':os.getenv('PRO'),'FIPS_SUPPORTED':os.getenv('FIPS_SUPPORTED')}
         # vars={'BASE_DIR':pro,'PS_REVISION':ps_version}
         for var, value in vars.items():
             cmd=f"echo {var}={value} >> /etc/environment"
@@ -28,7 +28,7 @@ def test_load_env_vars_define_in_test(host):
     cmd="groups $USER| awk -F' ' '{print $1$2$3}'"
     user_group=host.run(cmd).stdout.replace(" ", "").replace("\n","")
     with host.sudo():
-        for dir in (f'./package-testing','/usr/percona-server'):
+        for dir in (f'./package-testing',os.getenv('BASE_DIR')):
             cmd=f"chown -R {user_group} {dir}"
             host.check_output(cmd)
             cmd=f"ls -l {dir}"
