@@ -25,7 +25,7 @@ def test_load_env_vars_define_in_test(host):
         for var, value in vars.items():
             cmd=f"echo {var}={value} >> /etc/environment"
             host.run(cmd)
-    cmd="groups $USER"
+    cmd="groups $USER| awk -F' ' '{print $1$2$3}'"
     user_group=host.run(cmd).stdout.replace(" ", "").replace("\n","")
     with host.sudo():
         for dir in (f'./package-testing','/usr/percona-server'):
