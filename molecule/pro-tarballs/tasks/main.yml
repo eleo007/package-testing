@@ -43,7 +43,7 @@
       - libaio
       - numactl
       - tar
-      - awk
+      - gawk
       # - epel-release
       # - libselinux-python3
       - python3-pip
