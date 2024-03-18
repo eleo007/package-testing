@@ -1,11 +1,5 @@
 ---
 # tasks file for tarball tests
-  - name: Add specified repository into sources list
-    ansible.builtin.apt_repository:
-      repo: ppa:deadsnakes/ppa
-      state: present
-    when: ansible_os_family == "Debian" and ansible_distribution_release != "bookworm"
-
   - name: Add epel-release
     yum:
       state: present
@@ -20,15 +14,14 @@
     vars:
       packages:
       - git
+      - unzip
       - wget
-      - python3.6
-      - get-pip
+      - python3
+      - python3-pip
       - libaio1 
       - libnuma1
       - tar
       - gawk
-    retries: 60
-    delay: 10
     register: result
     until: result is not failed
     when: ansible_os_family == "Debian"
