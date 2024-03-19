@@ -29,7 +29,6 @@ verifier:
     verbose: true
     s: true
   env:
-    BASE_DIR: "/usr/percona-server"
     FIPS_SUPPORTED: "yes"
 scenario:
   name: ubuntu-jammy
