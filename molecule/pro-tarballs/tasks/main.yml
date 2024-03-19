@@ -45,10 +45,6 @@
       - openldap
     when: ansible_os_family == "RedHat"
 
-  - name: assign minimal value
-    set_fact:
-      MINIMAL:  "{{ '-minimal' if lookup('env', 'BUILD_TYPE_MINIMAL') == 'true' else '' }}"
-
   - name: get GLIBC_VERSION
     set_fact:
       GLIBC_VERSION: "{{ '2.35' if ansible_os_family == 'Debian' else '2.34' }}"
@@ -57,13 +53,21 @@
     set_fact:
       TARBALL_NAME: "Percona-Server-Pro-{{ lookup('env', 'PS_VERSION') }}-Linux.x86_64.glibc{{ GLIBC_VERSION }}{{ MINIMAL }}.tar.gz"
 
-  # - name: get main repo TARBALL_LINK
-  #   set_fact:
-  #     TARBALL_LINK: "https://repo.percona.com/private/{{ lookup('env', 'USERNAME') }}-{{ lookup('env', 'PASSWORD') }}/ps-80-pro/tarballs/Percona-Server-{{ lookup('env', 'PS_VERSION') }}/"
+  - name: get MINIMAL_TARBALL_NAME
+    set_fact:
+      MINIMAL_TARBALL_NAME: "Percona-Server-Pro-{{ lookup('env', 'PS_VERSION') }}-Linux.x86_64.glibc{{ GLIBC_VERSION }}-minimal.tar.gz"
+
+  # # - name: get main repo TARBALL_LINK
+  # #   set_fact:
+  # #     TARBALL_LINK: "https://repo.percona.com/private/{{ lookup('env', 'USERNAME') }}-{{ lookup('env', 'PASSWORD') }}/ps-80-pro/tarballs/Percona-Server-{{ lookup('env', 'PS_VERSION') }}/"
 
   - name: get testing repo TARBALL_LINK
     set_fact:
       TARBALL_LINK: "https://repo.percona.com/private/{{ lookup('env', 'USERNAME') }}-{{ lookup('env', 'PASSWORD') }}/qa-test/ps-gated-{{ lookup('env', 'PS_VERSION') }}/{{ TARBALL_NAME }}"
+
+  - name: get testing repo MINIMAL_TARBALL_LINK
+    set_fact:
+      MINIMAL_TARBALL_LINK: "https://repo.percona.com/private/{{ lookup('env', 'USERNAME') }}-{{ lookup('env', 'PASSWORD') }}/qa-test/ps-gated-{{ lookup('env', 'PS_VERSION') }}/{{ MINIMAL_TARBALL_NAME }}"
 
   - name: download package-testing repo branch with wget
     command: "{{ item }}"
@@ -75,7 +79,7 @@
     - rm -f master.zip
     - mv package-testing-pro_build_job package-testing
 
-  - name: Download {{ TARBALL_NAME }}
+  - name: Download regular {{ TARBALL_NAME }}
     get_url:
       url: '{{ TARBALL_LINK }}'
       dest: /tmp/percona-server-{{ lookup('env', 'PS_VERSION') }}.tar.gz
@@ -88,4 +92,19 @@
       remote_src: yes
       extra_opts:
       - --transform
-      - 's,^/*[^/]*,/usr/percona-server,S'
+      - 's,^/*[^/]*,{{ lookup('env', 'BASE_DIR') }},S'
+
+  - name: Download minimal {{ MINIMAL_TARBALL_NAME }}
+    get_url:
+      url: '{{ MINIMAL_TARBALL_LINK }}'
+      dest: /tmp/percona-server-{{ lookup('env', 'PS_VERSION') }}-minimal.tar.gz
+      mode: '0644'
+
+  - name: Unpack new minimal tarball
+    unarchive:
+      src: /tmp/percona-server-{{ lookup('env', 'PS_VERSION') }}-minimal.tar.gz
+      dest: /
+      remote_src: yes
+      extra_opts:
+      - --transform
+      - 's,^/*[^/]*,{{ lookup('env', 'BASE_DIR') }}-minimal,S'
