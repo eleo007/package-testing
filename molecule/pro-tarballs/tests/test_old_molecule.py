@@ -32,7 +32,7 @@ def test_regular_tarball(host, test_load_env_vars_define_in_test):
 
 def test_minimal_tarball(host, test_load_env_vars_define_in_test):
     with host.sudo():
-        cmd = f"sed -i 's/\\(BASE_DIR.*\\)/\\1-minimal/' /etc/environment"
+        cmd = f"sed -i 's/\\(BASE_DIR.*\\)/\\1-minimal/g' /etc/environment"
         result = host.run(cmd)
     cmd = "cd ~/package-testing/binary-tarball-tests/ps/ && ./run.sh"
     result = host.run(cmd)
@@ -42,7 +42,7 @@ def test_minimal_tarball(host, test_load_env_vars_define_in_test):
 
 def test_debug_tarball(host, test_load_env_vars_define_in_test):
     with host.sudo():
-        cmd = f"sed -i 's/\\(BASE_DIR.*\\)-minimal/\\1-debug/' /etc/environment"
+        cmd = f"sed -i 's/\\(BASE_DIR.*\\)-minimal/\\1-debug/g' /etc/environment"
         result = host.run(cmd)
     cmd = "cd ~/package-testing/binary-tarball-tests/ps/ && ./run.sh"
     result = host.run(cmd)
