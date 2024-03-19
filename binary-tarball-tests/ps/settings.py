@@ -14,6 +14,11 @@ if os.getenv('PRO') == "yes":
 else:
   pro=''
 
+if os.getenv('DEBUG') == "yes":
+  debug='-debug'
+else:
+  debug=''
+
 if os.getenv('FIPS_SUPPORTED') == "yes":
   fips_supported=True
 else:

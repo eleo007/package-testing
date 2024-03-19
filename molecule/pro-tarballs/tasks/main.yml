@@ -100,7 +100,7 @@
       remote_src: yes
       extra_opts:
       - --transform
-      - "s,^/*[^/]*,{{ lookup('env', 'BASE_DIR') }},S"
+      - 's,^/*[^/]*,/usr/percona-server,S'
 
   - name: Download minimal {{ MINIMAL_TARBALL_NAME }}
     get_url:
@@ -115,7 +115,7 @@
       remote_src: yes
       extra_opts:
       - --transform
-      - "s,^/*[^/]*,{{ lookup('env', 'BASE_DIR') }}-minimal,S"
+      - 's,^/*[^/]*,/usr/percona-server-minimal,S'
 
   - name: Download debug {{ DEBUG_TARBALL_NAME }}
     get_url:
@@ -130,4 +130,4 @@
       remote_src: yes
       extra_opts:
       - --transform
-      - "s,^/*[^/]*,{{ lookup('env', 'BASE_DIR') }}-debug,S"
+      - 's,^/*[^/]*,/usr/percona-server-debug,S'

@@ -44,6 +44,8 @@ def test_debug_tarball(host, test_load_env_vars_define_in_test):
     with host.sudo():
         cmd = f"sed -i 's/\\(BASE_DIR.*\\)-minimal/\\1-debug/g' /etc/environment"
         result = host.run(cmd)
+        cmd=f"echo DEBUG='yes' >> /etc/environment"
+        result = host.run(cmd)
     cmd = "cd ~/package-testing/binary-tarball-tests/ps/ && ./run.sh"
     result = host.run(cmd)
     print(result.stdout)
