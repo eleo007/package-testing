@@ -63,10 +63,6 @@
     set_fact:
       TARBALL_NAME: "Percona-Server-Pro-{{ lookup('env', 'PS_VERSION') }}-Linux.x86_64.glibc{{ GLIBC_VERSION }}{{ MINIMAL }}.tar.gz"
 
-  - name: Print TARBALL_NAME
-    debug:
-      var: TARBALL_NAME
-
   # - name: get main repo TARBALL_LINK
   #   set_fact:
   #     TARBALL_LINK: "https://repo.percona.com/private/{{ lookup('env', 'USERNAME') }}-{{ lookup('env', 'PASSWORD') }}/ps-80-pro/tarballs/Percona-Server-{{ lookup('env', 'PS_VERSION') }}/"
@@ -86,7 +82,7 @@
     - rm -f master.zip
     - mv package-testing-pro_build_job package-testing
 
-  - name: Download tarball for ol9 from url
+  - name: Download {{ TARBALL_NAME }}
     get_url:
       url: '{{ TARBALL_LINK }}'
       dest: /tmp/percona-server-{{ lookup('env', 'PS_VERSION') }}.tar.gz

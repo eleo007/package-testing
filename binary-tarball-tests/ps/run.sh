@@ -34,25 +34,25 @@ else
   pip3 install --user pytest-testinfra pytest
 fi
 
-if [ $pro != 'yes' ]; then
-  TARBALL_NAME=$(basename "$(find . -maxdepth 1 -name '*.tar.gz'|head -n1)")
-fi
-
-if [ -z "${TARBALL_NAME}" ]; then
-  echo "Please put PS tarball into this directory!"
-  exit 1
-fi
 if [ -z "${PS_VERSION}" ]; then
   echo "PS_VERSION environment variable needs to be set!"
   echo "export PS_VERSION=\"8.0.17-8\""
   exit 1
 fi
+
 if [ -z "${PS_REVISION}" ]; then
   echo "PS_REVISION environment variable needs to be set!"
   echo "export PS_REVISION=\"868a4ef\""
   exit 1
 fi
-if [ $pro != 'yes' ]; then
+
+# For PRO tarballs are downloaded, extracted and BASE_DIR is set by Jenkins job.
+if [ "$PRO" != 'yes' ]; then
+  TARBALL_NAME=$(basename "$(find . -maxdepth 1 -name '*.tar.gz'|head -n1)")
+  if [ -z "${TARBALL_NAME}" ]; then
+    echo "Please put PS tarball into this directory!"
+    exit 1
+  fi
   tar xf "${TARBALL_NAME}"
   PS_DIR_NAME=$(echo "${TARBALL_NAME}"|sed 's/.tar.gz$//'|sed 's/.deb$//'|sed 's/.rpm$//')
   export BASE_DIR="${PWD}/${PS_DIR_NAME}"
@@ -66,5 +66,3 @@ fi
 
 echo "Running tests..."
 python3 -m pytest -v --junit-xml report.xml $@
-
-# --testdata="PS_VERSION:$PS_VERSION,PS_REVISION:$PS_REVISION,PRO:$PRO,FIPS_SUPPORTED:$FIPS_SUPPORTED,BASE_DIR:$BASE_DIR" --junit-xml report.xml $@
