@@ -44,7 +44,7 @@ if [ -z "${PS_REVISION}" ]; then
   echo "export PS_REVISION=\"868a4ef\""
 fi
 
-# For PRO tarballs are downloaded, extracted and BASE_DIR is set by Jenkins job.
+# PRO tarballs are downloaded, extracted and BASE_DIR is set by Jenkins job.
 if [ "$PRO" != 'yes' ]; then
   TARBALL_NAME=$(basename "$(find . -maxdepth 1 -name '*.tar.gz'|head -n1)")
   if [ -z "${TARBALL_NAME}" ]; then

@@ -9,7 +9,7 @@ from packaging import version
 from settings import *
 
 @pytest.fixture(scope='module')
-def mysql_server(request, host):
+def mysql_server(request):
     features=[]
     if pro and fips_supported:
         features.append('fips')
@@ -34,7 +34,6 @@ def test_fips_value(host,mysql_server):
         assert 'ON' in output
     else:
         pytest.skip("This test is only for PRO tarballs. Skipping")
-
 
 def test_fips_in_log(host, mysql_server):
     if pro and fips_supported:

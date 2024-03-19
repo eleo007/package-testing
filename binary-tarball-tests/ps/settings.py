@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 import os
 import re
-import testinfra
-import pytest
 
 base_dir = os.getenv('BASE_DIR')
 ps_version = os.getenv('PS_VERSION')
@@ -10,6 +8,16 @@ ps_revision = os.getenv('PS_REVISION')
 
 ps_version_upstream, ps_version_percona = ps_version.split('-')
 ps_version_major = ps_version_upstream.split('.')[0] + '.' + ps_version_upstream.split('.')[1]
+
+if os.getenv('PRO') == "yes":
+  pro='Pro '
+else:
+  pro=''
+
+if os.getenv('FIPS_SUPPORTED') == "yes":
+  fips_supported=True
+else:
+  fips_supported=False
 
 # 8.0
 ps80_binaries = [
@@ -39,11 +47,9 @@ ps80_functions = (
   ('get_gtid_set_by_binlog', 'binlog_utils_udf.so', 'STRING'), ('get_binlog_by_gtid_set', 'binlog_utils_udf.so', 'STRING'), ('get_first_record_timestamp_by_binlog', 'binlog_utils_udf.so', 'STRING'),
   ('get_last_record_timestamp_by_binlog', 'binlog_utils_udf.so', 'STRING')
 )
-
 ps80_components = (
   'component_masking_functions',
 )
-
 ps80_files = (
   'lib/libcoredumper.a', 
   'lib/mysqlrouter/private/libmysqlrouter_http.so.1', 'lib/mysqlrouter/private/libmysqlrouter.so.1', 'lib/libmysqlservices.a',
@@ -58,8 +64,9 @@ ps80_symlinks = (
   ('lib/libperconaserverclient.so.21','lib/libperconaserverclient.so.21.2.36'),
   ('lib/libperconaserverclient.so','lib/libperconaserverclient.so.21.2.36'),('lib/mysql/libjemalloc.so','lib/mysql/libjemalloc.so.1')
 )
-
-ps80_openssl_files = ('lib/libcrypto.so', 'lib/libk5crypto.so', 'lib/libssl.so', 'lib/libsasl2.so')
+ps80_openssl_files = (
+  'lib/libcrypto.so', 'lib/libk5crypto.so', 'lib/libssl.so', 'lib/libsasl2.so'
+)
 
 # 5.7
 ps57_binaries = [
@@ -202,13 +209,3 @@ elif ps_version_major == '5.6':
     ps_functions = ps56_functions
     ps_files = ps56_files
     ps_symlinks = ps56_symlinks
-
-if os.getenv('PRO') == "yes":
-  pro='Pro '
-else:
-  pro=''
-
-if os.getenv('FIPS_SUPPORTED') == "yes":
-  fips_supported=True
-else:
-  fips_supported=False

@@ -39,26 +39,20 @@
       - numactl
       - tar
       - gawk
-      # - epel-release
-      # - libselinux-python3
+      - python3
       - python3-pip
       - libtirpc
       - openldap
     when: ansible_os_family == "RedHat"
 
-  - name: Print TARBALL_NAME
-    debug:
-      msg: "The value is {{ lookup('env', 'BUILD_TYPE_MINIMAL') }}"
-
   - name: assign minimal value
     set_fact:
       MINIMAL:  "{{ '-minimal' if lookup('env', 'BUILD_TYPE_MINIMAL') == 'true' else '' }}"
 
-
   - name: get GLIBC_VERSION
     set_fact:
       GLIBC_VERSION: "{{ '2.35' if ansible_os_family == 'Debian' else '2.34' }}"
-  
+
   - name: get TARBALL_NAME
     set_fact:
       TARBALL_NAME: "Percona-Server-Pro-{{ lookup('env', 'PS_VERSION') }}-Linux.x86_64.glibc{{ GLIBC_VERSION }}{{ MINIMAL }}.tar.gz"
