@@ -14,8 +14,8 @@ def test_binaries_version(host):
         assert 'mysql  Ver 14.14 Distrib '+ps_version+', for Linux (x86_64)' in host.check_output(base_dir+'/bin/mysql --version')
         assert 'mysqld  Ver '+ps_version+' for Linux on x86_64 (Percona Server (GPL), Release '+ps_version_percona+', Revision '+ps_revision+')' in host.check_output(base_dir+'/bin/mysqld --version')
     else:
-        assert 'mysql  Ver '+ ps_version +' for Linux on x86_64 (Percona Server ' + pro + ' (GPL), Release '+ ps_version_percona +', Revision '+ ps_revision +')' in host.check_output(base_dir+'/bin/mysql --version')
-        assert 'mysqld  Ver '+ ps_version +' for Linux on x86_64 (Percona Server ' + pro + ' (GPL), Release '+ ps_version_percona +', Revision '+ ps_revision +')' in host.check_output(base_dir+'/bin/mysqld --version')
+        assert 'mysql  Ver '+ ps_version +' for Linux on x86_64 (Percona Server ' + pro + '(GPL), Release '+ ps_version_percona +', Revision '+ ps_revision +')' in host.check_output(base_dir+'/bin/mysql --version')
+        assert 'mysqld  Ver '+ ps_version +' for Linux on x86_64 (Percona Server ' + pro + '(GPL), Release '+ ps_version_percona +', Revision '+ ps_revision +')' in host.check_output(base_dir+'/bin/mysqld --version')
 
 def test_files_exist(host):
     for f in ps_files:
