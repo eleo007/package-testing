@@ -34,35 +34,35 @@ else
   pip3 install --user pytest-testinfra pytest
 fi
 
-# TARBALL_NAME=$(basename "$(find . -maxdepth 1 -name '*.tar.gz'|head -n1)")
-# if [ -z "${TARBALL_NAME}" ]; then
-#   echo "Please put PS tarball into this directory!"
-#   exit 1
-# fi
-# if [ -z "${PS_VERSION}" ]; then
-#   echo "PS_VERSION environment variable needs to be set!"
-#   echo "export PS_VERSION=\"8.0.17-8\""
-# fi
-# if [ -z "${PS_REVISION}" ]; then
-#   echo "PS_REVISION environment variable needs to be set!"
-#   echo "export PS_REVISION=\"868a4ef\""
-# fi
-# tar xf "${TARBALL_NAME}"
-# PS_DIR_NAME=$(echo "${TARBALL_NAME}"|sed 's/.tar.gz$//'|sed 's/.deb$//'|sed 's/.rpm$//')
-# export BASE_DIR="${PWD}/${PS_DIR_NAME}"
+if [ $pro != 'yes' ]; then
+  TARBALL_NAME=$(basename "$(find . -maxdepth 1 -name '*.tar.gz'|head -n1)")
+fi
 
-# export PS_VERSION='8.0.36-28' && export PS_REVISION='47601f19' && export PRO='yes' && export FIPS_SUPPORTED=yes && export BASE_DIR="/usr/percona-server"
+if [ -z "${TARBALL_NAME}" ]; then
+  echo "Please put PS tarball into this directory!"
+  exit 1
+fi
+if [ -z "${PS_VERSION}" ]; then
+  echo "PS_VERSION environment variable needs to be set!"
+  echo "export PS_VERSION=\"8.0.17-8\""
+  exit 1
+fi
+if [ -z "${PS_REVISION}" ]; then
+  echo "PS_REVISION environment variable needs to be set!"
+  echo "export PS_REVISION=\"868a4ef\""
+  exit 1
+fi
+if [ $pro != 'yes' ]; then
+  tar xf "${TARBALL_NAME}"
+  PS_DIR_NAME=$(echo "${TARBALL_NAME}"|sed 's/.tar.gz$//'|sed 's/.deb$//'|sed 's/.rpm$//')
+  export BASE_DIR="${PWD}/${PS_DIR_NAME}"
+  exit 1
+fi
 
-cd package-testing/binary-tarball-tests/ps/
-
-# if [ -f './envfile.sh' ]; then
-#   echo "Adding env file"
-#   chmod +x ./envfile.sh
-#   ./envfile.sh
-# else
-#   echo "Empty env file"
-#   env_command=""
-# fi
+if [ -z "${BASE_DIR}" ]; then
+  echo "BASE_DIR environment variable needs to be set!"
+  exit 1
+fi
 
 echo "Running tests..."
 python3 -m pytest -v --junit-xml report.xml $@
