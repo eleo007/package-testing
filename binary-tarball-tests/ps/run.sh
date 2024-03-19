@@ -37,13 +37,11 @@ fi
 if [ -z "${PS_VERSION}" ]; then
   echo "PS_VERSION environment variable needs to be set!"
   echo "export PS_VERSION=\"8.0.17-8\""
-  exit 1
 fi
 
 if [ -z "${PS_REVISION}" ]; then
   echo "PS_REVISION environment variable needs to be set!"
   echo "export PS_REVISION=\"868a4ef\""
-  exit 1
 fi
 
 # For PRO tarballs are downloaded, extracted and BASE_DIR is set by Jenkins job.
@@ -56,7 +54,6 @@ if [ "$PRO" != 'yes' ]; then
   tar xf "${TARBALL_NAME}"
   PS_DIR_NAME=$(echo "${TARBALL_NAME}"|sed 's/.tar.gz$//'|sed 's/.deb$//'|sed 's/.rpm$//')
   export BASE_DIR="${PWD}/${PS_DIR_NAME}"
-  exit 1
 fi
 
 if [ -z "${BASE_DIR}" ]; then
