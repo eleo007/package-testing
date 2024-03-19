@@ -7,17 +7,19 @@ import testinfra.utils.ansible_runner
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('all')
 
+BASE_DIR='/usr/percona-server'
+
 @pytest.fixture(scope='module')
 def test_load_env_vars_define_in_test(host):
     with host.sudo():
-        vars={'BASE_DIR':os.getenv('BASE_DIR'),'PS_VERSION':os.getenv('PS_VERSION'),'PS_REVISION':os.getenv('PS_REVISION'),'PRO':os.getenv('PRO'),'FIPS_SUPPORTED':os.getenv('FIPS_SUPPORTED')}
+        vars={'BASE_DIR':BASE_DIR,'PS_VERSION':os.getenv('PS_VERSION'),'PS_REVISION':os.getenv('PS_REVISION'),'PRO':os.getenv('PRO'),'FIPS_SUPPORTED':os.getenv('FIPS_SUPPORTED')}
         for var, value in vars.items():
             cmd=f"echo {var}={value} >> /etc/environment"
             host.run(cmd)
     cmd="groups $USER| awk -F' ' '{print $1$2$3}'"
     user_group=host.run(cmd).stdout.replace(" ", "").replace("\n","")
     with host.sudo():
-        for dir in (f'./package-testing',os.getenv('BASE_DIR'), os.getenv('BASE_DIR')+'-minimal', os.getenv('BASE_DIR')+'-debug'):
+        for dir in (f'./package-testing',BASE_DIR, BASE_DIR+'-minimal', BASE_DIR+'-debug'):
             cmd=f"chown -R {user_group} {dir}"
             host.check_output(cmd)
             cmd=f"ls -l {dir}"
