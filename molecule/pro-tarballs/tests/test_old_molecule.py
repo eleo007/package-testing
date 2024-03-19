@@ -39,3 +39,13 @@ def test_minimal_tarball(host, test_load_env_vars_define_in_test):
     print(result.stdout)
     print(result.stderr)
     assert result.rc == 0, result.stdout
+
+def test_debug_tarball(host, test_load_env_vars_define_in_test):
+    with host.sudo():
+        cmd = f"sed -i 's/\\(BASE_DIR.*\\)-minimal/\\1-debug/' /etc/environment"
+        result = host.run(cmd)
+    cmd = "cd ~/package-testing/binary-tarball-tests/ps/ && ./run.sh"
+    result = host.run(cmd)
+    print(result.stdout)
+    print(result.stderr)
+    assert result.rc == 0, result.stdout
