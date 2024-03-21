@@ -366,7 +366,7 @@
     when: ansible_os_family == "Debian"
 
   - name: remove Percona Server{{ pro_suf }} rpm packages
-    command: yum remove percona-server-server{{ pro_suf }}
+    command: yum remove -y percona-server-server{{ pro_suf }}
     when: ansible_os_family == "RedHat"
 
   - name: check if process is stopped after package removal
