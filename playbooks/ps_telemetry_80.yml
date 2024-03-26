@@ -216,6 +216,6 @@
                 {
                 "ansible_test_string":"ansible_test_string"
                 }
-      dest: "{{ ansible_date_time.epoch }}test_content.json"
+      dest: "{{ ansible_date_time.epoch }}-test_content.json"
 
-  # - name: Export
+  - name: Export
