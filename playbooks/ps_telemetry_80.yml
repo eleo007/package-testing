@@ -22,6 +22,10 @@
   - name: include tasks for test env setup
     include_tasks: ../tasks/test_prep.yml
 
+  - name: disable the mysql module on RHEL/CentOS 8
+    command: /usr/bin/dnf module disable mysql -y
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
+
   - name: Copy telemetry agent binary
     ansible.builtin.copy:
       src: /home/eleonora.zinchenko/telemetry-agent/bin/telemetry-agent
@@ -214,4 +218,4 @@
                 }
       dest: "{{ ansible_date_time.epoch }}test_content.json"
 
-  - name: Export
+  # - name: Export
