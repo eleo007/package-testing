@@ -103,3 +103,8 @@
       - percona-mysql-router
     when: ansible_os_family == "RedHat"
 
+  - name: Copy telemetry agent binary
+    ansible.builtin.copy:
+      src: /home/eleonora.zinchenko/telemetry-agent/bin/telemetry-agent
+      dest: telemetry-agent
+      mode: '777'
