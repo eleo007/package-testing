@@ -73,10 +73,10 @@
     vars:
       packages:
       - percona-server-server
-      - percona-server-test
-      - percona-server-dbg
-      - percona-server-source
-      - percona-server-client
+      # - percona-server-test
+      # - percona-server-dbg
+      # - percona-server-source
+      # - percona-server-client
       - percona-server-rocksdb
       - proxysql2
       - percona-orchestrator-cli
@@ -96,10 +96,10 @@
     vars:
       packages:
       - percona-server-server
-      - percona-server-client
-      - percona-server-test
-      - percona-server-debuginfo
-      - percona-server-devel
+      # - percona-server-client
+      # - percona-server-test
+      # - percona-server-debuginfo
+      # - percona-server-devel
       - percona-server-rocksdb
       - proxysql2
       - percona-orchestrator-cli
@@ -132,7 +132,7 @@
     vars:
       packages:
       - percona-haproxy
-      when: ansible_os_family == "Debian"
+    when: ansible_os_family == "Debian"
 
   - name: enable the original repo
     command: percona-release enable-only original
@@ -155,7 +155,7 @@
     vars:
       packages:
       - pmm2-client
-      when: ansible_os_family == "Debian"
+    when: ansible_os_family == "Debian"
 
   - name: enable the mongo repo pdmdb-7.0
     command: percona-release enable-only pdmdb-7.0
@@ -169,7 +169,7 @@
       packages:
       - percona-server-mongodb
       - percona-backup-mongodb
-      when: ansible_os_family == "Debian"
+    when: ansible_os_family == "Debian"
 
   - name: install Percona Server rpm packages
     yum:
@@ -210,12 +210,17 @@
       - etcd
     when: ansible_os_family == "RedHat"
 
+- name: ensures /usr/local/percona/telemetry/ps dir exists
+  file: 
+    path: "/usr/local/percona/telemetry/ps"
+    state: directory
+
   - name: Create test file
     copy:
       content: |
                 {
                 "ansible_test_string":"ansible_test_string"
                 }
-      dest: "{{ ansible_date_time.epoch }}-test_content.json"
+      dest: "/usr/local/percona/telemetry/ps/{{ ansible_date_time.epoch }}-test_content.json"
 
-  - name: Export
+  # - name: run telemetry agent
