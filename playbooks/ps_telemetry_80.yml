@@ -210,10 +210,10 @@
       - etcd
     when: ansible_os_family == "RedHat"
 
-- name: ensures /usr/local/percona/telemetry/ps dir exists
-  file: 
-    path: "/usr/local/percona/telemetry/ps"
-    state: directory
+  - name: ensures /usr/local/percona/telemetry/ps dir exists
+    file: 
+      path: "/usr/local/percona/telemetry/ps"
+      state: directory
 
   - name: Create test file
     copy:
