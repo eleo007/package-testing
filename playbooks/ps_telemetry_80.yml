@@ -78,6 +78,8 @@
       - percona-orchestrator
       - percona-mysql-shell
       - percona-mysql-router
+      - percona-xtrabackup-80
+      - percona-toolkit
       when: ansible_os_family == "Debian"
 
   - name: install Percona Server rpm packages
@@ -99,4 +101,113 @@
       - percona-orchestrator
       - percona-mysql-shell
       - percona-mysql-router
+      - percona-xtrabackup-80
+      - percona-toolkit
     when: ansible_os_family == "RedHat"
+
+  - name: enable the pdpxc-8.0.35
+    command: percona-release enable-only pdpxc-8.0.35
+
+  - name: install percona-haproxy rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - percona-haproxy
+    when: ansible_os_family == "RedHat"
+
+  - name: install percona-haproxy deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - percona-haproxy
+      when: ansible_os_family == "Debian"
+
+  - name: enable the original repo
+    command: percona-release enable-only original
+
+  - name: install Percona Server rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - pmm2-client
+    when: ansible_os_family == "RedHat"
+
+  - name: install Percona Server deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - pmm2-client
+      when: ansible_os_family == "Debian"
+
+  - name: enable the mongo repo pdmdb-7.0
+    command: percona-release enable-only pdmdb-7.0
+
+  - name: install Percona Server deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - percona-server-mongodb
+      - percona-backup-mongodb
+      when: ansible_os_family == "Debian"
+
+  - name: install Percona Server rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - percona-server-mongodb
+      - percona-backup-mongodb
+    when: ansible_os_family == "RedHat"
+
+  - name: enable the ppg repo ppg-16
+    command: percona-release setup ppg-16
+
+
+  - name: install Percona Server deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - percona-ppg-server-16
+      - percona-pgbouncer
+      - etcd
+      when: ansible_os_family == "Debian"
+
+  - name: install Percona Server rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - percona-ppg-server16
+      - percona-pgbouncer
+      - etcd
+    when: ansible_os_family == "RedHat"
+
+  - name: Create test file
+    copy:
+      content: |
+                {
+                "test_string":"test_string"
+                }
+      dest: test_content.json
