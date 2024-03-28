@@ -79,7 +79,7 @@
 #  - name: install Percona Toolkit new deb packages
 #    include_tasks: ../tasks/install_pt.yml
 
-  - name: install Percona Server 8.0 packages
+  - name: install Percona Server-{{ pro_suf }} 8.0 packages
     include_tasks: ../tasks/install_ps80.yml
     vars:
       pro_suf: "{{ '-pro' if 'yes' in lookup('env', 'pro_test') else '' }}"
@@ -126,7 +126,7 @@
 
   - name: Handle check that Percona Server version is correct
     block: 
-      - name: Run the version_check.sh script
+      - name: Run the version_check.sh script {{ pro }}
         shell: /package-testing/version_check.sh ps80 {{ pro }} > version-check.log 2>&1
 
       - name: Log check for warnings in the previous stage
@@ -146,9 +146,10 @@
         fail:
           msg: Failing the further tasks due to issues in the previous task.
 
-  - name: check that Percona Server package versions are correct
+  - name: check that Percona Server {{ pro }} package versions are correct
     command: /package-testing/package_check.sh ps80 {{ pro }}
 
+# Bookworm does not support fips mode out of the box. It requires opennsl module rebuid. So we skip fips mode enabling for bookworm.
   - name: include tasks for checking FIPS mode
     include: ../tasks/check_ps80_fips.yml
     when:

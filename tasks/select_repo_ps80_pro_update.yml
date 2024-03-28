@@ -1,3 +1,8 @@
+# Repo selection:
+# - enable PS 80 PRO main repo for pro_to_pro test (eg. 8.0.35 PRO to 8.0.36 PRO)
+# - enable PDPS-being-released-version for not_pro_to_pro test (eg. 8.0.36 not PRO to 8.0.36 PRO)
+# - enable PS 80 PRO testing repo for downgrade test (eg. 8.0.36 PRO to 8.0.36 not PRO)
+
   - name: include tasks for enabling PS 80 pro main repo
     include_tasks: ../tasks/enable_ps80_pro_tools_repo.yml
     vars:
@@ -25,7 +30,7 @@
     when:
       - lookup('env', 'cur_action_to_test') == "not_pro_to_pro"
 
-  - name: include tasks for enabling PS 80 pro main repo
+  - name: include tasks for enabling PS 80 pro testing repo
     include_tasks: ../tasks/enable_ps80_pro_tools_repo.yml
     vars:
       repo: "testing"
