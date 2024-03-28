@@ -160,7 +160,7 @@
   - name: enable the mongo repo pdmdb-7.0
     command: percona-release enable-only pdmdb-7.0
 
-  - name: install Percona Server deb packages
+  - name: install Mongo deb packages
     apt:
       name: "{{ packages }}"
       update_cache: yes
@@ -171,7 +171,7 @@
       - percona-backup-mongodb
     when: ansible_os_family == "Debian"
 
-  - name: install Percona Server rpm packages
+  - name: install Mongo rpm packages
     yum:
       name: "{{ packages }}"
       state: latest
@@ -183,10 +183,10 @@
     when: ansible_os_family == "RedHat"
 
   - name: enable the ppg repo ppg-16
-    command: percona-release setup ppg-16
+    command: percona-release setup -y ppg-16
 
 
-  - name: install Percona Server deb packages
+  - name: install PPG deb packages
     apt:
       name: "{{ packages }}"
       update_cache: yes
@@ -196,9 +196,9 @@
       - percona-ppg-server-16
       - percona-pgbouncer
       - etcd
-      when: ansible_os_family == "Debian"
+    when: ansible_os_family == "Debian"
 
-  - name: install Percona Server rpm packages
+  - name: install PPG rpm packages
     yum:
       name: "{{ packages }}"
       state: latest
