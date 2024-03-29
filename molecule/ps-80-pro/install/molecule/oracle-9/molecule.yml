@@ -20,7 +20,6 @@ provisioner:
   playbooks:
     create: ../../../../playbooks/create.yml
     destroy: ../../../../playbooks/destroy.yml
-    cleanup: ../../playbooks/cleanup.yml
     prepare: ../../playbooks/prepare-pro.yml
     converge: ../../playbooks/playbook.yml
 scenario:
