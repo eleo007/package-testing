@@ -4,7 +4,7 @@ dependency:
 driver:
   name: ec2
 platforms:
-  - name: ol9-${BUILD_NUMBER}-${JOB_NAME}
+  - name: ol9-${BUILD_NUMBER}-${JOB_NAME}-${cur_action_to_test}
     region: us-west-2
     image:  ami-00a5d5bcea31bb02c
     vpc_subnet_id: subnet-03136d8c244f56036

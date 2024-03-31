@@ -4,7 +4,7 @@ dependency:
 driver:
   name: ec2
 platforms:
-  - name: ujammy-${BUILD_NUMBER}-${JOB_NAME}
+  - name: ujammy-${BUILD_NUMBER}-${JOB_NAME}-${cur_action_to_test}
     region: us-west-2
     image: ami-058168290d30b9c52
     vpc_subnet_id: subnet-03136d8c244f56036
