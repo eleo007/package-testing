@@ -6,6 +6,7 @@ import time
 import os
 import json
 import shutil
+import shutil
 import mysql
 from packaging import version
 
@@ -13,6 +14,10 @@ from packaging import version
 os.environ['PERCONA_TELEMETRY_URL'] = 'https://check-dev.percona.com/v1/telemetry/GenericReport'
 # os.environ['PERCONA_TELEMETRY_CHECK_INTERVAL'] = '10'
 # TEL_URL_VAR="PERCONA_TELEMETRY_URL=https://check-dev.percona.com/v1/telemetry/GenericReport"
+
+telemetry_log_file="/home/eleonora/telemetry.log"
+
+pillars_list=["ps", "pg", "psmdb"]
 
 #### !!!!!!!!!!!!!!! CHANGE URL TO CORRECT ONE AFTER THE CHANGES!!!!!!!!!!!
 telemetry_defaults=[["RootPath", "/usr/local/percona/telemetry"],["PSMetricsPath", "/usr/local/percona/telemetry/ps"],
@@ -23,6 +28,14 @@ telemetry_defaults=[["RootPath", "/usr/local/percona/telemetry"],["PSMetricsPath
 
 platform_defaults=[["ResendTimeout", 60], ["URL","https://check-dev.percona.com/v1/telemetry/GenericReport"]
     ]
+
+telem_root_dir = '/usr/local/percona/telemetry/'
+
+telem_history_dir=telem_root_dir + 'history'
+
+def get_telemetry_command(timeout, interval, extra_options=""):
+    telem_cmd="timeout --preserve-status "+ timeout + " ~/telemetry-agent/bin/telemetry-agent --telemetry.check-interval="+ interval + extra_options + " > " + telemetry_log_file
+    return telem_cmd
 
 @pytest.fixture(scope="module")
 def get_defaults(host):
@@ -43,26 +56,26 @@ def run_telemetry(host):
 @pytest.fixture(scope="module")
 def copy_pillar_metrics(host):
     with host.sudo("root"):
-        root_dir = '/usr/local/percona/telemetry/'
-        if os.path.isdir(root_dir):
-            print(f"{root_dir} exists. Continue")
+        if host.file(telem_root_dir).is_directory:
+            print(f"{telem_root_dir} exists. Continue")
         else:
-            print(f"Creating {root_dir}. Continue")
-            host.check_output(f"mkdir -p {root_dir}")
-        for pillar in ["ps", "pg", "psmdb"]:
-            pillar_dir=root_dir + pillar
-            if os.path.isdir(pillar_dir):
+            print(f"Creating {telem_root_dir}. Continue")
+            host.check_output(f"mkdir -p {telem_root_dir}")
+        for pillar in pillars_list:
+            pillar_dir=telem_root_dir + pillar
+            if host.file(pillar_dir).is_directory:
                 print(f"{pillar_dir} exists. Continue")
             else:
                 print(f"Creating {pillar_dir}. Continue")
                 host.check_output(f"mkdir -p {pillar_dir}")
-            if len(os.listdir(pillar_dir)) == 0:
-                print(f"{pillar_dir} is empty. Copiying pillar telemetry file")
-                host.check_output(f"cp ./{pillar}_test_file.json {pillar_dir}/$(date +%s)_{pillar}_test_file.json")
-
-    # cmd="destination_directory = './projects'"
-    # file_to_copy = './ps_test_file.json'
-    # for file in ['ps_test_file.json','ps_test_file.json','ps_test_file.json']
+            print(host.file(pillar_dir).listdir())
+            if len(host.file(pillar_dir).listdir()) != 0:
+                print("Clean up folder to have predictable num of files")
+                for filename in host.file(pillar_dir).listdir():
+                    print(f"{pillar_dir} + '/' + {filename}")
+                    host.check_output(f"rm -rf {pillar_dir} + '/' + {filename}")
+            print(f"{pillar_dir} does not have all files. Copiying pillar telemetry files")
+            host.check_output(f"cp -p ./{pillar}-test-file.json {pillar_dir}/$(date +%s)-{pillar}-test-file.json")
 
 @pytest.mark.parametrize("key, value", telemetry_defaults)
 def test_telemetry_default_values(host, get_defaults, key, value):
@@ -78,16 +91,39 @@ def test_platform_default_values(host, get_defaults, key, value):
     assert len(platform_config) == 2
     assert platform_config[key] == value
 
-# def test_telemetry_not_sent_wrong hist_permissions(host, copy_pillar_metrics):
-#     host.run("timeout 25 ~/telemetry-agent/bin/telemetry-agent --telemetry.check-interval=10 > ~/telemetry.log")
-#     cmd="cat ~/telemetry.log"
+
+def test_history_no_rights(host, copy_pillar_metrics):
+    with host.sudo("root"):
+        if host.file(telem_history_dir).is_directory:
+            print(telem_history_dir + " exists")
+            host.run(f"rm -rf {telem_history_dir}")
+        host.check_output(f"chattr +i {telem_root_dir}")
+    telem_cmd=get_telemetry_command("2", "10")
+    check_result = host.run(telem_cmd)
+    with host.sudo("root"):
+        host.check_output(f"chattr -i {telem_root_dir}")
+    assert check_result.rc != 0, (check_result.rc, check_result.stderr, check_result.stdout)
 
 
 def test_telemetry_sending(host, copy_pillar_metrics):
-    host.run("timeout 25 ~/telemetry-agent/bin/telemetry-agent --telemetry.check-interval=10 > ~/telemetry.log")
-    cmd="cat ~/telemetry.log"
-    output=host.check_output(cmd)
-    print(output)
+    telem_cmd=get_telemetry_command("10", "5")
+    host.check_output(telem_cmd)
+    log_file_content = host.file(telemetry_log_file).content_string
+    assert "sleeping for 5 seconds before first iteration" in log_file_content
+    for pillar in pillars_list:
+        assert 'Sending request to host=check-dev.percona.com.","file":"/usr/local/percona/telemetry/' + pillar in log_file_content
+        assert 'Received response: 200 OK","file":"/usr/local/percona/telemetry/' + pillar in log_file_content
+
+def test_telemetry_history(host,):
+    log_file_content = host.file(telemetry_log_file).content_string
+    for pillar in pillars_list:
+        assert 'writing metrics to history file","pillar file":"/usr/local/percona/telemetry/' + pillar in log_file_content
+        assert len(host.file(telem_history_dir).listdir()) == 3
+
+
+# def test_telemetry_not_sent_wrong hist_permissions(host, copy_pillar_metrics):
+#     host.run("timeout 25 ~/telemetry-agent/bin/telemetry-agent --telemetry.check-interval=10 > ~/telemetry.log")
+#     cmd="cat ~/telemetry.log"
 
 # def test_host_uuid_telemetry(host):
 # def test_pg_telemetry(host):
