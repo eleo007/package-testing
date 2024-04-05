@@ -6,7 +6,7 @@ import time
 import os
 import json
 import shutil
-import shutil
+import re
 import mysql
 from packaging import version
 
@@ -15,6 +15,7 @@ os.environ['PERCONA_TELEMETRY_URL'] = 'https://check-dev.percona.com/v1/telemetr
 # os.environ['PERCONA_TELEMETRY_CHECK_INTERVAL'] = '10'
 # TEL_URL_VAR="PERCONA_TELEMETRY_URL=https://check-dev.percona.com/v1/telemetry/GenericReport"
 
+deployment = 'PACKAGE'
 telemetry_log_file="/home/eleonora/telemetry.log"
 
 pillars_list=["ps", "pg", "psmdb"]
@@ -116,6 +117,12 @@ def copy_pillar_metrics(host):
     metrics_files = create_pillar_metrics_file(host)
     yield metrics_files
 
+
+##################################################################################
+#################################### TESTS #######################################
+##################################################################################
+
+
 @pytest.mark.parametrize("key, value", telemetry_defaults)
 def test_telemetry_default_values(host, get_ta_defaults, key, value):
     cur_values=get_ta_defaults
@@ -171,16 +178,67 @@ def test_tetemetry_removed_from_pillar(host,copy_pillar_metrics):
         assert 'failed to remove metrics file, will try on next iteration","file":"' + telem_root_dir + pillar + '/' + copy_pillar_metrics[pillar] not in log_file_content
         assert len (host.file(telem_root_dir + pillar).listdir()) == 0
 
-
-
 def test_no_other_errors(host):
     log_file_content = host.file(telemetry_log_file).content_string
     assert '"level":"error"' not in log_file_content
 
+def test_telemetry_file_valid_json(host, copy_pillar_metrics):
+    for pillar in pillars_list:
+        history_file=host.file(telem_history_dir + copy_pillar_metrics[pillar]).content_string
+        json.loads(history_file)
+
+def test_major_metrics_sent(host, copy_pillar_metrics):
+    for pillar in pillars_list:
+        history_file=host.file(telem_history_dir + copy_pillar_metrics[pillar]).content_string
+        assert '"id":' in history_file
+        assert '"createTime":' in history_file
+        assert '"instanceId":' in history_file
+        assert '"productFamily":' in history_file
+        assert '"metrics":' in history_file
+        assert '"installed_packages"' in history_file
+        assert '"OS"' in history_file
+        assert '"deployment"' in history_file
+        assert '"hardware_arch"' in history_file
+
+def test_major_metrics_sent(host, copy_pillar_metrics):
+    # get OS
+    test_host_version = host.system_info.distribution
+    test_host_release = host.system_info.release
+    test_host_arch = host.system_info.arch
+    # get  instanceId
+    telemetry_uuid_content = host.file('/usr/local/percona/telemetry_uuid').content_string
+    pattern = r'instanceId: ([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})'
+    match = re.search(pattern, telemetry_uuid_content)
+    extracted_uuid = match.group(1)
+    for pillar in pillars_list:
+        history_file=host.file(telem_history_dir + copy_pillar_metrics[pillar]).content_string
+        # get product family
+        if pillar != 'pg':
+            product_family = 'PRODUCT_FAMILY_' + pillar.upper()
+        elif pillar == 'pg':
+            product_family = 'PRODUCT_FAMILY_POSTGRESQL'
+        else:
+            assert 'Unknown pillar'
+
+        history_dict=json.loads(history_file)
+        assert re.search(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',history_dict['reports'][0]['id'])
+        assert history_dict['reports'][0]['instanceId'] == extracted_uuid
+        assert history_dict['reports'][0]['productFamily'] == product_family
+        metrics_list=history_dict['reports'][0]['metrics']
+        for metric in metrics_list:
+            if metric['key'] == 'OS':
+                assert test_host_version in metric['value'].lower()
+                assert test_host_release in metric['value'].lower()
+            if metric['key'] == 'deployment':
+                assert deployment in metric['value']
+            if metric['key'] == 'hardware_arch':
+                assert test_host_arch in metric['value']
+
+# check installed packages         assert '"installed_packages"' in history_file
+
 # def test_test_OS_metrics():
 
 
-# restart agent to alen up history dir
 # def test_telemetry_removed_from_history(host):
 #     telem_cmd=get_ta_command("10", "5", "6")
 #     host.check_output(telem_cmd)
@@ -190,15 +248,10 @@ def test_no_other_errors(host):
 
 # def test_no_perm_errors_with_packages()
 
-# def test_tetemetry_os_metrics(host):
-#     for pillar in pillars_list:
-
-
 
 # def test_host_uuid_telemetry(host):
 # def test_pg_telemetry(host):
 
-# def test_OS_metrics
 # def test_mongo_telemetry(host):
 
 # def test_telemetry_rerun(host):
