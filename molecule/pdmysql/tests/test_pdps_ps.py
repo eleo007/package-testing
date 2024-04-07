@@ -208,6 +208,8 @@ def test_plugins(host, plugin_command):
 @pytest.mark.parametrize("component", COMPONENTS)
 def test_components(component, host):
     with host.sudo("root"):
+        cmd = 'echo "log_error_verbosity=3" >> /etc/my.cnf'
+        host.run(cmd)
         cmd = 'mysql -Ns -e "select count(*) from mysql.component where component_urn=\"file://{}\";"'.format(component)
         check_component = host.run(cmd)
         if check_component.rc == 0:
