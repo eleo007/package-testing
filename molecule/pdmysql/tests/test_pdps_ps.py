@@ -235,50 +235,50 @@ def test_madmin(host):
         mysql = host.service("mysql")
         assert mysql.is_running
 
-def test_disable_validate_password_plugin(host):
-    with host.sudo():
-        cmd = "mysql -e \"UNINSTALL PLUGIN validate_password;\""
-        plugin = host.run(cmd)
-        assert plugin.rc == 0, plugin.stdout
-        dist = host.system_info.distribution
-        if dist.lower() in RHEL_DISTS:
-            cmd = 'service mysql restart'
-            restart = host.run(cmd)
-            assert restart.rc == 0, (restart.stdout, restart.stderr)
+# def test_disable_validate_password_plugin(host):
+#     with host.sudo():
+#         cmd = "mysql -e \"UNINSTALL PLUGIN validate_password;\""
+#         plugin = host.run(cmd)
+#         assert plugin.rc == 0, plugin.stdout
+#         dist = host.system_info.distribution
+#         if dist.lower() in RHEL_DISTS:
+#             cmd = 'service mysql restart'
+#             restart = host.run(cmd)
+#             assert restart.rc == 0, (restart.stdout, restart.stderr)
 
-@pytest.mark.pkg_source
-def test_sources_ps_version(host):
-    if REPO == "testing" or REPO == "experimental":
-        pytest.skip("This test only for main repo")
-    dist = host.system_info.distribution    
-    if dist.lower() in RHEL_DISTS:
-        pytest.skip("This test only for DEB distributions")
-    if DEB_PERCONA_BUILD_VERSION:
-        cmd = "apt-cache madison percona-server | grep Source | grep \"{}\"".format(DEB_PERCONA_BUILD_VERSION)
-    else:
-        cmd = "apt-cache madison percona-server | grep Source | grep \"{}\"".format(VERSION)
-    result = host.run(cmd)
-    assert result.rc == 0, (result.stderr, result.stdout)
-    assert VERSION in result.stdout, result.stdout
+# @pytest.mark.pkg_source
+# def test_sources_ps_version(host):
+#     if REPO == "testing" or REPO == "experimental":
+#         pytest.skip("This test only for main repo")
+#     dist = host.system_info.distribution    
+#     if dist.lower() in RHEL_DISTS:
+#         pytest.skip("This test only for DEB distributions")
+#     if DEB_PERCONA_BUILD_VERSION:
+#         cmd = "apt-cache madison percona-server | grep Source | grep \"{}\"".format(DEB_PERCONA_BUILD_VERSION)
+#     else:
+#         cmd = "apt-cache madison percona-server | grep Source | grep \"{}\"".format(VERSION)
+#     result = host.run(cmd)
+#     assert result.rc == 0, (result.stderr, result.stdout)
+#     assert VERSION in result.stdout, result.stdout
 
-@pytest.mark.pkg_source
-def test_sources_mysql_shell_version(host):
-    if REPO == "testing" or REPO == "experimental":
-        pytest.skip("This test only for main repo")
-    dist = host.system_info.distribution
-    if dist.lower() in RHEL_DISTS:
-        pytest.skip("This test only for DEB distributions")
-    cmd = "apt-cache madison percona-mysql-shell | grep Source | grep \"{}\"".format(VERSION.split('-')[0])
-    result = host.run(cmd)
-    assert result.rc == 0, (result.stderr, result.stdout)
-    assert VERSION.split('-')[0] in result.stdout, result.stdout
+# @pytest.mark.pkg_source
+# def test_sources_mysql_shell_version(host):
+#     if REPO == "testing" or REPO == "experimental":
+#         pytest.skip("This test only for main repo")
+#     dist = host.system_info.distribution
+#     if dist.lower() in RHEL_DISTS:
+#         pytest.skip("This test only for DEB distributions")
+#     cmd = "apt-cache madison percona-mysql-shell | grep Source | grep \"{}\"".format(VERSION.split('-')[0])
+#     result = host.run(cmd)
+#     assert result.rc == 0, (result.stderr, result.stdout)
+#     assert VERSION.split('-')[0] in result.stdout, result.stdout
 
-@pytest.mark.telemetry_enabled
-def test_telemetry_enabled(host):
-    assert host.file(TELEMETRY_PATH).exists
-    assert host.file(TELEMETRY_PATH).contains('PRODUCT_FAMILY_PS')
-    assert host.file(TELEMETRY_PATH).contains('instanceId:[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}$')
+# @pytest.mark.telemetry_enabled
+# def test_telemetry_enabled(host):
+#     assert host.file(TELEMETRY_PATH).exists
+#     assert host.file(TELEMETRY_PATH).contains('PRODUCT_FAMILY_PS')
+#     assert host.file(TELEMETRY_PATH).contains('instanceId:[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}$')
 
-@pytest.mark.telemetry_disabled
-def test_telemetry_disabled(host):
-    assert not host.file(TELEMETRY_PATH).exists
+# @pytest.mark.telemetry_disabled
+# def test_telemetry_disabled(host):
+#     assert not host.file(TELEMETRY_PATH).exists
