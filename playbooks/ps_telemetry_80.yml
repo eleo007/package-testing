@@ -62,6 +62,9 @@
   - name: Install percona release
     include_tasks: ../tasks/install_percona-release.yml
 
+  - name: enable percona-release tools experimental
+    command: percona-release enable tools experimental
+
   # - name: enable the pdps-pdps-8.0.36
   #   command: percona-release enable-only pdps-8.0.36
 
