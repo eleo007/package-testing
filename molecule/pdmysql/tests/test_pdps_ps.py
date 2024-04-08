@@ -2,6 +2,7 @@ import os
 import pytest
 import testinfra.utils.ansible_runner
 import re
+import time
 from .settings import *
 from packaging import version
 
@@ -224,6 +225,7 @@ def test_components(component, host):
 
 def test_madmin(host):
     with host.sudo("root"):
+        time.sleep(2)
         mysql = host.service("mysql")
         assert mysql.is_running
         cmd = 'mysqladmin shutdown'
