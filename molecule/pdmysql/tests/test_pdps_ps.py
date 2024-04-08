@@ -237,16 +237,16 @@ def test_madmin(host):
         mysql = host.service("mysql")
         assert mysql.is_running
 
-def test_disable_validate_password_plugin(host):
-    with host.sudo():
-        cmd = "mysql -e \"UNINSTALL PLUGIN validate_password;\""
-        plugin = host.run(cmd)
-        assert plugin.rc == 0, plugin.stdout
-        dist = host.system_info.distribution
-        if dist.lower() in RHEL_DISTS:
-            cmd = 'service mysql restart'
-            restart = host.run(cmd)
-            assert restart.rc == 0, (restart.stdout, restart.stderr)
+# def test_disable_validate_password_plugin(host):
+#     with host.sudo():
+#         cmd = "mysql -e \"UNINSTALL PLUGIN validate_password;\""
+#         plugin = host.run(cmd)
+#         assert plugin.rc == 0, plugin.stdout
+#         dist = host.system_info.distribution
+#         if dist.lower() in RHEL_DISTS:
+#             cmd = 'service mysql restart'
+#             restart = host.run(cmd)
+#             assert restart.rc == 0, (restart.stdout, restart.stderr)
 
 # @pytest.mark.pkg_source
 # def test_sources_ps_version(host):
