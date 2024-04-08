@@ -19,131 +19,131 @@
     # PERCONA_TELEMETRY_CHECK_INTERVAL: 10
 
   tasks:
-  - name: include tasks for test env setup
-    include_tasks: ../tasks/test_prep.yml
+#   - name: include tasks for test env setup
+#     include_tasks: ../tasks/test_prep.yml
 
-  - name: disable the mysql module on RHEL/CentOS 8
-    command: /usr/bin/dnf module disable mysql -y
-    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
+#   - name: disable the mysql module on RHEL/CentOS 8
+#     command: /usr/bin/dnf module disable mysql -y
+#     when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
 
-  - name: Copy telemetry agent binary
-    ansible.builtin.copy:
-      src: /home/eleonora.zinchenko/telemetry-agent/bin/telemetry-agent
-      dest: telemetry-agent
-      mode: '777'
+#   - name: Copy telemetry agent binary
+#     ansible.builtin.copy:
+#       src: /home/eleonora.zinchenko/telemetry-agent/bin/telemetry-agent
+#       dest: telemetry-agent
+#       mode: '777'
 
-  - name: enforce SELinux on CentOS
-    selinux:
-      policy: targeted
-      state: enforcing
-    when: ansible_os_family == "RedHat"
+#   - name: enforce SELinux on CentOS
+#     selinux:
+#       policy: targeted
+#       state: enforcing
+#     when: ansible_os_family == "RedHat"
 
-  - name: get selinux status
-    command: sestatus
-    register: selinux_status
-    when: ansible_os_family == "RedHat"
+#   - name: get selinux status
+#     command: sestatus
+#     register: selinux_status
+#     when: ansible_os_family == "RedHat"
 
-  - name: list selinux status
-    debug:
-      var: selinux_status
-    when: ansible_os_family == "RedHat"
+#   - name: list selinux status
+#     debug:
+#       var: selinux_status
+#     when: ansible_os_family == "RedHat"
 
-  - name: download and extract world database
-    command: "{{ item }}"
-    with_items:
-    - wget --no-check-certificate -P /package-testing https://raw.githubusercontent.com/Percona-QA/percona-qa/master/sample_db/world.sql
+#   - name: download and extract world database
+#     command: "{{ item }}"
+#     with_items:
+#     - wget --no-check-certificate -P /package-testing https://raw.githubusercontent.com/Percona-QA/percona-qa/master/sample_db/world.sql
 
-# Disable Percona Toolkit installation till its supported in OL9 and Jammy
-#  - name: install Percona Toolkit new deb packages
-#    include_tasks: ../tasks/install_pt.yml
-  - name: include playbook for removing Percona repo
-    include_tasks: ../tasks/remove_percona_repository.yml
+# # Disable Percona Toolkit installation till its supported in OL9 and Jammy
+# #  - name: install Percona Toolkit new deb packages
+# #    include_tasks: ../tasks/install_pt.yml
+#   - name: include playbook for removing Percona repo
+#     include_tasks: ../tasks/remove_percona_repository.yml
 
-  - name: Install percona release
-    include_tasks: ../tasks/install_percona-release.yml
+#   - name: Install percona release
+#     include_tasks: ../tasks/install_percona-release.yml
 
-  - name: enable percona-release tools experimental
-    command: percona-release enable tools experimental
+#   - name: enable percona-release tools experimental
+#     command: percona-release enable tools experimental
 
-  - name: Update cache
-    command: apt update
+#   - name: Update cache
+#     command: apt update
+#     when: ansible_os_family == "Debian"
+
+
+  - name: enable the pdps-pdps-8.0.36
+    command: percona-release enable-only pdps-8.0.36
+
+  - name: install Percona Server deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - percona-server-server
+      - percona-server-test
+      # - percona-server-dbg
+      - percona-server-source
+      - percona-server-client
+      - percona-server-rocksdb
+      - proxysql2
+      - percona-orchestrator-cli
+      - percona-orchestrator-client
+      - percona-orchestrator
+      - percona-mysql-shell
+      - percona-mysql-router
+      - percona-xtrabackup-80
+      - percona-toolkit
     when: ansible_os_family == "Debian"
 
+  - name: install Percona Server rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - percona-server-server
+      - percona-server-client
+      - percona-server-test
+      # - percona-server-debuginfo
+      # - percona-server-devel
+      - percona-server-rocksdb
+      - proxysql2
+      - percona-orchestrator-cli
+      - percona-orchestrator-client
+      - percona-orchestrator
+      - percona-mysql-shell
+      - percona-mysql-router
+      - percona-xtrabackup-80
+      - percona-toolkit
+    when: ansible_os_family == "RedHat"
 
-  # - name: enable the pdps-pdps-8.0.36
-  #   command: percona-release enable-only pdps-8.0.36
+  - name: enable the pdpxc-8.0.35
+    command: percona-release enable-only pdpxc-8.0.35
 
-  # - name: install Percona Server deb packages
-  #   apt:
-  #     name: "{{ packages }}"
-  #     update_cache: yes
-  #     state: latest
-  #   vars:
-  #     packages:
-  #     - percona-server-server
-  #     # - percona-server-test
-  #     # - percona-server-dbg
-  #     # - percona-server-source
-  #     # - percona-server-client
-  #     - percona-server-rocksdb
-  #     - proxysql2
-  #     - percona-orchestrator-cli
-  #     - percona-orchestrator-client
-  #     - percona-orchestrator
-  #     - percona-mysql-shell
-  #     - percona-mysql-router
-  #     - percona-xtrabackup-80
-  #     - percona-toolkit
-  #   when: ansible_os_family == "Debian"
+  - name: install percona-haproxy rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - percona-haproxy
+    when: ansible_os_family == "RedHat"
 
-  # - name: install Percona Server rpm packages
-  #   yum:
-  #     name: "{{ packages }}"
-  #     state: latest
-  #     update_cache: yes
-  #   vars:
-  #     packages:
-  #     - percona-server-server
-  #     # - percona-server-client
-  #     # - percona-server-test
-  #     # - percona-server-debuginfo
-  #     # - percona-server-devel
-  #     - percona-server-rocksdb
-  #     - proxysql2
-  #     - percona-orchestrator-cli
-  #     - percona-orchestrator-client
-  #     - percona-orchestrator
-  #     - percona-mysql-shell
-  #     - percona-mysql-router
-  #     - percona-xtrabackup-80
-  #     - percona-toolkit
-  #   when: ansible_os_family == "RedHat"
+  - name: install percona-haproxy deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - percona-haproxy
+    when: ansible_os_family == "Debian"
 
-  # - name: enable the pdpxc-8.0.35
-  #   command: percona-release enable-only pdpxc-8.0.35
-
-  # - name: install percona-haproxy rpm packages
-  #   yum:
-  #     name: "{{ packages }}"
-  #     state: latest
-  #     update_cache: yes
-  #   vars:
-  #     packages:
-  #     - percona-haproxy
-  #   when: ansible_os_family == "RedHat"
-
-  # - name: install percona-haproxy deb packages
-  #   apt:
-  #     name: "{{ packages }}"
-  #     update_cache: yes
-  #     state: latest
-  #   vars:
-  #     packages:
-  #     - percona-haproxy
-  #   when: ansible_os_family == "Debian"
-
-  # - name: enable the original repo
-  #   command: percona-release enable-only original
+  - name: enable the original repo
+    command: percona-release enable-only original
 
   # - name: install Percona Server rpm packages
   #   yum:
@@ -165,58 +165,64 @@
   #     - pmm2-client
   #   when: ansible_os_family == "Debian"
 
-  # - name: enable the mongo repo pdmdb-7.0
-  #   command: percona-release enable-only pdmdb-7.0
+  - name: enable the mongo repo pdmdb-7.0
+    command: percona-release enable-only pdmdb-7.0
 
-  # - name: install Mongo deb packages
-  #   apt:
-  #     name: "{{ packages }}"
-  #     update_cache: yes
-  #     state: latest
-  #   vars:
-  #     packages:
-  #     - percona-server-mongodb
-  #     - percona-backup-mongodb
-  #   when: ansible_os_family == "Debian"
+  - name: install Mongo deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - percona-server-mongodb
+      - percona-backup-mongodb
+    when: ansible_os_family == "Debian"
 
-  # - name: install Mongo rpm packages
-  #   yum:
-  #     name: "{{ packages }}"
-  #     state: latest
-  #     update_cache: yes
-  #   vars:
-  #     packages:
-  #     - percona-server-mongodb
-  #     - percona-backup-mongodb
-  #   when: ansible_os_family == "RedHat"
+  - name: install Mongo rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - percona-server-mongodb
+      - percona-backup-mongodb
+    when: ansible_os_family == "RedHat"
 
-  # - name: enable the ppg repo ppg-16
-  #   command: percona-release setup -y ppg-16
+  - name: enable the ppg repo ppg-16
+    command: percona-release setup -y ppg-16
 
 
-  # - name: install PPG deb packages
-  #   apt:
-  #     name: "{{ packages }}"
-  #     update_cache: yes
-  #     state: latest
-  #   vars:
-  #     packages:
-  #     - percona-ppg-server-16
-  #     - percona-pgbouncer
-  #     - etcd
-  #   when: ansible_os_family == "Debian"
+  - name: install PPG deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - percona-ppg-server-16
+      - percona-pgbouncer
+      - percona-pg-stat-monitor16
+      - etcd
+      - patroni
+      - wal2json
+    when: ansible_os_family == "Debian"
 
-  # - name: install PPG rpm packages
-  #   yum:
-  #     name: "{{ packages }}"
-  #     state: latest
-  #     update_cache: yes
-  #   vars:
-  #     packages:
-  #     - percona-ppg-server16
-  #     - percona-pgbouncer
-  #     - etcd
-  #   when: ansible_os_family == "RedHat"
+  - name: install PPG rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - percona-ppg-server16
+      - percona-pgbouncer
+      - percona-pg-stat-monitor16
+      - etcd
+      - patroni
+      - wal2json
+    when: ansible_os_family == "RedHat"
 
   # - name: ensures /usr/local/percona/telemetry/ps dir exists
   #   file: 
