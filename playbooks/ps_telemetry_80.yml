@@ -253,11 +253,14 @@
       - percona-server-mongodb-mongos
     when: ansible_os_family == "RedHat"
 
-  - name: enable the pdpxc-8.0.35 testing
-    command: sudo dnf module disable postgresql llvm-toolset
 
   - name: enable the ppg repo ppg-16
     command: percona-release enable ppg-16
+    when: ansible_os_family == "Debian"
+
+  - name: setup the ppg repo ppg-16 for rhel
+    command: percona-release setup -y ppg-16
+    when: ansible_os_family == "RedHat"
 
   - name: install PPG deb packages
     apt:
@@ -273,12 +276,12 @@
       - percona-pgaudit16-set-user
       - percona-pgbadger
       - percona-pgbouncer
-      - percona-pg_gather
-      - percona-pgpool-2
-      - percona-pg-repack
-      - percona-pg-stat-monitor
+      - percona-pg-gather
+      - percona-pgpool2
+      - percona-postgresql-*-repack
+      - percona-pg-stat-monitor*
       - percona-postgis
-      - percona-wal2json
+      - percona-postgresql-*-wal2json
       - percona-pgbackrest
       - etcd
     when: ansible_os_family == "Debian"
@@ -291,19 +294,19 @@
     vars:
       packages:
       - percona-ppg-server-16
-      - percona-pgbouncer
-      - percona-patroni
-      - percona-postgresql-16-pgaudit
-      - percona-pgaudit
-      - percona-pgaudit16_set_user
-      - percona-pgbadger
-      - percona-pgbouncer
-      - percona-pg_gather
-      - percona-pgpool-II
-      - percona-pg_repack*
-      - percona-pg_stat_monitor
-      - percona-postgis*
-      - percona-wal2json*
+      # - percona-pgbouncer
+      # - percona-patroni
+      # - percona-postgresql-16-pgaudit
+      # - percona-pgaudit
+      # - percona-pgaudit16_set_user
+      # - percona-pgbadger
+      # - percona-pgbouncer
+      # - percona-pg_gather
+      # - percona-pgpool-II
+      # - percona-pg_repack*
+      # - percona-pg_stat_monitor
+      # - percona-postgis*
+      # - percona-wal2json*
       - percona-pgbackrest
       - etcd
     when: ansible_os_family == "RedHat"
