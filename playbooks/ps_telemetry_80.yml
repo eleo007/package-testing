@@ -253,6 +253,9 @@
       - percona-server-mongodb-mongos
     when: ansible_os_family == "RedHat"
 
+  - name: enable the pdpxc-8.0.35 testing
+    command: sudo dnf module disable postgresql llvm-toolset
+
   - name: enable the ppg repo ppg-16
     command: percona-release enable ppg-16
 
@@ -287,12 +290,22 @@
       update_cache: yes
     vars:
       packages:
-      - percona-ppg-server16
+      - percona-ppg-server-16
       - percona-pgbouncer
-      - percona-pg-stat-monitor16
+      - percona-patroni
+      - percona-postgresql-16-pgaudit
+      - percona-pgaudit
+      - percona-pgaudit16_set_user
+      - percona-pgbadger
+      - percona-pgbouncer
+      - percona-pg_gather
+      - percona-pgpool-II
+      - percona-pg_repack*
+      - percona-pg_stat_monitor
+      - percona-postgis*
+      - percona-wal2json*
+      - percona-pgbackrest
       - etcd
-      - patroni
-      - wal2json
     when: ansible_os_family == "RedHat"
 
   # - name: ensures /usr/local/percona/telemetry/ps dir exists
