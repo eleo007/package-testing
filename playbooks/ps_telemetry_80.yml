@@ -266,7 +266,7 @@
       - percona-ppg-server-16
       - percona-pgbouncer
       - percona-patroni
-      - percona-pgaudit
+      - percona-postgresql-16-pgaudit
       - percona-pgaudit16-set-user
       - percona-pgbadger
       - percona-pgbouncer
