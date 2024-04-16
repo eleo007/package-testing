@@ -297,6 +297,7 @@
       - percona-pgaudit*_set_user
       - percona-pgbadger
       - percona-pg_gather
+      - percona-patroni
       - percona-pgpool-II*
       # - percona-postgis*
       - etcd
@@ -376,5 +377,4 @@
   #               }
   #     dest: "/usr/local/percona/telemetry/ps/{{ ansible_date_time.epoch }}-test_content.json"
 
-  # - name: run telemetry agent
 
