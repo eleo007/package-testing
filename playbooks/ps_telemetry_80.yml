@@ -15,7 +15,6 @@
   environment:
     install_mysql_shell: '{{ install_mysql_shell }}'
     PERCONA_TELEMETRY_URL: "https://check-dev.percona.com/v1/telemetry/GenericReport"
-    PERCONA_TELEMETRY_DISABLE: 1
     # PERCONA_TELEMETRY_CHECK_INTERVAL: 10
 
   tasks:
@@ -181,7 +180,7 @@
 
 
   - name: enable the pdpxc-8.0.35 testing
-    command: percona-release enable-only pdpxc-8.0.35 testing
+    command: percona-release enable pdpxc-8.0.35 testing
 
   - name: install percona-haproxy rpm packages
     yum:
@@ -204,7 +203,7 @@
     when: ansible_os_family == "Debian"
 
   - name: enable the original repo
-    command: percona-release enable-only original
+    command: percona-release enable original
 
   - name: install PMM client rpm packages
     yum:
@@ -226,8 +225,8 @@
       - pmm2-client
     when: ansible_os_family == "Debian"
 
-  - name: enable the mongo repo pdmdb-7.0
-    command: percona-release enable pdmdb-7.0
+  - name: enable the mongo repo pdmdb-7.0 testing
+    command: percona-release enable pdmdb-7.0 testing
 
   - name: install Mongo deb packages
     apt:
@@ -254,8 +253,8 @@
     when: ansible_os_family == "RedHat"
 
 
-  - name: enable the ppg repo ppg-16
-    command: percona-release enable ppg-16
+  - name: enable the ppg repo ppg-16 
+    command: percona-release enable ppg-16 
     when: ansible_os_family == "Debian"
 
   - name: setup the ppg repo ppg-16 for rhel
@@ -293,24 +292,77 @@
       update_cache: yes
     vars:
       packages:
-      - percona-ppg-server-16
-      # - percona-pgbouncer
-      # - percona-patroni
-      # - percona-postgresql-16-pgaudit
-      # - percona-pgaudit
-      # - percona-pgaudit16_set_user
-      # - percona-pgbadger
-      # - percona-pgbouncer
-      # - percona-pg_gather
-      # - percona-pgpool-II
-      # - percona-pg_repack*
-      # - percona-pg_stat_monitor
+      - percona-ppg-server16
+      - percona-pgbouncer
+      - percona-pgaudit*_set_user
+      - percona-pgbadger
+      - percona-pg_gather
+      - percona-pgpool-II*
       # - percona-postgis*
-      # - percona-wal2json*
-      - percona-pgbackrest
       - etcd
     when: ansible_os_family == "RedHat"
 
+  # - name: make changes for pgpool2
+  #   command: psudo dnf config-manager --set-enabled codeready-builder-for-rhel-9-x86_64-rpms
+  #   when: ansible_os_family == "RedHat"
+
+  # - name: install PPG rpm packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #      - percona-pgpool-II
+  #   when: ansible_os_family == "RedHat"
+
+
+  - name: make changes for postgis
+    command: "{{ item }}" 
+    with_items:
+      - yum install epel-release
+      - dnf module enable -y llvm-toolset
+      - dnf config-manager --set-enabled ol8_codeready_builder
+    when: ansible_os_family == "RedHat"
+
+  - name: install PPG rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - percona-postgis33
+    when: ansible_os_family == "RedHat"
+
+  - name: Update PERCONA_TELEMETRY_CHECK_INTERVAL default
+    ansible.builtin.lineinfile:
+      path: /etc/default/percona-telemetry-agent
+      search_string: 'PERCONA_TELEMETRY_CHECK_INTERVAL=86400'
+      line: PERCONA_TELEMETRY_CHECK_INTERVAL=10
+    when: ansible_os_family == "Debian"
+
+  - name: Update PERCONA_TELEMETRY_URL default
+    ansible.builtin.lineinfile:
+      path: /etc/default/percona-telemetry-agent
+      search_string: 'PERCONA_TELEMETRY_URL=https://check.percona.com/v1/telemetry/GenericReport'
+      line: PERCONA_TELEMETRY_URL=https://check-dev.percona.com/v1/telemetry/GenericReport
+    when: ansible_os_family == "Debian"
+
+
+- name: Update PERCONA_TELEMETRY_CHECK_INTERVAL default
+  ansible.builtin.lineinfile:
+    path: /etc/sysconfig/percona-telemetry-agent
+    search_string: 'PERCONA_TELEMETRY_CHECK_INTERVAL=86400'
+    line: PERCONA_TELEMETRY_CHECK_INTERVAL=10
+  when: ansible_os_family == "RedHat"
+
+- name: Update PERCONA_TELEMETRY_URL default
+  ansible.builtin.lineinfile:
+    path: /etc/sysconfig/percona-telemetry-agent
+    search_string: 'PERCONA_TELEMETRY_URL=https://check.percona.com/v1/telemetry/GenericReport'
+    line: PERCONA_TELEMETRY_URL=https://check-dev.percona.com/v1/telemetry/GenericReport
+  when: ansible_os_family == "RedHat"
   # - name: ensures /usr/local/percona/telemetry/ps dir exists
   #   file: 
   #     path: "/usr/local/percona/telemetry/ps"
@@ -325,3 +377,4 @@
   #     dest: "/usr/local/percona/telemetry/ps/{{ ansible_date_time.epoch }}-test_content.json"
 
   # - name: run telemetry agent
+
