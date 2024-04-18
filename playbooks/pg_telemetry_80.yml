@@ -41,6 +41,12 @@
       var: selinux_status
     when: ansible_os_family == "RedHat"
 
+  - name: Install percona release
+    include_tasks: ../tasks/install_percona-release.yml
+
+  - name: enable percona-release tools experimental
+    command: percona-release enable tools experimental
+
   - name: install Telemetry Agent deb packages
     apt:
       name: "{{ packages }}"
