@@ -41,6 +41,68 @@
       var: selinux_status
     when: ansible_os_family == "RedHat"
 
+  - name: install Telemetry Agent deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - percona-telemetry-agent
+    when: ansible_os_family == "Debian"
+
+  - name: install Telemetry Agent rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - percona-telemetry-agent
+    when: ansible_os_family == "RedHat"
+
+  - name: Update PERCONA_TELEMETRY_CHECK_INTERVAL default
+    ansible.builtin.lineinfile:
+      path: /etc/default/percona-telemetry-agent
+      regex: 'PERCONA_TELEMETRY_CHECK_INTERVAL=86400'
+      line: PERCONA_TELEMETRY_CHECK_INTERVAL=10
+    when: ansible_os_family == "Debian"
+
+  - name: Update PERCONA_TELEMETRY_URL default
+    ansible.builtin.lineinfile:
+      path: /etc/default/percona-telemetry-agent
+      regex: 'PERCONA_TELEMETRY_URL=https://check.percona.com/v1/telemetry/GenericReport'
+      line: PERCONA_TELEMETRY_URL=https://check-dev.percona.com/v1/telemetry/GenericReport
+    when: ansible_os_family == "Debian"
+
+
+  - name: Update PERCONA_TELEMETRY_CHECK_INTERVAL default
+    ansible.builtin.lineinfile:
+      path: /etc/sysconfig/percona-telemetry-agent
+      regex: 'PERCONA_TELEMETRY_CHECK_INTERVAL=86400'
+      line: PERCONA_TELEMETRY_CHECK_INTERVAL=10
+    when: ansible_os_family == "RedHat"
+
+  - name: Update PERCONA_TELEMETRY_URL default
+    ansible.builtin.lineinfile:
+      path: /etc/sysconfig/percona-telemetry-agent
+      regex: 'PERCONA_TELEMETRY_URL=https://check.percona.com/v1/telemetry/GenericReport'
+      line: PERCONA_TELEMETRY_URL=https://check-dev.percona.com/v1/telemetry/GenericReport
+    when: ansible_os_family == "RedHat"
+
+  - name: ensures /usr/local/percona/telemetry/ps dir exists
+    file: 
+      path: "/usr/local/percona/telemetry/ps"
+      state: directory
+
+  - name: Create test file
+    copy:
+      content: |
+                {
+                "ansible_test_string":"ansible_test_string"
+                }
+      dest: "/usr/local/percona/telemetry/ps/{{ ansible_date_time.epoch }}-test_content.json"
+
   - name: install PPG repository package
     apt:
       name: "{{ packages }}"
