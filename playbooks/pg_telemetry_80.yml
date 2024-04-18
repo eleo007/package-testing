@@ -172,7 +172,6 @@
       - pg_repack_16 
       - pgbadger 
       - pgpool-II
-      - postgis34_16 
       - wal2json_16 
     when: ansible_os_family == "RedHat"
 
