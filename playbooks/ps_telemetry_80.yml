@@ -364,6 +364,30 @@
       search_string: 'PERCONA_TELEMETRY_URL=https://check.percona.com/v1/telemetry/GenericReport'
       line: PERCONA_TELEMETRY_URL=https://check-dev.percona.com/v1/telemetry/GenericReport
     when: ansible_os_family == "RedHat"
+
+  # - name: install haproxy packages
+  #   apt:
+  #     name: "{{ packages }}"
+  #     update_cache: yes
+  #     state: latest
+  #   vars:
+  #     packages:
+  #     - haproxy
+  #   when: ansible_os_family == "Debian"
+
+  # - name: install haproxy packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #     skip_broken: yes
+  #   vars:
+  #     packages:
+  #     - haproxy
+  #     # - percona-postgis*
+  #     - etcd
+  #   when: ansible_os_family == "RedHat"
+
   # - name: ensures /usr/local/percona/telemetry/ps dir exists
   #   file: 
   #     path: "/usr/local/percona/telemetry/ps"
@@ -376,5 +400,44 @@
   #               "ansible_test_string":"ansible_test_string"
   #               }
   #     dest: "/usr/local/percona/telemetry/ps/{{ ansible_date_time.epoch }}-test_content.json"
+################################333
 
+  # - name: install PPG deb packages
+  #   apt:
+  #     name: "{{ packages }}"
+  #     update_cache: yes
+  #     state: latest
+  #   vars:
+  #     packages:
+  #     - postgresql-16
+  #     - patroni + 
+  #     - postgresql-16-pgaudit
+  #     - pgbadger + 
+  #     - pgbouncer +
+  #     - postgresql-16-pgpool2
+  #     - postgresql-16-repack
+  #     - postgis + ? 
+  #     - postgresql-16-wal2json
+  #     - pgbackrest +
+  #   when: ansible_os_family == "Debian"
 
+  # - name: install PPG rpm packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #     skip_broken: yes
+  #   vars:
+  #     packages:
+  #     - patroni +
+  #     - pgaudit_16 +
+  #     - pgbackrest +
+  #     - pgbouncer + 
+  #     - pg_repack_16 + 
+  #     - pgbadger + 
+  #     - pgpool-II +
+  #     - postgis34_16 - 
+  #     - wal2json_16 - 
+  #     # - percona-postgis*
+  #     - etcd
+  #   when: ansible_os_family == "RedHat"
