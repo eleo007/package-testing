@@ -339,14 +339,14 @@
   - name: Update PERCONA_TELEMETRY_CHECK_INTERVAL default
     ansible.builtin.lineinfile:
       path: /etc/default/percona-telemetry-agent
-      search_string: 'PERCONA_TELEMETRY_CHECK_INTERVAL=86400'
+      regex: 'PERCONA_TELEMETRY_CHECK_INTERVAL=86400'
       line: PERCONA_TELEMETRY_CHECK_INTERVAL=10
     when: ansible_os_family == "Debian"
 
   - name: Update PERCONA_TELEMETRY_URL default
     ansible.builtin.lineinfile:
       path: /etc/default/percona-telemetry-agent
-      search_string: 'PERCONA_TELEMETRY_URL=https://check.percona.com/v1/telemetry/GenericReport'
+      regex: 'PERCONA_TELEMETRY_URL=https://check.percona.com/v1/telemetry/GenericReport'
       line: PERCONA_TELEMETRY_URL=https://check-dev.percona.com/v1/telemetry/GenericReport
     when: ansible_os_family == "Debian"
 
@@ -354,14 +354,14 @@
   - name: Update PERCONA_TELEMETRY_CHECK_INTERVAL default
     ansible.builtin.lineinfile:
       path: /etc/sysconfig/percona-telemetry-agent
-      search_string: 'PERCONA_TELEMETRY_CHECK_INTERVAL=86400'
+      regex: 'PERCONA_TELEMETRY_CHECK_INTERVAL=86400'
       line: PERCONA_TELEMETRY_CHECK_INTERVAL=10
     when: ansible_os_family == "RedHat"
 
   - name: Update PERCONA_TELEMETRY_URL default
     ansible.builtin.lineinfile:
       path: /etc/sysconfig/percona-telemetry-agent
-      search_string: 'PERCONA_TELEMETRY_URL=https://check.percona.com/v1/telemetry/GenericReport'
+      regex: 'PERCONA_TELEMETRY_URL=https://check.percona.com/v1/telemetry/GenericReport'
       line: PERCONA_TELEMETRY_URL=https://check-dev.percona.com/v1/telemetry/GenericReport
     when: ansible_os_family == "RedHat"
 
