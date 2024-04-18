@@ -52,7 +52,7 @@
     when: ansible_os_family == "Debian"
 
   - name: install PPG apt repository
-    command: /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+    command: /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
     when: ansible_os_family == "Debian"
 
   - name: install Percona Server rpm packages
