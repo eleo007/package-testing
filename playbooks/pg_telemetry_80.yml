@@ -123,11 +123,12 @@
     command: /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
     when: ansible_os_family == "Debian"
 
-  - name: install Percona Server rpm packages
+  - name: install PG repo
     yum:
       name: "{{ packages }}"
       state: latest
       update_cache: yes
+      disable_gpg_check: yes
     vars:
       packages:
       - "https://download.postgresql.org/pub/repos/yum/reporpms/EL-{{ ansible_distribution_major_version }}-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
@@ -173,4 +174,23 @@
       - pgpool-II
       - postgis34_16 
       - wal2json_16 
+    when: ansible_os_family == "RedHat"
+
+  - name: make changes for postgis
+    command: "{{ item }}" 
+    with_items:
+      - yum install epel-release
+      - dnf module enable -y llvm-toolset
+      - dnf config-manager --set-enabled ol8_codeready_builder
+    when: ansible_os_family == "RedHat"
+
+  - name: install PPG rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+      skip_broken: yes
+    vars:
+      packages:
+      - postgis34_16 
     when: ansible_os_family == "RedHat"
