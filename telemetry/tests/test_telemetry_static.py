@@ -1,13 +1,6 @@
 #!/usr/bin/env python3
 import pytest
-import subprocess
-import testinfra
-import time
 import os
-import json
-import shutil
-import re
-import mysql
 from packaging import version
 
 VERSION=os.environ.get("TA_VERSION")
