@@ -95,7 +95,7 @@
 
   - block:
       - name: run pytest
-        command: python3 -m pytest -v ../telemetry/tests/test_telemetry_static.py
+        command: python3 -m pytest -v /package-testing/telemetry/tests/test_telemetry_static.py
         register: pytest_out
     always:
       - name: debug pytest
