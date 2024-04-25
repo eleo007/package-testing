@@ -100,7 +100,9 @@
     always:
       - name: debug pytest
         debug:
-          var: pytest_out.stdout_lines
+          var: 
+            - pytest_out.stdout_lines
+            - pytest_out.stderr_lines
 
 
 
