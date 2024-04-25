@@ -11,6 +11,10 @@ PAK_VERSION = '0.1-1'
 VERSION = 'phase-0.1'
 REVISION = '13b74807'
 
+RHEL_DISTS = ["redhat", "centos", "rhel", "oracleserver", "ol", "amzn"]
+
+DEB_DISTS = ["debian", "ubuntu"]
+
 os.environ['PERCONA_TELEMETRY_URL'] = 'https://check.percona.com/v1/telemetry/GenericReport'
 
 telemetry_log_file="/var/log/percona/telemetry-agent.log"
@@ -39,9 +43,13 @@ telem_history_dir=telem_root_dir + 'history/'
 
 
 def test_ta_package(host):
+    dist = host.system_info.distribution
     pkg = host.package("percona-telemetry-agent")
     assert pkg.is_installed
-    assert PAK_VERSION in pkg.version
+    if dist.lower() in DEB_DISTS:
+        assert PAK_VERSION in pkg.version, pkg.version
+    else:
+        assert PAK_VERSION in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
 
 def test_ta_service(host):
     ta_serv = host.service("percona-telemetry-agent")
