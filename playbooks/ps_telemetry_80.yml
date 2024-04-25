@@ -304,7 +304,7 @@
     when: ansible_os_family == "RedHat"
 
   # - name: make changes for pgpool2
-  #   command: psudo dnf config-manager --set-enabled codeready-builder-for-rhel-9-x86_64-rpms
+  #   command: sudo dnf config-manager --set-enabled codeready-builder-for-rhel-9-x86_64-rpms
   #   when: ansible_os_family == "RedHat"
 
   # - name: install PPG rpm packages
