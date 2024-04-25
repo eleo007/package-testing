@@ -1,30 +1,23 @@
 #!/usr/bin/env python3
 import pytest
 import os
+import json
 from packaging import version
 
-VERSION=os.environ.get("TA_VERSION")
-REVISION=os.environ.get("TA_REVISION")
+# VERSION=os.environ.get("TA_VERSION")
+# REVISION=os.environ.get("TA_REVISION")
 
-RHEL_DISTS = ["redhat", "centos", "rhel", "oracleserver", "ol", "amzn"]
+PAK_VERSION = '0.1-1'
+VERSION = 'phase-0.1'
+REVISION = '13b74807'
 
-DEB_DISTS = ["debian", "ubuntu"]
-
-# from settings import *
-os.environ['PERCONA_TELEMETRY_URL'] = 'https://check-dev.percona.com/v1/telemetry/GenericReport'
-# os.environ['PERCONA_TELEMETRY_CHECK_INTERVAL'] = '10'
-# TEL_URL_VAR="PERCONA_TELEMETRY_URL=https://check-dev.percona.com/v1/telemetry/GenericReport"
-
-deployment = 'PACKAGE'
+os.environ['PERCONA_TELEMETRY_URL'] = 'https://check.percona.com/v1/telemetry/GenericReport'
 
 telemetry_log_file="/var/log/percona/telemetry-agent.log"
 # telemetry_log_file="/home/eleonora/telemetry.log"
 
-
-
 pillars_list=["ps", "pg", "psmdb"]
 
-#### !!!!!!!!!!!!!!! CHANGE URL TO CORRECT ONE AFTER THE CHANGES!!!!!!!!!!!
 # Dictionary of default values that TA should start with
 telemetry_defaults=[["RootPath", "/usr/local/percona/telemetry"],["PSMetricsPath", "/usr/local/percona/telemetry/ps"],
          ["PSMDBMetricsPath", "/usr/local/percona/telemetry/psmdb"],["PXCMetricsPath", "/usr/local/percona/telemetry/pxc"],
@@ -32,7 +25,7 @@ telemetry_defaults=[["RootPath", "/usr/local/percona/telemetry"],["PSMetricsPath
         ["CheckInterval", 86400], ["HistoryKeepInterval", 604800]
     ]
 
-platform_defaults=[["ResendTimeout", 60], ["URL","https://check-dev.percona.com/v1/telemetry/GenericReport"]
+platform_defaults=[["ResendTimeout", 60], ["URL","https://check.percona.com/v1/telemetry/GenericReport"]
     ]
 
 telem_root_dir = '/usr/local/percona/telemetry/'
@@ -46,22 +39,26 @@ telem_history_dir=telem_root_dir + 'history/'
 
 
 def test_ta_package(host):
-    pkg = host.package("percona-telemry-agent")
+    pkg = host.package("percona-telemetry-agent")
     assert pkg.is_installed
-    assert VERSION in pkg.version
+    assert PAK_VERSION in pkg.version
 
 def test_ta_service(host):
-    ta_serv = host.service("percona-telemry-agent")
+    ta_serv = host.service("percona-telemetry-agent")
     assert ta_serv.is_running
     assert ta_serv.is_enabled
 
 def test_ta_dirs(host):
+    assert host.file('/usr/local/percona').group == 'percona-telemetry'
+    assert oct(host.file('/usr/local/percona').mode) == '0o775'
     assert host.file(telem_root_dir).is_directory
-    assert host.file(telem_root_dir).user == 'root'
-    assert host.file(telem_root_dir).mode == '0o755'
+    assert host.file(telem_root_dir).user == 'daemon'
+    assert host.file(telem_root_dir).group == 'percona-telemetry'
+    assert oct(host.file(telem_root_dir).mode) == '0o755'
     assert host.file(telem_history_dir).is_directory
-    assert host.file(telem_history_dir).user == 'root'
-    assert host.file(telem_history_dir).mode == '0o755'
+    assert host.file(telem_history_dir).user == 'daemon'
+    assert host.file(telem_root_dir).group == 'percona-telemetry'
+    assert oct(host.file(telem_history_dir).mode) == '0o6755'
 
 def test_ta_log_file(host):
     assert host.file(telemetry_log_file).is_file
@@ -78,15 +75,17 @@ def test_ta_rotation(host):
     assert 'copytruncate' in rotate_file_content
 
 @pytest.mark.parametrize("ta_key, ref_value", telemetry_defaults)
-def test_ta_telemetry_default_values(host, get_ta_defaults, ta_key, ref_value):
-    cur_values=get_ta_defaults
+def test_ta_telemetry_default_values(host, ta_key, ref_value):
+    log_file_params = host.file(telemetry_log_file).content_string.partition('\n')[0]
+    cur_values=json.loads(log_file_params)
     telem_config=cur_values["config"]["Telemetry"]
     assert len(telem_config) == 8
     assert telem_config[ta_key] == ref_value
 
 @pytest.mark.parametrize("ta_key, ref_value", platform_defaults)
-def test_ta_platform_default_values(host, get_ta_defaults, ta_key, ref_value):
-    cur_values=get_ta_defaults
+def test_ta_platform_default_values(host, ta_key, ref_value):
+    log_file_params = host.file(telemetry_log_file).content_string.partition('\n')[0]
+    cur_values=json.loads(log_file_params)
     platform_config=cur_values["config"]["Platform"]
     assert len(platform_config) == 2
     assert platform_config[ta_key] == ref_value
