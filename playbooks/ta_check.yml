@@ -95,7 +95,7 @@
 
   - block:
       - name: run pytest
-        command: python3 -m pytest -v /package-testing/telemetry/tests/test_telemetry_static.py
+        command: python3 -m pytest -v /package-testing/telemetry/tests/test_telemetry_dynamic_package.py
         register: pytest_out
         no_log: True
     always:
