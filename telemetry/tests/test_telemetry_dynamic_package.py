@@ -17,8 +17,6 @@ os.environ['PERCONA_TELEMETRY_URL'] = 'https://check-dev.percona.com/v1/telemetr
 # os.environ['PERCONA_TELEMETRY_CHECK_INTERVAL'] = '10'
 # TEL_URL_VAR="PERCONA_TELEMETRY_URL=https://check-dev.percona.com/v1/telemetry/GenericReport"
 
-deployment = 'PACKAGE'
-
 telemetry_log_file="/var/log/percona/telemetry-agent.log"
 
 pillars_list=["ps", "pg", "psmdb"]
@@ -157,17 +155,21 @@ def test_major_metrics_sent(host, copy_pillar_metrics):
         assert '"OS"' in history_file
         assert '"deployment"' in history_file
         assert '"hardware_arch"' in history_file
+        assert '"installed_packages"' in history_file
 
 def test_major_metrics_values_sent(host, copy_pillar_metrics):
     # get OS
     test_host_version = host.system_info.distribution
     test_host_release = host.system_info.release
     test_host_arch = host.system_info.arch
-    # get  instanceId
+    deployment = 'PACKAGE'
+    # get  instanceId from telemetry_uuid
     telemetry_uuid_content = host.file('/usr/local/percona/telemetry_uuid').content_string
-    pattern = r'instanceId: ([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})'
+    pattern = r'instanceId:([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})'
     match = re.search(pattern, telemetry_uuid_content)
     extracted_uuid = match.group(1)
+
+    # check metrics in the history files
     for pillar in pillars_list:
         history_file=host.file(telem_history_dir + copy_pillar_metrics[pillar]).content_string
         # get product family
