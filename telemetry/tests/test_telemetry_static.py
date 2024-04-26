@@ -55,6 +55,9 @@ def test_ta_service(host):
     ta_serv = host.service("percona-telemetry-agent")
     assert ta_serv.is_running
     assert ta_serv.is_enabled
+    assert ta_serv.systemd_properties["User"] == 'daemon'
+    assert ta_serv.systemd_properties["Group"] == 'percona-telemetry'
+    assert "percona-telemetry-agent" in ta_serv.systemd_properties["GrEnvironmentFilesoup"]
 
 def test_ta_dirs(host):
     assert host.file('/usr/local/percona').group == 'percona-telemetry'
@@ -98,9 +101,20 @@ def test_ta_platform_default_values(host, ta_key, ref_value):
     assert len(platform_config) == 2
     assert platform_config[ta_key] == ref_value
 
-
 def test_ta_version(host):
     cmd = "/usr/bin/percona-telemetry-agent --version"
     result = host.run(cmd)
     assert VERSION in result.stdout, result.stdout
     assert REVISION in result.stdout, result.stdout
+
+def test_ta_defaults_file(host):
+    dist = host.system_info.distribution
+    if dist.lower() in DEB_DISTS:
+        options_file = '/etc/default/percona-telemetry-agent'
+    else:
+        options_file = '/etc/sysconfig/percona-telemetry-agent'
+    defaults_file_content = host.file(options_file).content_string
+    assert 'PERCONA_TELEMETRY_CHECK_INTERVAL' in defaults_file_content
+    assert 'PERCONA_TELEMETRY_HISTORY_KEEP_INTERVAL' in defaults_file_content
+    assert 'PERCONA_TELEMETRY_RESEND_INTERVAL' in defaults_file_content
+    assert 'PERCONA_TELEMETRY_UR' in defaults_file_content

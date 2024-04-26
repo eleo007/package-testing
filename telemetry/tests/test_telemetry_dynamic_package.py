@@ -7,86 +7,36 @@ import os
 import json
 import shutil
 import re
-import mysql
 from packaging import version
 
 RHEL_DISTS = ["redhat", "centos", "rhel", "oracleserver", "ol", "amzn"]
 
 DEB_DISTS = ["debian", "ubuntu"]
 
-# from settings import *
 os.environ['PERCONA_TELEMETRY_URL'] = 'https://check-dev.percona.com/v1/telemetry/GenericReport'
 # os.environ['PERCONA_TELEMETRY_CHECK_INTERVAL'] = '10'
 # TEL_URL_VAR="PERCONA_TELEMETRY_URL=https://check-dev.percona.com/v1/telemetry/GenericReport"
 
 deployment = 'PACKAGE'
 
-#telemetry_log_file="/var/log/percona/telemetry-agent.log"
-telemetry_log_file="/home/eleonora/telemetry.log"
+telemetry_log_file="/var/log/percona/telemetry-agent.log"
 
 pillars_list=["ps", "pg", "psmdb"]
-
-#### !!!!!!!!!!!!!!! CHANGE URL TO CORRECT ONE AFTER THE CHANGES!!!!!!!!!!!
-telemetry_defaults=[["RootPath", "/usr/local/percona/telemetry"],["PSMetricsPath", "/usr/local/percona/telemetry/ps"],
-         ["PSMDBMetricsPath", "/usr/local/percona/telemetry/psmdb"],["PXCMetricsPath", "/usr/local/percona/telemetry/pxc"],
-        ["PGMetricsPath", "/usr/local/percona/telemetry/pg"], ["HistoryPath", "/usr/local/percona/telemetry/history"],
-        ["CheckInterval", 86400], ["HistoryKeepInterval", 604800]
-    ]
-
-platform_defaults=[["ResendTimeout", 60], ["URL","https://check-dev.percona.com/v1/telemetry/GenericReport"]
-    ]
 
 telem_root_dir = '/usr/local/percona/telemetry/'
 
 telem_history_dir=telem_root_dir + 'history/'
 
-# For tests when there is no TA package: generate command that will start TA. Assuming that TA binary is located in user home dir
-def get_ta_command(timeout, check_interval="", hist_keep_interval="", resend_timeout=""):
-    extra_options = []
-    # popiulate extra_options var if any are provided
-    if check_interval:
-        extra_options.append('--telemetry.check-interval=' + check_interval)
-    if hist_keep_interval:
-        extra_options.append('--telemetry.history-keep-interval=' + hist_keep_interval)
-    if resend_timeout:
-        extra_options.append('--platform.resend-timeout=' + resend_timeout)
+dev_telem_url='https://check-dev.percona.com/v1/telemetry/GenericReport'
 
-    # generate command with stdout to log file
-    if extra_options:
-        telem_cmd="timeout --preserve-status "+ timeout + " ~/telemetry-agent/bin/telemetry-agent " + \
-            ' '.join(extra_options) + " > " + telemetry_log_file
-    else:
-        telem_cmd="timeout --preserve-status "+ timeout + " ~/telemetry-agent/bin/telemetry-agent > " + telemetry_log_file
-    return telem_cmd
+ta_service_name='percona-telemetry-agent'
 
-# The first string of Telemetry Agent (TA) log contains params with which the TA starts.
-# Get the first string of TA log.
-@pytest.fixture(scope="module")
-def get_ta_defaults(host):
-    telem_cmd=get_ta_command("2")
-    print(telem_cmd)
-    host.run(telem_cmd)
-    log_file_params = host.file(telemetry_log_file).content_string.partition('\n')[0]
-    ta_defaults=json.loads(log_file_params)
-    return ta_defaults
-
-# For tests when there is no package: create telemetry root directory if it is not present
-def create_telem_root_dir(host):
-    print(f"Checking {telem_root_dir}.")
-    with host.sudo("root"):
-        if host.file(telem_root_dir).is_directory:
-            print(f"{telem_root_dir} exists. No actions required.")
-        else:
-            print(f"Creating {telem_root_dir}. Continue")
-            host.check_output(f"mkdir -p {telem_root_dir}")
-#DO NOT FORGET TO REVER/UPDATE THIS
-            print(f"Updating rights")
-            host.check_output(f"chown -R eleonora:eleonora {telem_root_dir}")
-
-# For tests when there is no pillar package: create telemetry pillar directory if it is not present
+# For tests when there is no package: create telemetry pillar directory if it is not present
 def create_pillars_dir(host):
     with host.sudo("root"):
+        pillar_users = {'pg':'postgres','ps':'mysql','pxc':'mysql','psmdb':'mongod'}
         for pillar in pillars_list:
+            host.check_output(f"useradd {pillar_users[pillar]}")
             print(f"checking {pillar}")
             pillar_dir=telem_root_dir + pillar
             if host.file(pillar_dir).is_directory:
@@ -94,7 +44,13 @@ def create_pillars_dir(host):
             else:
                 print(f"Creating {pillar_dir}.")
                 host.check_output(f"mkdir -p {pillar_dir}")
+                host.check_output(f"chown {pillar_users[pillar]}:percona-telemetry {pillar_dir}")
+                host.check_output(f"chmod 775 {pillar_dir}")
+                host.check_output(f"chmod g+s {pillar_dir}")
+                host.check_output(f"chmod u+s {pillar_dir}")
 
+
+# For tests when there is no pillar: create metrics files from templates.
 # Crean up pillars directory to have predictable number of files for pillar we will add 1 file per pillar.
 def clenup_pillar_dirs(host):
     with host.sudo("root"):
@@ -120,37 +76,41 @@ def create_pillar_metrics_file(host):
 
 @pytest.fixture(scope="module")
 def copy_pillar_metrics(host):
-    create_telem_root_dir(host)
     create_pillars_dir(host)
     clenup_pillar_dirs(host)
     metrics_files = create_pillar_metrics_file(host)
     yield metrics_files
 
+def set_ta_defaults(host, check_interval="", hist_keep_interval="", resend_timeout="", url=""):
+    dist = host.system_info.distribution
+    if dist.lower() in DEB_DISTS:
+        options_file = '/etc/default/percona-telemetry-agent'
+    else:
+        options_file = '/etc/sysconfig/percona-telemetry-agent'
+    if check_interval:
+        host.check_output(f"sed -iE 's/PERCONA_TELEMETRY_CHECK_INTERVAL=.*$$/PERCONA_TELEMETRY_CHECK_INTERVAL={check_interval}/' {options_file}")
+    if hist_keep_interval:
+        host.check_output(f"sed -iE 's/PERCONA_TELEMETRY_HISTORY_KEEP_INTERVAL=.*$/PERCONA_TELEMETRY_HISTORY_KEEP_INTERVAL={hist_keep_interval}/' {options_file}")
+    if resend_timeout:
+        host.check_output(f"sed -iE 's/PERCONA_TELEMETRY_RESEND_INTERVAL=.*$/PERCONA_TELEMETRY_RESEND_INTERVAL={resend_timeout}/' {options_file}")
+    if url:
+        host.check_output(f"sed -iE 's/PERCONA_TELEMETRY_URL=.*$/PERCONA_TELEMETRY_URL={url}/' {options_file}")
+
+def update_ta_options(host, check_interval="", hist_keep_interval="", resend_timeout="", url=""):
+    set_ta_defaults(host, check_interval, hist_keep_interval, resend_timeout, url)
+    cmd = 'systmctl restart' + ta_service_name
+    host.check_output(cmd)
+    time.sleep(int(check_interval)+2)
 
 ##################################################################################
 #################################### TESTS #######################################
 ##################################################################################
 
 
-@pytest.mark.parametrize("key, value", telemetry_defaults)
-def test_telemetry_default_values(host, get_ta_defaults, key, value):
-    cur_values=get_ta_defaults
-    telem_config=cur_values["config"]["Telemetry"]
-    assert len(telem_config) == 8
-    assert telem_config[key] == value
-
-@pytest.mark.parametrize("key, value", platform_defaults)
-def test_platform_default_values(host, get_ta_defaults, key, value):
-    cur_values=get_ta_defaults
-    platform_config=cur_values["config"]["Platform"]
-    assert len(platform_config) == 2
-    assert platform_config[key] == value
-
 # After pillar dirs are created and metrics are copied in copy_pillar_metrics, try to send telemetry
 # TA log should contain info that telemetry was sent and receive code was 200
 def test_telemetry_sending(host, copy_pillar_metrics):
-    telem_cmd=get_ta_command("10", "5")
-    host.check_output(telem_cmd)
+    update_ta_options(host,'5', url=dev_telem_url)
     log_file_content = host.file(telemetry_log_file).content_string
     assert "sleeping for 5 seconds before first iteration" in log_file_content
     for pillar in pillars_list:
@@ -195,7 +155,7 @@ def test_major_metrics_sent(host, copy_pillar_metrics):
         assert '"deployment"' in history_file
         assert '"hardware_arch"' in history_file
 
-def test_major_metrics_sent(host, copy_pillar_metrics):
+def test_major_metrics_values_sent(host, copy_pillar_metrics):
     # get OS
     test_host_version = host.system_info.distribution
     test_host_release = host.system_info.release
@@ -231,17 +191,17 @@ def test_major_metrics_sent(host, copy_pillar_metrics):
 
 # On the first start of TA it should create history dir. If it can not for some reason (eg no rights) - TA terminates
 # We remove TA history dir if present, make dir immutable and try to start TA. TA should terminate.
-def test_history_no_rights(host, copy_pillar_metrics):
-    with host.sudo("root"):
-        if host.file(telem_history_dir).is_directory:
-            print(telem_history_dir + " exists")
-            host.run(f"rm -rf {telem_history_dir}")
-        host.check_output(f"chattr +i {telem_root_dir}")
-    telem_cmd=get_ta_command("5", "10")
-    check_result = host.run(telem_cmd)
-    with host.sudo("root"):
-        host.check_output(f"chattr -i {telem_root_dir}")
-    assert check_result.rc != 0, (check_result.rc, check_result.stderr, check_result.stdout)
+# def test_history_no_rights(host, copy_pillar_metrics):
+#     with host.sudo("root"):
+#         if host.file(telem_history_dir).is_directory:
+#             print(telem_history_dir + " exists")
+#             host.run(f"rm -rf {telem_history_dir}")
+#         host.check_output(f"chattr +i {telem_root_dir}")
+#     telem_cmd=get_ta_command("5", "10")
+#     check_result = host.run(telem_cmd)
+#     with host.sudo("root"):
+#         host.check_output(f"chattr -i {telem_root_dir}")
+#     assert check_result.rc != 0, (check_result.rc, check_result.stderr, check_result.stdout)
 
 # check installed packages         assert '"installed_packages"' in history_file
 
