@@ -36,7 +36,7 @@ def create_pillars_dir(host):
     with host.sudo("root"):
         pillar_users = {'pg':'postgres','ps':'mysql','pxc':'mysql','psmdb':'mongod'}
         for pillar in pillars_list:
-            host.check_output(f"useradd {pillar_users[pillar]}")
+            host.run(f"useradd {pillar_users[pillar]}")
             print(f"checking {pillar}")
             pillar_dir=telem_root_dir + pillar
             if host.file(pillar_dir).is_directory:
@@ -89,7 +89,7 @@ def set_ta_defaults(host, check_interval="", hist_keep_interval="", resend_timeo
         options_file = '/etc/sysconfig/percona-telemetry-agent'
     with host.sudo("root"):
         if check_interval:
-            host.check_output(f"sed -iE 's/PERCONA_TELEMETRY_CHECK_INTERVAL=.*$$/PERCONA_TELEMETRY_CHECK_INTERVAL={check_interval}/' {options_file}")
+            host.check_output(f"sed -iE 's/PERCONA_TELEMETRY_CHECK_INTERVAL=.*$/PERCONA_TELEMETRY_CHECK_INTERVAL={check_interval}/' {options_file}")
         if hist_keep_interval:
             host.check_output(f"sed -iE 's/PERCONA_TELEMETRY_HISTORY_KEEP_INTERVAL=.*$/PERCONA_TELEMETRY_HISTORY_KEEP_INTERVAL={hist_keep_interval}/' {options_file}")
         if resend_timeout:
@@ -101,7 +101,9 @@ def update_ta_options(host, check_interval="", hist_keep_interval="", resend_tim
     set_ta_defaults(host, check_interval, hist_keep_interval, resend_timeout, url)
     cmd = 'systemctl restart ' + ta_service_name
     host.check_output(cmd)
-    time.sleep(int(check_interval)+2)
+    time.sleep(int(check_interval)+5)
+    cmd = 'systemctl stop ' + ta_service_name
+    host.check_output(cmd)
 
 ##################################################################################
 #################################### TESTS #######################################
@@ -111,7 +113,7 @@ def update_ta_options(host, check_interval="", hist_keep_interval="", resend_tim
 # After pillar dirs are created and metrics are copied in copy_pillar_metrics, try to send telemetry
 # TA log should contain info that telemetry was sent and receive code was 200
 def test_telemetry_sending(host, copy_pillar_metrics):
-    update_ta_options(host,'5', url=dev_telem_url)
+    update_ta_options(host, check_interval='5', url=dev_telem_url)
     log_file_content = host.file(telemetry_log_file).content_string
     assert "sleeping for 5 seconds before first iteration" in log_file_content
     for pillar in pillars_list:
