@@ -27,7 +27,7 @@ telem_root_dir = '/usr/local/percona/telemetry/'
 
 telem_history_dir=telem_root_dir + 'history/'
 
-dev_telem_url='https://check-dev.percona.com/v1/telemetry/GenericReport'
+dev_telem_url='https:\/\/check-dev.percona.com\/v1\/telemetry\/GenericReport'
 
 ta_service_name='percona-telemetry-agent'
 
@@ -70,7 +70,7 @@ def create_pillar_metrics_file(host):
         for pillar in pillars_list:
             pillar_dir=telem_root_dir + pillar
             print(f"{pillar_dir} does not have all files. Copiying pillar telemetry files")
-            host.check_output(f"cp -p ./{pillar}-test-file.json {pillar_dir}/$(date +%s)-{pillar}-test-file.json")
+            host.check_output(f"cp -p /package-testing/telemetry/{pillar}-test-file.json {pillar_dir}/$(date +%s)-{pillar}-test-file.json")
             metrics_files[pillar]=' '.join(host.file(pillar_dir).listdir())
         return metrics_files
 
@@ -87,14 +87,15 @@ def set_ta_defaults(host, check_interval="", hist_keep_interval="", resend_timeo
         options_file = '/etc/default/percona-telemetry-agent'
     else:
         options_file = '/etc/sysconfig/percona-telemetry-agent'
-    if check_interval:
-        host.check_output(f"sed -iE 's/PERCONA_TELEMETRY_CHECK_INTERVAL=.*$$/PERCONA_TELEMETRY_CHECK_INTERVAL={check_interval}/' {options_file}")
-    if hist_keep_interval:
-        host.check_output(f"sed -iE 's/PERCONA_TELEMETRY_HISTORY_KEEP_INTERVAL=.*$/PERCONA_TELEMETRY_HISTORY_KEEP_INTERVAL={hist_keep_interval}/' {options_file}")
-    if resend_timeout:
-        host.check_output(f"sed -iE 's/PERCONA_TELEMETRY_RESEND_INTERVAL=.*$/PERCONA_TELEMETRY_RESEND_INTERVAL={resend_timeout}/' {options_file}")
-    if url:
-        host.check_output(f"sed -iE 's/PERCONA_TELEMETRY_URL=.*$/PERCONA_TELEMETRY_URL={url}/' {options_file}")
+    with host.sudo("root"):
+        if check_interval:
+            host.check_output(f"sed -iE 's/PERCONA_TELEMETRY_CHECK_INTERVAL=.*$$/PERCONA_TELEMETRY_CHECK_INTERVAL={check_interval}/' {options_file}")
+        if hist_keep_interval:
+            host.check_output(f"sed -iE 's/PERCONA_TELEMETRY_HISTORY_KEEP_INTERVAL=.*$/PERCONA_TELEMETRY_HISTORY_KEEP_INTERVAL={hist_keep_interval}/' {options_file}")
+        if resend_timeout:
+            host.check_output(f"sed -iE 's/PERCONA_TELEMETRY_RESEND_INTERVAL=.*$/PERCONA_TELEMETRY_RESEND_INTERVAL={resend_timeout}/' {options_file}")
+        if url:
+            host.check_output(f"sed -iE 's/PERCONA_TELEMETRY_URL=.*$/PERCONA_TELEMETRY_URL={url}/' {options_file}")
 
 def update_ta_options(host, check_interval="", hist_keep_interval="", resend_timeout="", url=""):
     set_ta_defaults(host, check_interval, hist_keep_interval, resend_timeout, url)

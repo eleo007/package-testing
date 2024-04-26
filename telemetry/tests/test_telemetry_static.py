@@ -57,7 +57,7 @@ def test_ta_service(host):
     assert ta_serv.is_enabled
     assert ta_serv.systemd_properties["User"] == 'daemon'
     assert ta_serv.systemd_properties["Group"] == 'percona-telemetry'
-    assert "percona-telemetry-agent" in ta_serv.systemd_properties["GrEnvironmentFilesoup"]
+    assert "percona-telemetry-agent" in ta_serv.systemd_properties["EnvironmentFilesoup"]
 
 def test_ta_dirs(host):
     assert host.file('/usr/local/percona').group == 'percona-telemetry'
