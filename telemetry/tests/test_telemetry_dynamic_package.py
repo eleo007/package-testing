@@ -99,7 +99,7 @@ def set_ta_defaults(host, check_interval="", hist_keep_interval="", resend_timeo
 
 def update_ta_options(host, check_interval="", hist_keep_interval="", resend_timeout="", url=""):
     set_ta_defaults(host, check_interval, hist_keep_interval, resend_timeout, url)
-    cmd = 'systmctl restart' + ta_service_name
+    cmd = 'systemctl restart ' + ta_service_name
     host.check_output(cmd)
     time.sleep(int(check_interval)+2)
 
