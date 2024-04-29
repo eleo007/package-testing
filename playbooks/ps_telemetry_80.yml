@@ -68,54 +68,54 @@
 #     command: apt update
 #     when: ansible_os_family == "Debian"
 
-  - name: install Telemetry Agent deb packages
-    apt:
-      name: "{{ packages }}"
-      update_cache: yes
-      state: latest
-    vars:
-      packages:
-      - percona-telemetry-agent
-    when: ansible_os_family == "Debian"
+  # - name: install Telemetry Agent deb packages
+  #   apt:
+  #     name: "{{ packages }}"
+  #     update_cache: yes
+  #     state: latest
+  #   vars:
+  #     packages:
+  #     - percona-telemetry-agent
+  #   when: ansible_os_family == "Debian"
 
-  - name: install Telemetry Agent rpm packages
-    yum:
-      name: "{{ packages }}"
-      state: latest
-      update_cache: yes
-    vars:
-      packages:
-      - percona-telemetry-agent
-    when: ansible_os_family == "RedHat"
+  # - name: install Telemetry Agent rpm packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #     - percona-telemetry-agent
+  #   when: ansible_os_family == "RedHat"
 
-  - name: disable percona-release tools experimental
-    command: percona-release disable tools experimental
+  # - name: disable percona-release tools experimental
+  #   command: percona-release disable tools experimental
 
-  - name: enable the proxysql repo
-    command: percona-release enable proxysql
+  # - name: enable the proxysql repo
+  #   command: percona-release enable proxysql
 
-  - name: install Percona Server deb packages
-    apt:
-      name: "{{ packages }}"
-      update_cache: yes
-      state: latest
-    vars:
-      packages:
-      - proxysql2
-    when: ansible_os_family == "Debian"
+  # - name: install Percona Server deb packages
+  #   apt:
+  #     name: "{{ packages }}"
+  #     update_cache: yes
+  #     state: latest
+  #   vars:
+  #     packages:
+  #     - proxysql2
+  #   when: ansible_os_family == "Debian"
 
-  - name: install Percona Server rpm packages
-    yum:
-      name: "{{ packages }}"
-      state: latest
-      update_cache: yes
-    vars:
-      packages:
-      - proxysql2
-    when: ansible_os_family == "RedHat"
+  # - name: install Percona Server rpm packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #     - proxysql2
+  #   when: ansible_os_family == "RedHat"
 
-  - name: enable the pdps-8x-innovation testing 
-    command: percona-release enable pdps-8x-innovation testing
+  - name: enable the ps-80 experimental
+    command: percona-release enable ps-80 experimental
 
   - name: install Percona Server and backup deb packages
     apt:
@@ -129,8 +129,6 @@
       - percona-server-source
       - percona-server-client
       - percona-server-rocksdb
-      - percona-mysql-router
-      - percona-xtrabackup-80
       - percona-toolkit
     when: ansible_os_family == "Debian"
 
@@ -145,85 +143,92 @@
       - percona-server-test
       - percona-server-client
       - percona-server-rocksdb
-      - percona-mysql-router
-      - percona-xtrabackup-80
       - percona-toolkit
     when: ansible_os_family == "RedHat"
 
+  - name: start mysql service
+    service: name=mysql state=started
 
-  - name: enable the pdps-8.0.36
-    command: percona-release enable pdps-8.0.36
-
-  - name: install Orchestrator deb packages
-    apt:
-      name: "{{ packages }}"
-      update_cache: yes
-      state: latest
-    vars:
-      packages:
-      - percona-orchestrator-cli
-      - percona-orchestrator-client
-      - percona-orchestrator
-    when: ansible_os_family == "Debian"
-
-  - name: install Orchestrator rpm packages
-    yum:
-      name: "{{ packages }}"
-      state: latest
-      update_cache: yes
-    vars:
-      packages:
-      - percona-orchestrator-cli
-      - percona-orchestrator-client
-      - percona-orchestrator
+  - name: set root password on centos
+    command: /package-testing/setpass_57.sh
     when: ansible_os_family == "RedHat"
 
+  - name: restart mysql service
+    service: name=mysql state=restarted
 
-  - name: enable the pdpxc-8.0.35 testing
-    command: percona-release enable pdpxc-8.0.35 testing
+  # - name: enable the pdps-8.0.36
+  #   command: percona-release enable pdps-8.0.36
 
-  - name: install percona-haproxy rpm packages
-    yum:
-      name: "{{ packages }}"
-      state: latest
-      update_cache: yes
-    vars:
-      packages:
-      - percona-haproxy
-    when: ansible_os_family == "RedHat"
+  # - name: install Orchestrator deb packages
+  #   apt:
+  #     name: "{{ packages }}"
+  #     update_cache: yes
+  #     state: latest
+  #   vars:
+  #     packages:
+  #     - percona-orchestrator-cli
+  #     - percona-orchestrator-client
+  #     - percona-orchestrator
+  #   when: ansible_os_family == "Debian"
 
-  - name: install percona-haproxy deb packages
-    apt:
-      name: "{{ packages }}"
-      update_cache: yes
-      state: latest
-    vars:
-      packages:
-      - percona-haproxy
-    when: ansible_os_family == "Debian"
+  # - name: install Orchestrator rpm packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #     - percona-orchestrator-cli
+  #     - percona-orchestrator-client
+  #     - percona-orchestrator
+  #   when: ansible_os_family == "RedHat"
 
-  - name: enable the original repo
-    command: percona-release enable original
 
-  - name: install PMM client rpm packages
-    yum:
-      name: "{{ packages }}"
-      state: latest
-      update_cache: yes
-    vars:
-      packages:
-      - pmm2-client
-    when: ansible_os_family == "RedHat"
+  # - name: enable the pdpxc-8.0.35 testing
+  #   command: percona-release enable pdpxc-8.0.35 testing
 
-  - name: install PMM client deb packages
-    apt:
-      name: "{{ packages }}"
-      update_cache: yes
-      state: latest
-    vars:
-      packages:
-      - pmm2-client
-    when: ansible_os_family == "Debian"
+  # - name: install percona-haproxy rpm packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #     - percona-haproxy
+  #   when: ansible_os_family == "RedHat"
+
+  # - name: install percona-haproxy deb packages
+  #   apt:
+  #     name: "{{ packages }}"
+  #     update_cache: yes
+  #     state: latest
+  #   vars:
+  #     packages:
+  #     - percona-haproxy
+  #   when: ansible_os_family == "Debian"
+
+  # - name: enable the original repo
+  #   command: percona-release enable original
+
+  # - name: install PMM client rpm packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #     - pmm2-client
+  #   when: ansible_os_family == "RedHat"
+
+  # - name: install PMM client deb packages
+  #   apt:
+  #     name: "{{ packages }}"
+  #     update_cache: yes
+  #     state: latest
+  #   vars:
+  #     packages:
+  #     - pmm2-client
+  #   when: ansible_os_family == "Debian"
 
   - name: enable the mongo repo pdmdb-7.0 experimental
     command: percona-release enable pdmdb-7.0 experimental
@@ -318,23 +323,23 @@
   #   when: ansible_os_family == "RedHat"
 
 
-  - name: make changes for postgis
-    command: "{{ item }}" 
-    with_items:
-      - yum install epel-release
-      - dnf module enable -y llvm-toolset
-      - dnf config-manager --set-enabled ol8_codeready_builder
-    when: ansible_os_family == "RedHat"
+  # - name: make changes for postgis
+  #   command: "{{ item }}" 
+  #   with_items:
+  #     - yum install epel-release
+  #     - dnf module enable -y llvm-toolset
+  #     - dnf config-manager --set-enabled ol8_codeready_builder
+  #   when: ansible_os_family == "RedHat"
 
-  - name: install PPG rpm packages
-    yum:
-      name: "{{ packages }}"
-      state: latest
-      update_cache: yes
-    vars:
-      packages:
-      - percona-postgis33
-    when: ansible_os_family == "RedHat"
+  # - name: install PPG rpm packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #     - percona-postgis33
+  #   when: ansible_os_family == "RedHat"
 
   # - name: Update PERCONA_TELEMETRY_CHECK_INTERVAL default
   #   ansible.builtin.lineinfile:
