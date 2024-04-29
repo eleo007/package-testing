@@ -438,8 +438,8 @@ def test_service_removed_deb(host):
         pytest.skip("This test only for DEB distributions")
     with host.sudo("root"):
         host.check_output("apt remove --purge -y percona-telemetry-agent")
-    ta_serv = host.service("percona-telemetry-agent")
-    assert not ta_serv.exists
+        ta_serv_result = host.run("systemctl status percona-telemetry-agent").stdout
+    assert ta_serv_result == "Unit percona-telemetry-agent.service could not be found."
     assert host.file(telem_history_dir).exists
 
 def test_service_removed_rpm(host):
@@ -448,8 +448,8 @@ def test_service_removed_rpm(host):
         pytest.skip("This test only for RPM distributions")
     with host.sudo("root"):
         host.check_output("yum remove -y percona-telemetry-agent")
-    ta_serv = host.service("percona-telemetry-agent")
-    assert not ta_serv.exists
+        ta_serv_result = host.run("systemctl status percona-telemetry-agent").stdout
+    assert ta_serv_result == "Unit percona-telemetry-agent.service could not be found."
     assert host.file(telem_history_dir).exists
 
 def test_process_not_running(host):
