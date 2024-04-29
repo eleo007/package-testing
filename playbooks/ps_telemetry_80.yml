@@ -75,7 +75,7 @@
       packages:
       - pytest-testinfra
       - pytest
-      
+
 #   - name: download and extract world database
 #     command: "{{ item }}"
 #     with_items:
@@ -185,6 +185,63 @@
   - name: restart mysql service
     service: name=mysql state=restarted
 
+  - name: Add log-error-verbosity option
+    blockinfile:
+      path: /etc/my.cnf
+      insertafter: EOF
+      block: |
+        early_plugin_load=keyring_file.so
+        log-error-verbosity=3
+    when: 
+        - ansible_os_family == "RedHat"
+
+# We enable fips mode only for jammy bc deb12 does not have image with fips.so
+  - name: Add fips_mode option
+    blockinfile:
+      path: /etc/mysql/mysql.conf.d/mysqld.cnf
+      insertafter: EOF
+      block: |
+        early_plugin_load=keyring_file.so
+        log-error-verbosity=3
+    when: 
+        - ansible_os_family == "Debian"
+
+  - name: copy the GR config file on Debian/Ubuntu
+    template: src=../templates/group_replication.j2 dest=/etc/mysql/conf.d/gr.cnf
+    when: ansible_os_family == "Debian"
+
+  - name: append include for RedHat
+    lineinfile:
+        path: /etc/my.cnf
+        line: '!includedir /etc/my.cnf.d'
+    when: ansible_os_family == "RedHat"
+
+  - name: copy the GR config file on RHEL/CentOS/Amazon
+    template: src=../templates/group_replication.j2 dest=/etc/my.cnf.d/gr.cnf
+    when: ansible_os_family == "RedHat"
+
+  - name: restart mysql service
+    service: name=mysql state=restarted
+
+  - name: run the test script
+    command: /package-testing/scripts/gr_test.sh
+
+  - name: download and extract world database
+    command: "{{ item }}"
+    with_items:
+    - wget --no-check-certificate -P /package-testing https://raw.githubusercontent.com/Percona-QA/percona-qa/master/sample_db/world.sql
+
+  - name: re-run ps_admin to install rocksdb
+    command: /usr/bin/ps-admin --enable-rocksdb
+
+  - name: install plugins, import world database
+    command: /package-testing/plugins_test_80.sh ps
+
+  - name: install audit_log v2 plugin
+    command: mysql -uroot -NBe "source /usr/share/mysql/audit_log_filter_linux_install.sql;"
+
+
+
   # - name: enable the pdps-8.0.36
   #   command: percona-release enable pdps-8.0.36
 
@@ -259,32 +316,32 @@
   #     - pmm2-client
   #   when: ansible_os_family == "Debian"
 
-  - name: enable the mongo repo pdmdb-7.0 experimental
-    command: percona-release enable pdmdb-7.0 experimental
+  # - name: enable the mongo repo pdmdb-7.0 experimental
+  #   command: percona-release enable pdmdb-7.0 experimental
 
-  - name: install Mongo deb packages
-    apt:
-      name: "{{ packages }}"
-      update_cache: yes
-      state: latest
-    vars:
-      packages:
-      - percona-server-mongodb
-      - percona-backup-mongodb
-      - percona-server-mongodb-mongos
-    when: ansible_os_family == "Debian"
+  # - name: install Mongo deb packages
+  #   apt:
+  #     name: "{{ packages }}"
+  #     update_cache: yes
+  #     state: latest
+  #   vars:
+  #     packages:
+  #     - percona-server-mongodb
+  #     - percona-backup-mongodb
+  #     - percona-server-mongodb-mongos
+  #   when: ansible_os_family == "Debian"
 
-  - name: install Mongo rpm packages
-    yum:
-      name: "{{ packages }}"
-      state: latest
-      update_cache: yes
-    vars:
-      packages:
-      - percona-server-mongodb
-      - percona-backup-mongodb
-      - percona-server-mongodb-mongos
-    when: ansible_os_family == "RedHat"
+  # - name: install Mongo rpm packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #     - percona-server-mongodb
+  #     - percona-backup-mongodb
+  #     - percona-server-mongodb-mongos
+  #   when: ansible_os_family == "RedHat"
 
 
   # - name: enable the ppg repo ppg-16
