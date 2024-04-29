@@ -225,8 +225,8 @@
       - pmm2-client
     when: ansible_os_family == "Debian"
 
-  - name: enable the mongo repo pdmdb-7.0 testing
-    command: percona-release enable pdmdb-7.0 testing
+  - name: enable the mongo repo pdmdb-7.0 experimental
+    command: percona-release enable pdmdb-7.0 experimental
 
   - name: install Mongo deb packages
     apt:
@@ -253,55 +253,55 @@
     when: ansible_os_family == "RedHat"
 
 
-  - name: enable the ppg repo ppg-16 
-    command: percona-release enable ppg-16 
-    when: ansible_os_family == "Debian"
+  # - name: enable the ppg repo ppg-16
+  #   command: percona-release enable ppg-16
+  #   when: ansible_os_family == "Debian"
 
-  - name: setup the ppg repo ppg-16 for rhel
-    command: percona-release setup -y ppg-16
-    when: ansible_os_family == "RedHat"
+  # - name: setup the ppg repo ppg-16 for rhel
+  #   command: percona-release setup -y ppg-16
+  #   when: ansible_os_family == "RedHat"
 
-  - name: install PPG deb packages
-    apt:
-      name: "{{ packages }}"
-      update_cache: yes
-      state: latest
-    vars:
-      packages:
-      - percona-ppg-server-16
-      - percona-pgbouncer
-      - percona-patroni
-      - percona-postgresql-16-pgaudit
-      - percona-pgaudit16-set-user
-      - percona-pgbadger
-      - percona-pgbouncer
-      - percona-pg-gather
-      - percona-pgpool2
-      - percona-postgresql-*-repack
-      - percona-pg-stat-monitor*
-      - percona-postgis
-      - percona-postgresql-*-wal2json
-      - percona-pgbackrest
-      - etcd
-    when: ansible_os_family == "Debian"
+  # - name: install PPG deb packages
+  #   apt:
+  #     name: "{{ packages }}"
+  #     update_cache: yes
+  #     state: latest
+  #   vars:
+  #     packages:
+  #     - percona-ppg-server-16
+  #     - percona-pgbouncer
+  #     - percona-patroni
+  #     - percona-postgresql-16-pgaudit
+  #     - percona-pgaudit16-set-user
+  #     - percona-pgbadger
+  #     - percona-pgbouncer
+  #     - percona-pg-gather
+  #     - percona-pgpool2
+  #     - percona-postgresql-*-repack
+  #     - percona-pg-stat-monitor*
+  #     - percona-postgis
+  #     - percona-postgresql-*-wal2json
+  #     - percona-pgbackrest
+  #     - etcd
+  #   when: ansible_os_family == "Debian"
 
-  - name: install PPG rpm packages
-    yum:
-      name: "{{ packages }}"
-      state: latest
-      update_cache: yes
-    vars:
-      packages:
-      - percona-ppg-server16
-      - percona-pgbouncer
-      - percona-pgaudit*_set_user
-      - percona-pgbadger
-      - percona-pg_gather
-      - percona-patroni
-      - percona-pgpool-II*
-      # - percona-postgis*
-      - etcd
-    when: ansible_os_family == "RedHat"
+  # - name: install PPG rpm packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #     - percona-ppg-server16
+  #     - percona-pgbouncer
+  #     - percona-pgaudit*_set_user
+  #     - percona-pgbadger
+  #     - percona-pg_gather
+  #     - percona-patroni
+  #     - percona-pgpool-II*
+  #     # - percona-postgis*
+  #     - etcd
+  #   when: ansible_os_family == "RedHat"
 
   # - name: make changes for pgpool2
   #   command: sudo dnf config-manager --set-enabled codeready-builder-for-rhel-9-x86_64-rpms
@@ -336,34 +336,34 @@
       - percona-postgis33
     when: ansible_os_family == "RedHat"
 
-  - name: Update PERCONA_TELEMETRY_CHECK_INTERVAL default
-    ansible.builtin.lineinfile:
-      path: /etc/default/percona-telemetry-agent
-      regex: 'PERCONA_TELEMETRY_CHECK_INTERVAL=86400'
-      line: PERCONA_TELEMETRY_CHECK_INTERVAL=10
-    when: ansible_os_family == "Debian"
+  # - name: Update PERCONA_TELEMETRY_CHECK_INTERVAL default
+  #   ansible.builtin.lineinfile:
+  #     path: /etc/default/percona-telemetry-agent
+  #     regex: 'PERCONA_TELEMETRY_CHECK_INTERVAL=86400'
+  #     line: PERCONA_TELEMETRY_CHECK_INTERVAL=10
+  #   when: ansible_os_family == "Debian"
 
-  - name: Update PERCONA_TELEMETRY_URL default
-    ansible.builtin.lineinfile:
-      path: /etc/default/percona-telemetry-agent
-      regex: 'PERCONA_TELEMETRY_URL=https://check.percona.com/v1/telemetry/GenericReport'
-      line: PERCONA_TELEMETRY_URL=https://check-dev.percona.com/v1/telemetry/GenericReport
-    when: ansible_os_family == "Debian"
+  # - name: Update PERCONA_TELEMETRY_URL default
+  #   ansible.builtin.lineinfile:
+  #     path: /etc/default/percona-telemetry-agent
+  #     regex: 'PERCONA_TELEMETRY_URL=https://check.percona.com/v1/telemetry/GenericReport'
+  #     line: PERCONA_TELEMETRY_URL=https://check-dev.percona.com/v1/telemetry/GenericReport
+  #   when: ansible_os_family == "Debian"
 
 
-  - name: Update PERCONA_TELEMETRY_CHECK_INTERVAL default
-    ansible.builtin.lineinfile:
-      path: /etc/sysconfig/percona-telemetry-agent
-      regex: 'PERCONA_TELEMETRY_CHECK_INTERVAL=86400'
-      line: PERCONA_TELEMETRY_CHECK_INTERVAL=10
-    when: ansible_os_family == "RedHat"
+  # - name: Update PERCONA_TELEMETRY_CHECK_INTERVAL default
+  #   ansible.builtin.lineinfile:
+  #     path: /etc/sysconfig/percona-telemetry-agent
+  #     regex: 'PERCONA_TELEMETRY_CHECK_INTERVAL=86400'
+  #     line: PERCONA_TELEMETRY_CHECK_INTERVAL=10
+  #   when: ansible_os_family == "RedHat"
 
-  - name: Update PERCONA_TELEMETRY_URL default
-    ansible.builtin.lineinfile:
-      path: /etc/sysconfig/percona-telemetry-agent
-      regex: 'PERCONA_TELEMETRY_URL=https://check.percona.com/v1/telemetry/GenericReport'
-      line: PERCONA_TELEMETRY_URL=https://check-dev.percona.com/v1/telemetry/GenericReport
-    when: ansible_os_family == "RedHat"
+  # - name: Update PERCONA_TELEMETRY_URL default
+  #   ansible.builtin.lineinfile:
+  #     path: /etc/sysconfig/percona-telemetry-agent
+  #     regex: 'PERCONA_TELEMETRY_URL=https://check.percona.com/v1/telemetry/GenericReport'
+  #     line: PERCONA_TELEMETRY_URL=https://check-dev.percona.com/v1/telemetry/GenericReport
+  #   when: ansible_os_family == "RedHat"
 
   # - name: install haproxy packages
   #   apt:
