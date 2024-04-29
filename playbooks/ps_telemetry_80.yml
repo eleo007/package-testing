@@ -47,6 +47,35 @@
       var: selinux_status
     when: ansible_os_family == "RedHat"
 
+  - name: install python3-pip rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - python3-pip
+    when: ansible_os_family == "RedHat"
+
+  - name: install python3-pip deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - python3-pip
+    when: ansible_os_family == "Debian"
+
+  - name: install pytest
+    pip:
+      name: "{{ packages }}"
+      extra_args: --user
+    vars:
+      packages:
+      - pytest-testinfra
+      - pytest
+      
 #   - name: download and extract world database
 #     command: "{{ item }}"
 #     with_items:
