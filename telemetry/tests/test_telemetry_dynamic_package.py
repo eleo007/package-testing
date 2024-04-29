@@ -115,7 +115,7 @@ def test_telemetry_scrape_postponed(host, copy_pillar_metrics):
     time.sleep(7)
     log_file_content = host.file(telemetry_log_file).content_string
     assert "sleeping for 10 seconds before first iteration" in log_file_content
-    assert "start metrics processing iteration" in log_file_content
+    assert "start metrics processing iteration" not in log_file_content
     for pillar in pillars_list:
         assert len (host.file(telem_root_dir + pillar).listdir()) == 1
 
@@ -126,6 +126,13 @@ def test_telemetry_sending(host, copy_pillar_metrics):
         assert 'Sending request to host=check-dev.percona.com.","file":"' + telem_root_dir + pillar + '/' + copy_pillar_metrics[pillar] in log_file_content
         assert 'Received response: 200 OK","file":"' + telem_root_dir + pillar + '/' + copy_pillar_metrics[pillar] in log_file_content
 
+def test_telemetry_uuid_created(host):
+    telem_uuid_file="/usr/local/percona/telemetry_uuid"
+    assert host.file(telem_uuid_file).is_file
+    pattern = r'instanceId:([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})'
+    telemetry_uuid_content = host.file(telem_uuid_file).content_string
+    assert re.search(pattern, telemetry_uuid_content)
+
 # After pillar dirs are created and metrics are copied in copy_pillar_metrics,
 # TA log should contain info that history was written. History dir should contain 3 files (equal to num of sent telem files).
 def test_telemetry_history_saved(host,copy_pillar_metrics):
@@ -134,20 +141,12 @@ def test_telemetry_history_saved(host,copy_pillar_metrics):
         assert 'writing metrics to history file","pillar file":"' + telem_root_dir + pillar + '/' + copy_pillar_metrics[pillar] in log_file_content
         assert 'failed to write history file","file":"' + telem_history_dir + copy_pillar_metrics[pillar] not in log_file_content
         assert len(host.file(telem_history_dir).listdir()) == 3
-
-def test_telemetry_uuid_created(host):
-    telem_uuid_file="/usr/local/percona/telemetry_uuid"
-    assert host.file(telem_uuid_file).is_file
-    pattern = r'instanceId:([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})'
-    telemetry_uuid_content = host.file(telem_uuid_file).content_string
-    assert re.search(pattern, telemetry_uuid_content)
-
 def test_tetemetry_removed_from_pillar(host,copy_pillar_metrics):
     log_file_content = host.file(telemetry_log_file).content_string
     for pillar in pillars_list:
         assert 'removing metrics file","file":"' + telem_root_dir + pillar + '/' + copy_pillar_metrics[pillar] in log_file_content
         assert 'failed to remove metrics file, will try on next iteration","file":"' + telem_root_dir + pillar + '/' + copy_pillar_metrics[pillar] not in log_file_content
-        assert len (host.file(telem_root_dir + pillar).listdir()) == 0
+        assert len(host.file(telem_root_dir + pillar).listdir()) == 0
 
 def test_no_other_errors(host):
     log_file_content = host.file(telemetry_log_file).content_string
@@ -206,7 +205,7 @@ def test_ta_metrics_values_sent(host, copy_pillar_metrics):
         metrics_list=history_dict['reports'][0]['metrics']
         for metric in metrics_list:
             if metric['key'] == 'OS':
-                assert test_host_os.lower() in metric['value'].lower()
+                assert test_host_os == metric['value']
             if metric['key'] == 'deployment':
                 assert deployment in metric['value']
             if metric['key'] == 'hardware_arch':
@@ -235,13 +234,12 @@ def test_ps_metrics_sent(host, copy_pillar_metrics):
             assert metric['value'] == "8.0.35-27-debug"
         if metric['key'] == 'replication_info':
             assert metric['value'] == "{\"is_replica\":\"1\",\"is_semisync_source\":\"1\"}"
-        if metric['key'] == 'replication_info':
-            assert metric['active_plugins'] == "[\"binlog\",\"mysql_native_password\",\"sha256_password\",\"caching_sha2_password\",\"sha2_cache_cleaner\",\"daemon_keyring_proxy_plugin\",\"PERFORMANCE_SCHEMA\",\"CSV\",\"MEMORY\",\"InnoDB\",\"INNODB_TRX\",\"INNODB_CMP\",\"INNODB_CMP_RESET\",\"INNODB_CMPMEM\",\"INNODB_CMPMEM_RESET\",\"INNODB_CMP_PER_INDEX\",\"INNODB_CMP_PER_INDEX_RESET\",\"INNODB_BUFFER_PAGE\",\"INNODB_BUFFER_PAGE_LRU\",\"INNODB_BUFFER_POOL_STATS\",\"INNODB_TEMP_TABLE_INFO\",\"INNODB_METRICS\",\"INNODB_FT_DEFAULT_STOPWORD\",\"INNODB_FT_DELETED\",\"INNODB_FT_BEING_DELETED\",\"INNODB_FT_CONFIG\",\"INNODB_FT_INDEX_CACHE\",\"INNODB_FT_INDEX_TABLE\",\"INNODB_TABLES\",\"INNODB_TABLESTATS\",\"INNODB_INDEXES\",\"INNODB_TABLESPACES\",\"INNODB_COLUMNS\",\"INNODB_VIRTUAL\",\"INNODB_CACHED_INDEXES\",\"INNODB_SESSION_TEMP_TABLESPACES\",\"MyISAM\",\"MRG_MYISAM\",\"TempTable\",\"ARCHIVE\",\"BLACKHOLE\",\"ngram\",\"mysqlx_cache_cleaner\",\"mysqlx\",\"ROCKSDB\",\"rpl_semi_sync_source\",\"ROCKSDB_CFSTATS\",\"ROCKSDB_DBSTATS\",\"ROCKSDB_PERF_CONTEXT\",\"ROCKSDB_PERF_CONTEXT_GLOBAL\",\"ROCKSDB_CF_OPTIONS\",\"ROCKSDB_GLOBAL_INFO\",\"ROCKSDB_COMPACTION_HISTORY\",\"ROCKSDB_COMPACTION_STATS\",\"ROCKSDB_ACTIVE_COMPACTION_STATS\",\"ROCKSDB_DDL\",\"ROCKSDB_INDEX_FILE_MAP\",\"ROCKSDB_LOCKS\",\"ROCKSDB_TRX\",\"ROCKSDB_DEADLOCK\"]"
+        if metric['key'] == 'active_plugins':
+            assert metric['value'] == "[\"binlog\",\"mysql_native_password\",\"sha256_password\",\"caching_sha2_password\",\"sha2_cache_cleaner\",\"daemon_keyring_proxy_plugin\",\"PERFORMANCE_SCHEMA\",\"CSV\",\"MEMORY\",\"InnoDB\",\"INNODB_TRX\",\"INNODB_CMP\",\"INNODB_CMP_RESET\",\"INNODB_CMPMEM\",\"INNODB_CMPMEM_RESET\",\"INNODB_CMP_PER_INDEX\",\"INNODB_CMP_PER_INDEX_RESET\",\"INNODB_BUFFER_PAGE\",\"INNODB_BUFFER_PAGE_LRU\",\"INNODB_BUFFER_POOL_STATS\",\"INNODB_TEMP_TABLE_INFO\",\"INNODB_METRICS\",\"INNODB_FT_DEFAULT_STOPWORD\",\"INNODB_FT_DELETED\",\"INNODB_FT_BEING_DELETED\",\"INNODB_FT_CONFIG\",\"INNODB_FT_INDEX_CACHE\",\"INNODB_FT_INDEX_TABLE\",\"INNODB_TABLES\",\"INNODB_TABLESTATS\",\"INNODB_INDEXES\",\"INNODB_TABLESPACES\",\"INNODB_COLUMNS\",\"INNODB_VIRTUAL\",\"INNODB_CACHED_INDEXES\",\"INNODB_SESSION_TEMP_TABLESPACES\",\"MyISAM\",\"MRG_MYISAM\",\"TempTable\",\"ARCHIVE\",\"BLACKHOLE\",\"ngram\",\"mysqlx_cache_cleaner\",\"mysqlx\",\"ROCKSDB\",\"rpl_semi_sync_source\",\"ROCKSDB_CFSTATS\",\"ROCKSDB_DBSTATS\",\"ROCKSDB_PERF_CONTEXT\",\"ROCKSDB_PERF_CONTEXT_GLOBAL\",\"ROCKSDB_CF_OPTIONS\",\"ROCKSDB_GLOBAL_INFO\",\"ROCKSDB_COMPACTION_HISTORY\",\"ROCKSDB_COMPACTION_STATS\",\"ROCKSDB_ACTIVE_COMPACTION_STATS\",\"ROCKSDB_DDL\",\"ROCKSDB_INDEX_FILE_MAP\",\"ROCKSDB_LOCKS\",\"ROCKSDB_TRX\",\"ROCKSDB_DEADLOCK\"]"
         if metric['key'] == 'active_components':
             assert metric['value'] == "[\"file://component_percona_telemetry\"]"
         if metric['key'] == 'installed_packages':
             assert metric['value'] == "[{\"name\":\"percona-release\",\"version\":\"1.0-27\",\"repository\":{\"name\":\"\",\"component\":\"\"}},{\"name\":\"percona-telemetry-agent\",\"version\":\"0.1-1\",\"repository\":{\"name\":\"tools\",\"component\":\"experimental\"}}]"
-
 
 def test_pg_metrics_sent(host, copy_pillar_metrics):
     # check metrics in the history files
@@ -293,8 +291,52 @@ def test_telemetry_removed_from_history(host):
     update_ta_options(host, check_interval="10", hist_keep_interval="10")
     time.sleep(40)
     log_file_content = host.file(telemetry_log_file).content_string
-    assert 'cleaning up history metric files","directory":"' + telem_history_dir in log_file_content
     assert len(host.file(telem_history_dir).listdir()) == 0
+    assert 'cleaning up history metric files","directory":"' + telem_history_dir in log_file_content
+
+def test_telemetry_uuid_corrupted(host):
+    telemetry_uuid_content = host.file('/usr/local/percona/telemetry_uuid').content_string
+    pattern = r'instanceId:([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})'
+    match = re.search(pattern, telemetry_uuid_content)
+    extracted_uuid_before = match.group(1)
+    with host.sudo("root"):
+        host.run("echo instanceId:123 > /usr/local/percona/telemetry_uuid")
+    update_ta_options(host, check_interval="10", hist_keep_interval="604800")
+    pillar_dir=telem_root_dir + 'ps'
+    host.check_output(f"cp -p /package-testing/telemetry/ps-test-file.json {pillar_dir}/$(date +%s)-ps-test-file.json")
+    time.sleep(15)
+    log_file_content_after = host.file(telemetry_log_file).content_string
+    telemetry_uuid_content_after = host.file('/usr/local/percona/telemetry_uuid').content_string
+    assert "open/usr/local/percona/telemetry_uuid: permission denied" not in log_file_content_after
+    assert re.search(pattern, telemetry_uuid_content)
+    assert extracted_uuid_before not in telemetry_uuid_content_after
+
+def test_network_issue_iptables(host):
+    with host.sudo("root"):
+        #block sending with iptables
+        host.check_output("iptables -I OUTPUT -d check-dev.percona.com -j DROP")
+        update_ta_options(host, check_interval="10")
+        pillar_dir=telem_root_dir + 'ps'
+        host.check_output(f"cp -p /package-testing/telemetry/ps-test-file.json {pillar_dir}/$(date +%s)-ps-test-file.json")
+        time.sleep(70)
+        #revert
+        host.run("iptables -D OUTPUT -d  check-dev.percona.com -j DROP")
+        log_file_content = host.file(telemetry_log_file).content_string
+        assert "error during sending telemetry, will try on next iteration" in log_file_content
+        assert "i/o timeout" in log_file_content
+        assert len(host.file(pillar_dir).listdir()) == 1
+
+def test_stop_service(host):
+    ta_serv = host.service("percona-telemetry-agent")
+    with host.sudo("root"):
+        host.check_output("systemctl stop percona-telemetry-agent")
+        assert not ta_serv.is_running
+
+def test_disable_service(host):
+    ta_serv = host.service("percona-telemetry-agent")
+    with host.sudo("root"):
+        host.check_output("systemctl disable percona-telemetry-agent")
+        assert not ta_serv.is_enabled
 
 # On the first start of TA it should create history dir. If it can not for some reason (eg no rights) - TA terminates
 # We remove TA history dir if present, make dir immutable and try to start TA. TA should terminate.
@@ -311,9 +353,7 @@ def test_telemetry_removed_from_history(host):
 #     assert check_result.rc != 0, (check_result.rc, check_result.stderr, check_result.stdout)
 
 
-# def test_resend_for_failure(host):
 
-    
 
 
 
