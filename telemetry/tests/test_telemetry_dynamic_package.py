@@ -100,7 +100,7 @@ def update_ta_options(host, check_interval="", hist_keep_interval="", resend_tim
     set_ta_defaults(host, check_interval, hist_keep_interval, resend_timeout, url)
     cmd = 'systemctl restart ' + ta_service_name
     host.check_output(cmd)
-    time.sleep(int(check_interval)+10)
+    time.sleep(int(check_interval)+25)
     cmd = 'systemctl stop ' + ta_service_name
     host.check_output(cmd)
 
@@ -112,7 +112,7 @@ def update_ta_options(host, check_interval="", hist_keep_interval="", resend_tim
 # After pillar dirs are created and metrics are copied in copy_pillar_metrics, try to send telemetry
 # TA log should contain info that telemetry was sent and receive code was 200
 def test_telemetry_sending(host, copy_pillar_metrics):
-    update_ta_options(host, check_interval='15', url=dev_telem_url)
+    update_ta_options(host, check_interval='10', url=dev_telem_url)
     log_file_content = host.file(telemetry_log_file).content_string
     assert "sleeping for 5 seconds before first iteration" in log_file_content
     for pillar in pillars_list:
@@ -144,7 +144,7 @@ def test_telemetry_file_valid_json(host, copy_pillar_metrics):
         history_file=host.file(telem_history_dir + copy_pillar_metrics[pillar]).content_string
         json.loads(history_file)
 
-def test_major_metrics_sent(host, copy_pillar_metrics):
+def test_ta_metrics_sent(host, copy_pillar_metrics):
     for pillar in pillars_list:
         history_file=host.file(telem_history_dir + copy_pillar_metrics[pillar]).content_string
         assert '"id":' in history_file
@@ -156,9 +156,9 @@ def test_major_metrics_sent(host, copy_pillar_metrics):
         assert '"OS"' in history_file
         assert '"deployment"' in history_file
         assert '"hardware_arch"' in history_file
-        assert '"installed_packages"' in history_file
 
-def test_major_metrics_values_sent(host, copy_pillar_metrics):
+
+def test_ta_metrics_values_sent(host, copy_pillar_metrics):
     # get OS
     test_host_version = host.system_info.distribution
     test_host_release = host.system_info.release
@@ -186,6 +186,7 @@ def test_major_metrics_values_sent(host, copy_pillar_metrics):
         assert datetime.strptime(history_dict['reports'][0]['createTime'], "%Y-%m-%dT%H:%M:%SZ")
         assert history_dict['reports'][0]['instanceId'] == extracted_uuid
         assert history_dict['reports'][0]['productFamily'] == product_family
+        # check metrics
         metrics_list=history_dict['reports'][0]['metrics']
         for metric in metrics_list:
             if metric['key'] == 'OS':
@@ -196,6 +197,31 @@ def test_major_metrics_values_sent(host, copy_pillar_metrics):
             if metric['key'] == 'hardware_arch':
                 assert test_host_arch in metric['value']
 
+def test_ps_metrics_sent(host, copy_pillar_metrics):
+    # check metrics in the history files
+    pillar = 'ps'
+    # get content of pillar history file
+    history_file=host.file(telem_history_dir + copy_pillar_metrics[pillar]).content_string
+    history_dict=json.loads(history_file)
+    # check metrics
+    metrics_list=history_dict['reports'][0]['metrics']
+    for metric in metrics_list:
+        if metric['key'] == 'uptime':
+            assert metric['value'] == "6185"
+        if metric['key'] == 'databases_count':
+            assert metric['value'] == "7"
+        if metric['key'] == 'databases_size':
+            assert metric['value'] == "33149"
+        if metric['key'] == 'se_engines_in_use':
+            assert metric['value'] == "[\"InnoDB\",\"ROCKSDB\"]"
+        if metric['key'] == 'db_instance_id':
+            assert re.search(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',metric['value'])
+        if metric['key'] == 'pillar_version':
+            assert metric['value'] == "8.0.35-27-debug"
+        if metric['key'] == 'replication_info':
+            assert metric['value'] == "{\\\"is_replica\\\":\\\"1\\\",\\\"is_semisync_source\\\":\\\"1\\\"}"
+        if metric['key'] == 'replication_info':
+            assert metric['active_plugins'] == "[\\\"binlog\\\",\\\"mysql_native_password\\\",\\\"sha256_password\\\",\\\"caching_sha2_password\\\",\\\"sha2_cache_cleaner\\\",\\\"daemon_keyring_proxy_plugin\\\",\\\"PERFORMANCE_SCHEMA\\\",\\\"CSV\\\",\\\"MEMORY\\\",\\\"InnoDB\\\",\\\"INNODB_TRX\\\",\\\"INNODB_CMP\\\",\\\"INNODB_CMP_RESET\\\",\\\"INNODB_CMPMEM\\\",\\\"INNODB_CMPMEM_RESET\\\",\\\"INNODB_CMP_PER_INDEX\\\",\\\"INNODB_CMP_PER_INDEX_RESET\\\",\\\"INNODB_BUFFER_PAGE\\\",\\\"INNODB_BUFFER_PAGE_LRU\\\",\\\"INNODB_BUFFER_POOL_STATS\\\",\\\"INNODB_TEMP_TABLE_INFO\\\",\\\"INNODB_METRICS\\\",\\\"INNODB_FT_DEFAULT_STOPWORD\\\",\\\"INNODB_FT_DELETED\\\",\\\"INNODB_FT_BEING_DELETED\\\",\\\"INNODB_FT_CONFIG\\\",\\\"INNODB_FT_INDEX_CACHE\\\",\\\"INNODB_FT_INDEX_TABLE\\\",\\\"INNODB_TABLES\\\",\\\"INNODB_TABLESTATS\\\",\\\"INNODB_INDEXES\\\",\\\"INNODB_TABLESPACES\\\",\\\"INNODB_COLUMNS\\\",\\\"INNODB_VIRTUAL\\\",\\\"INNODB_CACHED_INDEXES\\\",\\\"INNODB_SESSION_TEMP_TABLESPACES\\\",\\\"MyISAM\\\",\\\"MRG_MYISAM\\\",\\\"TempTable\\\",\\\"ARCHIVE\\\",\\\"BLACKHOLE\\\",\\\"ngram\\\",\\\"mysqlx_cache_cleaner\\\",\\\"mysqlx\\\",\\\"ROCKSDB\\\",\\\"rpl_semi_sync_source\\\",\\\"ROCKSDB_CFSTATS\",\\\"ROCKSDB_DBSTATS\\\",\\\"ROCKSDB_PERF_CONTEXT\\\",\\\"ROCKSDB_PERF_CONTEXT_GLOBAL\\\",\\\"ROCKSDB_CF_OPTIONS\\\",\\\"ROCKSDB_GLOBAL_INFO\\\",\\\"ROCKSDB_COMPACTION_HISTORY\\\",\\\"ROCKSDB_COMPACTION_STATS\\\",\\\"ROCKSDB_ACTIVE_COMPACTION_STATS\\\",\\\"ROCKSDB_DDL\\\",\\\"ROCKSDB_INDEX_FILE_MAP\\\",\\\"ROCKSDB_LOCKS\\\",\\\"ROCKSDB_TRX\\\",\\\"ROCKSDB_DEADLOCK\\\"]"
 # On the first start of TA it should create history dir. If it can not for some reason (eg no rights) - TA terminates
 # We remove TA history dir if present, make dir immutable and try to start TA. TA should terminate.
 # def test_history_no_rights(host, copy_pillar_metrics):
