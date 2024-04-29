@@ -268,7 +268,7 @@ def test_ta_metrics_sent(host, copy_pillar_metrics):
 
 def test_ta_metrics_values_sent(host, copy_pillar_metrics):
     # get OS
-    test_host_os = host.run("grep PRETTY_NAME /etc/os-release | sed 's/PRETTY_NAME=//g;s/\"//g'")
+    test_host_os = host.run("grep PRETTY_NAME /etc/os-release | sed 's/PRETTY_NAME=//g;s/\"//g'").stdout
     test_host_arch = host.system_info.arch
     deployment = 'PACKAGE'
     # get  instanceId from telemetry_uuid
@@ -384,7 +384,7 @@ def test_telemetry_removed_from_history(host):
     time.sleep(40)
     log_file_content = host.file(telemetry_log_file).content_string
     assert len(host.file(telem_history_dir).listdir()) == 0
-    assert 'cleaning up history metric files","directory":"' + telem_history_dir in log_file_content
+    assert 'cleaning up history metric files","directory":"' + telem_root_dir + 'history' in log_file_content
 
 def test_telemetry_uuid_corrupted(host):
     telemetry_uuid_content = host.file('/usr/local/percona/telemetry_uuid').content_string
@@ -409,6 +409,7 @@ def test_network_issue_iptables(host):
         host.check_output("iptables -I OUTPUT -d check-dev.percona.com -j DROP")
         update_ta_options(host, check_interval="10")
         pillar_dir=telem_root_dir + 'ps'
+        host.check_output(f"rm {pillar_dir}/*")
         host.check_output(f"cp -p /package-testing/telemetry/ps-test-file.json {pillar_dir}/$(date +%s)-ps-test-file.json")
         time.sleep(70)
         #revert
