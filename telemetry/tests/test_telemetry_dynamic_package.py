@@ -10,6 +10,13 @@ import re
 from datetime import datetime
 from packaging import version
 
+# VERSION=os.environ.get("TA_VERSION")
+# REVISION=os.environ.get("TA_REVISION")
+
+PAK_VERSION = '0.1-1'
+VERSION = 'phase-0.1'
+REVISION = '13b74807'
+
 RHEL_DISTS = ["redhat", "centos", "rhel", "oracleserver", "ol", "amzn"]
 
 DEB_DISTS = ["debian", "ubuntu"]
@@ -30,6 +37,15 @@ dev_telem_url='https:\/\/check-dev.percona.com\/v1\/telemetry\/GenericReport'
 
 ta_service_name='percona-telemetry-agent'
 
+telemetry_defaults=[["RootPath", "/usr/local/percona/telemetry"],["PSMetricsPath", "/usr/local/percona/telemetry/ps"],
+         ["PSMDBMetricsPath", "/usr/local/percona/telemetry/psmdb"],["PXCMetricsPath", "/usr/local/percona/telemetry/pxc"],
+        ["PGMetricsPath", "/usr/local/percona/telemetry/pg"], ["HistoryPath", "/usr/local/percona/telemetry/history"],
+        ["CheckInterval", 86400], ["HistoryKeepInterval", 604800]
+    ]
+
+platform_defaults=[["ResendTimeout", 60], ["URL","https://check.percona.com/v1/telemetry/GenericReport"]
+    ]
+                   
 # For tests when there is no package: create telemetry pillar directory if it is not present
 def create_pillars_dir(host):
     with host.sudo("root"):
@@ -107,6 +123,82 @@ def update_ta_options(host, check_interval="", hist_keep_interval="", resend_tim
 #################################### TESTS #######################################
 ##################################################################################
 
+def test_ta_package(host):
+    dist = host.system_info.distribution
+    pkg = host.package("percona-telemetry-agent")
+    assert pkg.is_installed
+    if dist.lower() in DEB_DISTS:
+        assert PAK_VERSION in pkg.version, pkg.version
+    else:
+        assert PAK_VERSION in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
+
+def test_ta_service(host):
+    ta_serv = host.service("percona-telemetry-agent")
+    assert ta_serv.is_running
+    assert ta_serv.is_enabled
+    assert ta_serv.systemd_properties["User"] == 'daemon'
+    assert ta_serv.systemd_properties["Group"] == 'percona-telemetry'
+    assert "percona-telemetry-agent" in ta_serv.systemd_properties["EnvironmentFilesoup"]
+
+def test_ta_dirs(host):
+    assert host.file('/usr/local/percona').group == 'percona-telemetry'
+    assert oct(host.file('/usr/local/percona').mode) == '0o775'
+    assert host.file(telem_root_dir).is_directory
+    assert host.file(telem_root_dir).user == 'daemon'
+    assert host.file(telem_root_dir).group == 'percona-telemetry'
+    assert oct(host.file(telem_root_dir).mode) == '0o755'
+    assert host.file(telem_history_dir).is_directory
+    assert host.file(telem_history_dir).user == 'daemon'
+    assert host.file(telem_root_dir).group == 'percona-telemetry'
+    assert oct(host.file(telem_history_dir).mode) == '0o6755'
+
+def test_ta_log_file(host):
+    assert host.file(telemetry_log_file).is_file
+    assert host.file("/var/log/percona/telemetry-agent-error.log").is_file
+
+def test_ta_rotation(host):
+    rotate_file_content = host.file("/etc/logrotate.d/percona-telemetry-agent").content_string
+    assert("/var/log/percona/telemetry-agent*.log") in rotate_file_content
+    assert 'weekly' in rotate_file_content
+    assert 'rotate 4' in rotate_file_content
+    assert 'compress' in rotate_file_content
+    assert 'dateext' in rotate_file_content
+    assert 'notifempty' in rotate_file_content
+    assert 'copytruncate' in rotate_file_content
+
+@pytest.mark.parametrize("ta_key, ref_value", telemetry_defaults)
+def test_ta_telemetry_default_values(host, ta_key, ref_value):
+    log_file_params = host.file(telemetry_log_file).content_string.partition('\n')[0]
+    cur_values=json.loads(log_file_params)
+    telem_config=cur_values["config"]["Telemetry"]
+    assert len(telem_config) == 8
+    assert telem_config[ta_key] == ref_value
+
+@pytest.mark.parametrize("ta_key, ref_value", platform_defaults)
+def test_ta_platform_default_values(host, ta_key, ref_value):
+    log_file_params = host.file(telemetry_log_file).content_string.partition('\n')[0]
+    cur_values=json.loads(log_file_params)
+    platform_config=cur_values["config"]["Platform"]
+    assert len(platform_config) == 2
+    assert platform_config[ta_key] == ref_value
+
+def test_ta_version(host):
+    cmd = "/usr/bin/percona-telemetry-agent --version"
+    result = host.run(cmd)
+    assert VERSION in result.stdout, result.stdout
+    assert REVISION in result.stdout, result.stdout
+
+def test_ta_defaults_file(host):
+    dist = host.system_info.distribution
+    if dist.lower() in DEB_DISTS:
+        options_file = '/etc/default/percona-telemetry-agent'
+    else:
+        options_file = '/etc/sysconfig/percona-telemetry-agent'
+    defaults_file_content = host.file(options_file).content_string
+    assert 'PERCONA_TELEMETRY_CHECK_INTERVAL' in defaults_file_content
+    assert 'PERCONA_TELEMETRY_HISTORY_KEEP_INTERVAL' in defaults_file_content
+    assert 'PERCONA_TELEMETRY_RESEND_INTERVAL' in defaults_file_content
+    assert 'PERCONA_TELEMETRY_UR' in defaults_file_content
 
 # After pillar dirs are created and metrics are copied in copy_pillar_metrics, try to send telemetry
 # TA log should contain info that telemetry was sent and receive code was 200
@@ -337,6 +429,32 @@ def test_disable_service(host):
     with host.sudo("root"):
         host.check_output("systemctl disable percona-telemetry-agent")
         assert not ta_serv.is_enabled
+
+def test_service_removed_deb(host):
+    dist = host.system_info.distribution
+    if dist.lower() not in DEB_DISTS:
+        pytest.skip("This test only for DEB distributions")
+    with host.sudo("root"):
+        host.check_output("apt remove --purge percona-telemetry-agent")
+    ta_serv = host.service("percona-telemetry-agent")
+    assert not ta_serv.exists
+    assert host.file(telem_history_dir).exists
+
+def test_service_removed_rpm(host):
+    dist = host.system_info.distribution
+    if dist.lower() in DEB_DISTS:
+        pytest.skip("This test only for RPM distributions")
+    with host.sudo("root"):
+        host.check_output("yum remove percona-telemetry-agent")
+    ta_serv = host.service("percona-telemetry-agent")
+    assert not ta_serv.exists
+    assert host.file(telem_history_dir).exists
+
+def test_process_not_running(host):
+    cmd = 'ps auxww| grep -v grep  | grep -c "percona-telemetry-agent"'
+    result = host.run(cmd)
+    stdout = int(result.stdout)
+    assert stdout == 0
 
 # On the first start of TA it should create history dir. If it can not for some reason (eg no rights) - TA terminates
 # We remove TA history dir if present, make dir immutable and try to start TA. TA should terminate.
