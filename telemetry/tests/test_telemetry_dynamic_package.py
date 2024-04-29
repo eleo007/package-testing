@@ -7,6 +7,7 @@ import os
 import json
 import shutil
 import re
+from datetime import datetime
 from packaging import version
 
 RHEL_DISTS = ["redhat", "centos", "rhel", "oracleserver", "ol", "amzn"]
@@ -99,7 +100,7 @@ def update_ta_options(host, check_interval="", hist_keep_interval="", resend_tim
     set_ta_defaults(host, check_interval, hist_keep_interval, resend_timeout, url)
     cmd = 'systemctl restart ' + ta_service_name
     host.check_output(cmd)
-    time.sleep(int(check_interval)+5)
+    time.sleep(int(check_interval)+10)
     cmd = 'systemctl stop ' + ta_service_name
     host.check_output(cmd)
 
@@ -111,7 +112,7 @@ def update_ta_options(host, check_interval="", hist_keep_interval="", resend_tim
 # After pillar dirs are created and metrics are copied in copy_pillar_metrics, try to send telemetry
 # TA log should contain info that telemetry was sent and receive code was 200
 def test_telemetry_sending(host, copy_pillar_metrics):
-    update_ta_options(host, check_interval='5', url=dev_telem_url)
+    update_ta_options(host, check_interval='15', url=dev_telem_url)
     log_file_content = host.file(telemetry_log_file).content_string
     assert "sleeping for 5 seconds before first iteration" in log_file_content
     for pillar in pillars_list:
@@ -182,6 +183,7 @@ def test_major_metrics_values_sent(host, copy_pillar_metrics):
 
         history_dict=json.loads(history_file)
         assert re.search(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',history_dict['reports'][0]['id'])
+        assert datetime.strptime(history_dict['reports'][0]['createTime'], "%Y-%m-%dT%H:%M:%SZ")
         assert history_dict['reports'][0]['instanceId'] == extracted_uuid
         assert history_dict['reports'][0]['productFamily'] == product_family
         metrics_list=history_dict['reports'][0]['metrics']
