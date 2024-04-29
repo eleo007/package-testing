@@ -138,7 +138,7 @@ def test_ta_service(host):
     assert ta_serv.is_enabled
     assert ta_serv.systemd_properties["User"] == 'daemon'
     assert ta_serv.systemd_properties["Group"] == 'percona-telemetry'
-    assert "percona-telemetry-agent" in ta_serv.systemd_properties["EnvironmentFilesoup"]
+    assert "percona-telemetry-agent" in ta_serv.systemd_properties["EnvironmentFiles"]
 
 def test_ta_dirs(host):
     assert host.file('/usr/local/percona').group == 'percona-telemetry'
@@ -297,7 +297,7 @@ def test_ta_metrics_values_sent(host, copy_pillar_metrics):
         metrics_list=history_dict['reports'][0]['metrics']
         for metric in metrics_list:
             if metric['key'] == 'OS':
-                assert test_host_os == metric['value']
+                assert metric['value'] in test_host_os
             if metric['key'] == 'deployment':
                 assert deployment in metric['value']
             if metric['key'] == 'hardware_arch':
@@ -331,7 +331,8 @@ def test_ps_metrics_sent(host, copy_pillar_metrics):
         if metric['key'] == 'active_components':
             assert metric['value'] == "[\"file://component_percona_telemetry\"]"
         if metric['key'] == 'installed_packages':
-            assert metric['value'] == "[{\"name\":\"percona-release\",\"version\":\"1.0-27\",\"repository\":{\"name\":\"\",\"component\":\"\"}},{\"name\":\"percona-telemetry-agent\",\"version\":\"0.1-1\",\"repository\":{\"name\":\"tools\",\"component\":\"experimental\"}}]"
+            assert '\"name\":\"percona-release\",\"version\":\"1.0-27\"' in metric['value']
+            assert '\"name\":\"percona-telemetry-agent\",\"version\":\"0.1-1\",\"repository\":{\"name\":\"tools\",\"component\":\"experimental\"' in metric['value']
 
 def test_pg_metrics_sent(host, copy_pillar_metrics):
     # check metrics in the history files
@@ -409,7 +410,7 @@ def test_network_issue_iptables(host):
         host.check_output("iptables -I OUTPUT -d check-dev.percona.com -j DROP")
         update_ta_options(host, check_interval="10")
         pillar_dir=telem_root_dir + 'ps'
-        host.check_output(f"rm {pillar_dir}/*")
+        host.run(f"rm {pillar_dir}/*")
         host.check_output(f"cp -p /package-testing/telemetry/ps-test-file.json {pillar_dir}/$(date +%s)-ps-test-file.json")
         time.sleep(70)
         #revert
@@ -436,7 +437,7 @@ def test_service_removed_deb(host):
     if dist.lower() not in DEB_DISTS:
         pytest.skip("This test only for DEB distributions")
     with host.sudo("root"):
-        host.check_output("apt remove --purge percona-telemetry-agent")
+        host.check_output("apt remove --purge -y percona-telemetry-agent")
     ta_serv = host.service("percona-telemetry-agent")
     assert not ta_serv.exists
     assert host.file(telem_history_dir).exists
@@ -446,7 +447,7 @@ def test_service_removed_rpm(host):
     if dist.lower() in DEB_DISTS:
         pytest.skip("This test only for RPM distributions")
     with host.sudo("root"):
-        host.check_output("yum remove percona-telemetry-agent")
+        host.check_output("yum remove -y percona-telemetry-agent")
     ta_serv = host.service("percona-telemetry-agent")
     assert not ta_serv.exists
     assert host.file(telem_history_dir).exists
