@@ -79,7 +79,7 @@
   - name: install pytest
     pip:
       name: "{{ packages }}"
-      extra_args: --user
+      extra_args: --user --break-system-packages
     vars:
       packages:
       - pytest-testinfra
