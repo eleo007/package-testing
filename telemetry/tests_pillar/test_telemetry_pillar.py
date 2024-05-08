@@ -12,7 +12,7 @@ from packaging import version
 
 PAK_VERSION = '0.1-1'
 VERSION = 'phase-0.1'
-REVISION = '13b74807'
+REVISION = '8502e528'
 
 RHEL_DISTS = ["redhat", "centos", "rhel", "oracleserver", "ol", "amzn"]
 
