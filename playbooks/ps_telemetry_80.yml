@@ -47,6 +47,15 @@
       var: selinux_status
     when: ansible_os_family == "RedHat"
 
+  - name: Allow mysql to listen on tcp port 33061
+    community.general.seport:
+      ports: 33061
+      proto: tcp
+      setype: mysqld_port_t
+      state: present
+    when: ansible_os_family == "RedHat"
+# semanage port -a -t mysqld_port_t -p tcp 33061
+
   - name: install python3-pip rpm packages
     yum:
       name: "{{ packages }}"
@@ -185,6 +194,16 @@
   - name: restart mysql service
     service: name=mysql state=restarted
 
+  - name: install AppArmor utils for deb
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+        - apparmor-utils
+      when: ansible_os_family == "Debian"
+
   - name: Add log-error-verbosity option
     blockinfile:
       path: /etc/my.cnf
@@ -195,7 +214,6 @@
     when: 
         - ansible_os_family == "RedHat"
 
-# We enable fips mode only for jammy bc deb12 does not have image with fips.so
   - name: Add fips_mode option
     blockinfile:
       path: /etc/mysql/mysql.conf.d/mysqld.cnf
@@ -223,9 +241,6 @@
   - name: restart mysql service
     service: name=mysql state=restarted
 
-  - name: run the test script
-    command: /package-testing/scripts/gr_test.sh
-
   - name: download and extract world database
     command: "{{ item }}"
     with_items:
@@ -240,7 +255,24 @@
   - name: install audit_log v2 plugin
     command: mysql -uroot -NBe "source /usr/share/mysql/audit_log_filter_linux_install.sql;"
 
+  - name: Update the DB engine
+    command: mysql -uroot -NBe "USE world3;create table r1 (id int, foo char(25)) engine=rocksdb;insert into r1 (id,foo) values (1,'test'),(2,'wow'),(3,'q');"
+    register: engine
 
+  - name: debug
+    debug:
+      var: engine
+
+  # - name: setup repl
+  #   command: "{{ item }}"
+  #   with_items:
+  #   - /usr/sbin/mysqld --no-defaults --initialize-insecure --datadir=$HOME/server_1/
+  #   - /usr/sbin/mysqld --no-defaults --datadir=$HOME/server_1/ --port=21000 --socket=/tmp/mysql_21000.sock --max-connections=1024 --log-error --general-log --log-error-verbosity=3 --report-host=127.0.0.1 --server-id=2&
+  #   - mysql -u root -e "create user 'repl'@'%' IDENTIFIED WITH mysql_native_password BY 'xyzzy';GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'repl'@'%';"
+  #   - mysql -e -S/tmp/mysql_21000.sock "stop slave; CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_USER='repl', MASTER_PASSWORD='xyzzy',MASTER_PORT=3600, MASTER_LOG_FILE='binlog.000001';start slave;"
+
+
+      
 
   # - name: enable the pdps-8.0.36
   #   command: percona-release enable pdps-8.0.36
