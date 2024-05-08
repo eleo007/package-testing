@@ -202,7 +202,7 @@
     vars:
       packages:
         - apparmor-utils
-      when: ansible_os_family == "Debian"
+    when: ansible_os_family == "Debian"
 
   - name: Add log-error-verbosity option
     blockinfile:
