@@ -432,7 +432,7 @@ def test_installed_packages_scraped(host):
 
 def test_ta_metrics_sent(host):
     pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
-    history_file=host.file(telem_history_dir + pillar_ref_file).content_string
+    history_file = host.file(telem_history_dir + pillar_ref_file).content_string
     assert '"id":' in history_file
     assert '"createTime":' in history_file
     assert '"instanceId":' in history_file
@@ -487,7 +487,7 @@ def test_ps_metrics_sent(host):
     ref_active_plugins = reference_dict['active_plugins'] 
     ref_active_components = reference_dict['active_components']
     # get content of pillar history file
-    history_file = host.file(telem_history_dir + pillar_ref_file).content_string
+    history_file = host.file(telem_history_dir + pillar_ref_name).content_string
     history_dict = json.loads(history_file)
     # check metrics
     metrics_list=history_dict['reports'][0]['metrics']
