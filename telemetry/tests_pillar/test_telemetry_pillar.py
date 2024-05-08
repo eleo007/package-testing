@@ -390,6 +390,7 @@ def test_telemetry_scrape_postponed(host):
 
 def test_telemetry_sending(host):
     pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
+    i = 0
     time.sleep(20)
     log_file_content = host.file(telemetry_log_file).content_string
     assert 'Sending request to host=check-dev.percona.com.","file":"' + ps_pillar_dir + '/' + pillar_ref_file in log_file_content
@@ -446,7 +447,6 @@ def test_ta_metrics_values_sent(host):
     # get OS
     test_host_os = host.run("grep PRETTY_NAME /etc/os-release | sed 's/PRETTY_NAME=//g;s/\"//g'").stdout
     test_host_arch = host.system_info.arch
-    deployment = 'PACKAGE'
     # get  instanceId from telemetry_uuid
     telemetry_uuid_content = host.file('/usr/local/percona/telemetry_uuid').content_string
     pattern = r'instanceId:([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})'
@@ -456,54 +456,63 @@ def test_ta_metrics_values_sent(host):
     # check metrics in the history files
     pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
     history_file=host.file(telem_history_dir + pillar_ref_file).content_string
-    # get product family
-    product_family = 'PRODUCT_FAMILY_PS'
 
     history_dict=json.loads(history_file)
     assert re.search(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',history_dict['reports'][0]['id'])
     assert datetime.strptime(history_dict['reports'][0]['createTime'], "%Y-%m-%dT%H:%M:%SZ")
     assert history_dict['reports'][0]['instanceId'] == extracted_uuid
-    assert history_dict['reports'][0]['productFamily'] == product_family
+    assert history_dict['reports'][0]['productFamily'] == 'PRODUCT_FAMILY_PS'
     # check metrics
     metrics_list=history_dict['reports'][0]['metrics']
     for metric in metrics_list:
         if metric['key'] == 'OS':
             assert metric['value'] in test_host_os
         if metric['key'] == 'deployment':
-            assert deployment in metric['value']
+            assert 'PACKAGE' in metric['value']
         if metric['key'] == 'hardware_arch':
             assert test_host_arch in metric['value']
 
-# def test_ps_metrics_sent(host):
-#     # check metrics in the history files
-#     pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
-#     # get content of pillar history file
-#     history_file=host.file(telem_history_dir + pillar_ref_file).content_string
-#     history_dict=json.loads(history_file)
-#     # check metrics
-#     metrics_list=history_dict['reports'][0]['metrics']
-#     for metric in metrics_list:
-#         if metric['key'] == 'uptime':
-#             assert metric['value'] == "6185"
-#         if metric['key'] == 'databases_count':
-#             assert metric['value'] == "7"
-#         if metric['key'] == 'databases_size':
-#             assert metric['value'] == "33149"
-#         if metric['key'] == 'se_engines_in_use':
-#             assert metric['value'] == "[\"InnoDB\",\"ROCKSDB\"]"
-#         if metric['key'] == 'db_instance_id':
-#             assert re.search(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',metric['value'])
-#         if metric['key'] == 'pillar_version':
-#             assert metric['value'] == "8.0.35-27-debug"
-#         if metric['key'] == 'replication_info':
-#             assert metric['value'] == "{\"is_replica\":\"1\",\"is_semisync_source\":\"1\"}"
-#         if metric['key'] == 'active_plugins':
-#             assert metric['value'] == "[\"binlog\",\"mysql_native_password\",\"sha256_password\",\"caching_sha2_password\",\"sha2_cache_cleaner\",\"daemon_keyring_proxy_plugin\",\"PERFORMANCE_SCHEMA\",\"CSV\",\"MEMORY\",\"InnoDB\",\"INNODB_TRX\",\"INNODB_CMP\",\"INNODB_CMP_RESET\",\"INNODB_CMPMEM\",\"INNODB_CMPMEM_RESET\",\"INNODB_CMP_PER_INDEX\",\"INNODB_CMP_PER_INDEX_RESET\",\"INNODB_BUFFER_PAGE\",\"INNODB_BUFFER_PAGE_LRU\",\"INNODB_BUFFER_POOL_STATS\",\"INNODB_TEMP_TABLE_INFO\",\"INNODB_METRICS\",\"INNODB_FT_DEFAULT_STOPWORD\",\"INNODB_FT_DELETED\",\"INNODB_FT_BEING_DELETED\",\"INNODB_FT_CONFIG\",\"INNODB_FT_INDEX_CACHE\",\"INNODB_FT_INDEX_TABLE\",\"INNODB_TABLES\",\"INNODB_TABLESTATS\",\"INNODB_INDEXES\",\"INNODB_TABLESPACES\",\"INNODB_COLUMNS\",\"INNODB_VIRTUAL\",\"INNODB_CACHED_INDEXES\",\"INNODB_SESSION_TEMP_TABLESPACES\",\"MyISAM\",\"MRG_MYISAM\",\"TempTable\",\"ARCHIVE\",\"BLACKHOLE\",\"ngram\",\"mysqlx_cache_cleaner\",\"mysqlx\",\"ROCKSDB\",\"rpl_semi_sync_source\",\"ROCKSDB_CFSTATS\",\"ROCKSDB_DBSTATS\",\"ROCKSDB_PERF_CONTEXT\",\"ROCKSDB_PERF_CONTEXT_GLOBAL\",\"ROCKSDB_CF_OPTIONS\",\"ROCKSDB_GLOBAL_INFO\",\"ROCKSDB_COMPACTION_HISTORY\",\"ROCKSDB_COMPACTION_STATS\",\"ROCKSDB_ACTIVE_COMPACTION_STATS\",\"ROCKSDB_DDL\",\"ROCKSDB_INDEX_FILE_MAP\",\"ROCKSDB_LOCKS\",\"ROCKSDB_TRX\",\"ROCKSDB_DEADLOCK\"]"
-#         if metric['key'] == 'active_components':
-#             assert metric['value'] == "[\"file://component_percona_telemetry\"]"
-#         if metric['key'] == 'installed_packages':
-#             assert '\"name\":\"percona-release\",\"version\":\"1.0-27\"' in metric['value']
-#             assert '\"name\":\"percona-telemetry-agent\",\"version\":\"0.1-1\",\"repository\":{\"name\":\"tools\",\"component\":\"experimental\"' in metric['value']
+def test_ps_metrics_sent(host):
+    # check metrics in the history files
+    pillar_ref_name = host.file('/package-testing/telemetry/reference/').listdir()[0]
+    pillar_ref_file = host.file('/package-testing/telemetry/reference/' + pillar_ref_name).content_string
+    reference_dict = json.loads(pillar_ref_file)
+    ref_uptime = reference_dict['uptime']
+    ref_databases_count = reference_dict['databases_count']
+    ref_databases_size = reference_dict['databases_size']
+    ref_se_engines_in_use = reference_dict['se_engines_in_use']
+    ref_db_instance_id = reference_dict['db_instance_id']
+    ref_pillar_version = reference_dict['pillar_version']
+    # ref_replication_info = reference_dict['replication_info']
+    ref_active_plugins = reference_dict['active_plugins'] 
+    ref_active_components = reference_dict['active_components']
+    # get content of pillar history file
+    history_file = host.file(telem_history_dir + pillar_ref_file).content_string
+    history_dict = json.loads(history_file)
+    # check metrics
+    metrics_list=history_dict['reports'][0]['metrics']
+    for metric in metrics_list:
+        if metric['key'] == 'uptime':
+            assert metric['value'] == ref_uptime
+        if metric['key'] == 'databases_count':
+            assert metric['value'] == ref_databases_count
+        if metric['key'] == 'databases_size':
+            assert metric['value'] == ref_databases_size
+        if metric['key'] == 'se_engines_in_use':
+            assert metric['value'] == ref_se_engines_in_use
+        if metric['key'] == 'db_instance_id':
+            assert metric['value'] == ref_db_instance_id
+        if metric['key'] == 'pillar_version':
+            assert metric['value'] == ref_pillar_version
+        if metric['key'] == 'active_plugins':
+            assert metric['value'] == ref_active_plugins
+        if metric['key'] == 'active_components':
+            assert metric['value'] == ref_active_components
+        if metric['key'] == 'installed_packages':
+            assert '\"name\":\"percona-release\",\"version\":\"1.0-27\"' in metric['value']
+            assert '\"name\":\"percona-telemetry-agent\",\"version\":\"0.1-1\",\"repository\":{\"name\":\"tools\",\"component\":\"experimental\"' in metric['value']
+            assert '\"name\":\"percona-server-server\",\"version\":\"8.0.36-28-1\"' in metric['value']
+            assert '\"name\":\"percona-toolkit\",\"version\":\"3.5.7-1\"' in metric['value']
 
 def test_telemetry_removed_from_history(host):
     update_ta_options(host, check_interval="10", hist_keep_interval="10")
@@ -511,6 +520,19 @@ def test_telemetry_removed_from_history(host):
     log_file_content = host.file(telemetry_log_file).content_string
     assert len(host.file(telem_history_dir).listdir()) == 0
     assert 'cleaning up history metric files","directory":"' + telem_root_dir + 'history' in log_file_content
+
+def test_stop_service(host):
+    ta_serv = host.service("percona-telemetry-agent")
+    with host.sudo("root"):
+        host.check_output("systemctl stop percona-telemetry-agent")
+        assert not ta_serv.is_running
+
+def test_disable_service(host):
+    ta_serv = host.service("percona-telemetry-agent")
+    with host.sudo("root"):
+        host.check_output("systemctl disable percona-telemetry-agent")
+        assert not ta_serv.is_enabled
+
 
 # def test_telemetry_uuid_corrupted(host):
 #     telemetry_uuid_content = host.file('/usr/local/percona/telemetry_uuid').content_string
@@ -544,18 +566,6 @@ def test_telemetry_removed_from_history(host):
 #         assert "error during sending telemetry, will try on next iteration" in log_file_content
 #         assert "i/o timeout" in log_file_content
 #         assert len(host.file(pillar_dir).listdir()) == 1
-
-# def test_stop_service(host):
-#     ta_serv = host.service("percona-telemetry-agent")
-#     with host.sudo("root"):
-#         host.check_output("systemctl stop percona-telemetry-agent")
-#         assert not ta_serv.is_running
-
-# def test_disable_service(host):
-#     ta_serv = host.service("percona-telemetry-agent")
-#     with host.sudo("root"):
-#         host.check_output("systemctl disable percona-telemetry-agent")
-#         assert not ta_serv.is_enabled
 
 #########################################
 ############# REMOVAL TESTS #############
