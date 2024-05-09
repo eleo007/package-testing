@@ -310,8 +310,8 @@ def test_telem_pillar_dir_cleaned_up_hist_max(host):
         host.check_output(f"touch {ps_pillar_dir}/1711821793-test-old-history.json")
         time.sleep(30)
         log_file_content = host.file(log_file).content_string
-        assert re.findall(r'Scheduling file 1711821793-test-hold-history.json owned by other server for deletion because it is older than 604800 seconds', log_file_content)
-        assert "1711821793-test-hold-history.json" not in host.file(ps_pillar_dir).listdir()
+        assert re.findall(r'Scheduling file 1711821793-test-old-history.json owned by other server for deletion because it is older than 604800 seconds', log_file_content)
+        assert "1711821793-test-old-history.json" not in host.file(ps_pillar_dir).listdir()
 
 def test_telem_disable_running(host):
     with host.sudo("root"):
