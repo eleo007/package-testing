@@ -84,6 +84,17 @@
       packages:
       - pytest-testinfra
       - pytest
+    when: ansible_distribution_release == "bookworm"
+
+  - name: install pytest
+    pip:
+      name: "{{ packages }}"
+      extra_args: --user
+    vars:
+      packages:
+      - pytest-testinfra
+      - pytest
+    when: ansible_distribution_release != "bookworm"
 
 #   - name: download and extract world database
 #     command: "{{ item }}"

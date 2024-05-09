@@ -288,7 +288,7 @@ def test_telem_content_gr(host):
     assert ps_telem_dict['group_replication_info']['group_size'] == "1"
 
 def test_telem_pillar_dir_cleaned_up(host):
-    # telemetry files of the current server (started) are stored no longer than 1 week.
+    # telemetry files of the current server (started) are stored no longer than 1 week or hist keep interval.
     log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
     update_ps_options(host, '20', '10', '60')
     ps_telem_files_num_before = len(host.file(ps_pillar_dir).listdir())
@@ -307,7 +307,7 @@ def test_telem_pillar_dir_cleaned_up_hist_max(host):
     # create telem file with timestamp older than 1 week
     with host.sudo("root"):
         log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
-        host.check_output(f"touch {ps_pillar_dir}/1711821793-test-hold-history.json")
+        host.check_output(f"touch {ps_pillar_dir}/1711821793-test-old-history.json")
         time.sleep(30)
         log_file_content = host.file(log_file).content_string
         assert re.findall(r'Scheduling file 1711821793-test-hold-history.json owned by other server for deletion because it is older than 604800 seconds', log_file_content)
@@ -480,12 +480,12 @@ def test_ps_metrics_sent(host):
     ref_uptime = reference_dict['uptime']
     ref_databases_count = reference_dict['databases_count']
     ref_databases_size = reference_dict['databases_size']
-    ref_se_engines_in_use = reference_dict['se_engines_in_use']
+    ref_se_engines_in_use = str(reference_dict['se_engines_in_use']).replace('\'', '\"')
     ref_db_instance_id = reference_dict['db_instance_id']
     ref_pillar_version = reference_dict['pillar_version']
     # ref_replication_info = reference_dict['replication_info']
-    ref_active_plugins = reference_dict['active_plugins'] 
-    ref_active_components = reference_dict['active_components']
+    ref_active_plugins = str(reference_dict['active_plugins']).replace('\'', '\"')
+    ref_active_components = str(reference_dict['active_components']).replace('\'', '\"')
     # get content of pillar history file
     history_file = host.file(telem_history_dir + pillar_ref_name).content_string
     history_dict = json.loads(history_file)
@@ -619,7 +619,6 @@ def test_ta_service_removed_rpm(host):
         pytest.skip("This test only for RPM distributions")
     with host.sudo("root"):
         # https://perconadev.atlassian.net/browse/PKG-46
-        host.check_output("systemctl daemon-reexec")
         ta_serv_result = host.run("systemctl status percona-telemetry-agent").stderr
     assert "Unit percona-telemetry-agent.service could not be found." in ta_serv_result
     assert host.file(telem_history_dir).exists
