@@ -274,6 +274,80 @@
     debug:
       var: engine
 
+  - name: enable the pdps-8.0.36
+    command: percona-release enable pdps-8.0.36
+
+  - name: install Orchestrator deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - percona-orchestrator-cli
+      - percona-orchestrator-client
+      - percona-orchestrator
+    when: ansible_os_family == "Debian"
+
+  - name: install Orchestrator rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - percona-orchestrator-cli
+      - percona-orchestrator-client
+      - percona-orchestrator
+    when: ansible_os_family == "RedHat"
+
+
+  - name: enable the pdpxc-8.0.35 testing
+    command: percona-release enable pdpxc-8.0.35 testing
+
+  - name: install percona-haproxy rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - percona-haproxy
+    when: ansible_os_family == "RedHat"
+
+  - name: install percona-haproxy deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - percona-haproxy
+    when: ansible_os_family == "Debian"
+
+  - name: enable the original repo
+    command: percona-release enable original
+
+  - name: install PMM client rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - pmm2-client
+    when: ansible_os_family == "RedHat"
+
+  - name: install PMM client deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - pmm2-client
+    when: ansible_os_family == "Debian"
+
   - block:
       - name: run pytest
         command: python3 -m pytest -v /package-testing/telemetry/tests_pillar/test_telemetry_pillar.py
@@ -296,82 +370,6 @@
   #   - mysql -u root -e "create user 'repl'@'%' IDENTIFIED WITH mysql_native_password BY 'xyzzy';GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'repl'@'%';"
   #   - mysql -e -S/tmp/mysql_21000.sock "stop slave; CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_USER='repl', MASTER_PASSWORD='xyzzy',MASTER_PORT=3600, MASTER_LOG_FILE='binlog.000001';start slave;"
 
-
-      
-
-  # - name: enable the pdps-8.0.36
-  #   command: percona-release enable pdps-8.0.36
-
-  # - name: install Orchestrator deb packages
-  #   apt:
-  #     name: "{{ packages }}"
-  #     update_cache: yes
-  #     state: latest
-  #   vars:
-  #     packages:
-  #     - percona-orchestrator-cli
-  #     - percona-orchestrator-client
-  #     - percona-orchestrator
-  #   when: ansible_os_family == "Debian"
-
-  # - name: install Orchestrator rpm packages
-  #   yum:
-  #     name: "{{ packages }}"
-  #     state: latest
-  #     update_cache: yes
-  #   vars:
-  #     packages:
-  #     - percona-orchestrator-cli
-  #     - percona-orchestrator-client
-  #     - percona-orchestrator
-  #   when: ansible_os_family == "RedHat"
-
-
-  # - name: enable the pdpxc-8.0.35 testing
-  #   command: percona-release enable pdpxc-8.0.35 testing
-
-  # - name: install percona-haproxy rpm packages
-  #   yum:
-  #     name: "{{ packages }}"
-  #     state: latest
-  #     update_cache: yes
-  #   vars:
-  #     packages:
-  #     - percona-haproxy
-  #   when: ansible_os_family == "RedHat"
-
-  # - name: install percona-haproxy deb packages
-  #   apt:
-  #     name: "{{ packages }}"
-  #     update_cache: yes
-  #     state: latest
-  #   vars:
-  #     packages:
-  #     - percona-haproxy
-  #   when: ansible_os_family == "Debian"
-
-  # - name: enable the original repo
-  #   command: percona-release enable original
-
-  # - name: install PMM client rpm packages
-  #   yum:
-  #     name: "{{ packages }}"
-  #     state: latest
-  #     update_cache: yes
-  #   vars:
-  #     packages:
-  #     - pmm2-client
-  #   when: ansible_os_family == "RedHat"
-
-  # - name: install PMM client deb packages
-  #   apt:
-  #     name: "{{ packages }}"
-  #     update_cache: yes
-  #     state: latest
-  #   vars:
-  #     packages:
-  #     - pmm2-client
-  #   when: ansible_os_family == "Debian"
 
   # - name: enable the mongo repo pdmdb-7.0 experimental
   #   command: percona-release enable pdmdb-7.0 experimental

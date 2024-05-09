@@ -1,6 +1,12 @@
 {
     "db_instance_id": "e83c568c-e140-11ee-8320-7e207666b18a",
     "pillar_version": "8.0.35-27-debug",
+    "boolean_true": "true",
+    "boolean_false": "false",
+    "boolean_true_no": true,
+    "boolean_false_no": false,
+    "boolean_true_no_cap": "True",
+    "boolean_false_no_cap": "False",
     "active_plugins": [
         "binlog",
         "mysql_native_password",
