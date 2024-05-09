@@ -488,6 +488,9 @@ def test_ps_metrics_sent(host):
     ref_active_components = str(reference_dict['active_components']).replace('\'', '\"')
     # get content of pillar history file
     history_file = host.file(telem_history_dir + pillar_ref_name).content_string
+    with host.sudo("root"):
+        host.run(f'mkdir -p /package-testing/telemetry/reference/hist')
+        host.run(f"cp {telem_history_dir} + {pillar_ref_name} /package-testing/telemetry/reference/hist/")
     history_dict = json.loads(history_file)
     # check metrics
     metrics_list=history_dict['reports'][0]['metrics']
