@@ -316,12 +316,12 @@ def test_ps_metrics_sent(host):
     ref_uptime = reference_dict['uptime']
     ref_databases_count = reference_dict['databases_count']
     ref_databases_size = reference_dict['databases_size']
-    ref_se_engines_in_use = str(reference_dict['se_engines_in_use']).replace('\'', '\"')
+    ref_se_engines_in_use = str(reference_dict['se_engines_in_use']).replace('\'', '\"').replace(' ', '')
     ref_db_instance_id = reference_dict['db_instance_id']
     ref_pillar_version = reference_dict['pillar_version']
     # ref_replication_info = reference_dict['replication_info']
-    ref_active_plugins = str(reference_dict['active_plugins']).replace('\'', '\"')
-    ref_active_components = str(reference_dict['active_components']).replace('\'', '\"')
+    ref_active_plugins = str(reference_dict['active_plugins']).replace('\'', '\"').replace(' ', '')
+    ref_active_components = str(reference_dict['active_components']).replace('\'', '\"').replace(' ', '')
     # get content of pillar history file
     history_file = host.file(telem_history_dir + pillar_ref_name).content_string
     with host.sudo("root"):
