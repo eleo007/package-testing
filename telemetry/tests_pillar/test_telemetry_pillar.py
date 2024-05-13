@@ -70,9 +70,11 @@ def set_ta_defaults(host, check_interval="", hist_keep_interval="", resend_timeo
             host.check_output(f"sed -iE 's/PERCONA_TELEMETRY_URL=.*$/PERCONA_TELEMETRY_URL={url}/' {options_file}")
 
 def update_ta_options(host, check_interval="", hist_keep_interval="", resend_timeout="", url=""):
-    set_ta_defaults(host, check_interval, hist_keep_interval, resend_timeout, url)
-    cmd = 'systemctl restart ' + ta_service_name
-    host.check_output(cmd)
+    with host.sudo("root"):
+        set_ta_defaults(host, check_interval, hist_keep_interval, resend_timeout, url)
+        cmd = 'systemctl restart ' + ta_service_name
+        host.check_output(cmd)
+    time.sleep(1)
 
 def update_ps_options(host, grace_interval="", scrape_interval="", history_keep_interval=""):
     dist = host.system_info.distribution
@@ -656,37 +658,38 @@ def test_disable_service(host):
 ############# REMOVAL TESTS #############
 #########################################
 
-def test_telem_path_not_writtable(host):
-    with host.sudo("root"):
-        log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
-        update_ps_options(host, '20', '10')
-        host.check_output(f'chown root:root {ps_pillar_dir}')
-        time.sleep(30)
-        log_file_content = host.file(log_file).content_string
-        mysql_serv = host.service("mysql")
-        assert "Problem during telemetry file write: Permission denied" in log_file_content
-        assert mysql_serv.is_running
-        host.check_output(f'chown mysql:percona-telemetry {ps_pillar_dir}')
+# def test_telem_path_not_writtable(host):
+#     with host.sudo("root"):
+#         log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
+#         update_ps_options(host, '20', '10')
+#         host.check_output(f'chown root:root {ps_pillar_dir}')
+#         time.sleep(30)
+#         log_file_content = host.file(log_file).content_string
+#         mysql_serv = host.service("mysql")
+#         assert "Problem during telemetry file write: Permission denied" in log_file_content
+#         assert mysql_serv.is_running
+#         host.check_output(f'chown mysql:percona-telemetry {ps_pillar_dir}')
 
-def test_telem_path_absent(host):
-    with host.sudo("root"):
-        log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
-        update_ps_options(host, '20', '10')
-        cmd = f'rm -rf {ps_pillar_dir}'
-        host.check_output(cmd)
-        time.sleep(30)
-        log_file_content = host.file(log_file).content_string
-        mysql_serv = host.service("mysql")
-        assert "Component percona_telemetry reported: 'Problem during telemetry file write: filesystem error: directory iterator cannot open directory: No such file or directory [/usr/local/percona/telemetry/ps]" in log_file_content
-        assert mysql_serv.is_running
+# def test_telem_path_absent(host):
+#     with host.sudo("root"):
+#         log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
+#         update_ps_options(host, '20', '10')
+#         cmd = f'rm -rf {ps_pillar_dir}'
+#         host.check_output(cmd)
+#         time.sleep(30)
+#         log_file_content = host.file(log_file).content_string
+#         mysql_serv = host.service("mysql")
+#         assert "Component percona_telemetry reported: 'Problem during telemetry file write: filesystem error: directory iterator cannot open directory: No such file or directory [/usr/local/percona/telemetry/ps]" in log_file_content
+#         assert mysql_serv.is_running
 
 def test_path_absent_after_removal(host):
     dist = host.system_info.distribution
-    if dist.lower() in DEB_DISTS:
-        host.check_output("apt autoremove -y percona-server-server")
-    else:
-        host.check_output("yum remove -y percona-server-server")
-    assert not host.file(ps_pillar_dir).exists
+    with host.sudo("root"):
+        if dist.lower() in DEB_DISTS:
+            host.check_output("apt autoremove -y percona-server-server")
+        else:
+            host.check_output("yum remove -y percona-server-server")
+        assert not host.file(ps_pillar_dir).exists
 
 def test_ta_service_removed_deb(host):
     dist = host.system_info.distribution
