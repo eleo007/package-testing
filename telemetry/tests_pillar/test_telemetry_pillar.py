@@ -380,6 +380,8 @@ def test_ps_packages_values(host):
                     pkg_version_repo = host.run(f'apt-cache -q=0 policy {hist_pkg_name} | grep "\\*\\*\\*"')
                     pkg_version_match = re.search(r'[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9]+)?((-|.)[0-9]+)?',pkg_version_repo.stdout)
                     pkg_version = pkg_version_match.group(0)
+                    if re.search(r'[0-9]+\.[0-9]+\.[0-9]+\-[0-9]+\.[0-9]+', pkg_version):
+                        pkg_version = re.sub(r'.([0-9]+)$',r'-\g<1>', pkg_version)
                     # repository name and type
                     repo_url = host.run(f'apt-cache -q=0 policy {hist_pkg_name} | grep -A1 "\\*\\*\\*"| grep "http"')
                     repo_url_split = repo_url.stdout.strip(" ").split(" ")
@@ -411,7 +413,7 @@ def test_ps_packages_values(host):
                         # print(pkg_version, pkg_release, pkg_repository, repo_name)
                 # Assert if values in history file differ from installed on server
                 if hist_pkg_name == 'percona-server-server':
-                    assert pkg_version 
+                    assert re.search(r'[0-9]+\.[0-9]+\.[0-9]+\-[0-9]+\-[0-9]+',pkg_version), hist_pkg_name
                 assert pkg_version == hist_pkg_version, hist_pkg_name
                 assert str(hist_pkg_repo) == repository_str, hist_pkg_name
                 # assert str(package['repository']) == repository_str
