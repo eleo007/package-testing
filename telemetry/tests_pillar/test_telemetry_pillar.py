@@ -18,6 +18,9 @@ RHEL_DISTS = ["redhat", "centos", "rhel", "oracleserver", "ol", "amzn"]
 
 DEB_DISTS = ["debian", "ubuntu"]
 
+packages_list=['percona-toolkit','percona-Server-Server', 'percona-xtrabackup', 'percona-toolkit', 'percona-orchestrator', 'percona-haproxy', \
+               'proxysql2', 'percona-mysql-shell', 'percona-mysql-router', 'pmm2-client']
+
 os.environ['PERCONA_TELEMETRY_URL'] = 'https://check-dev.percona.com/v1/telemetry/GenericReport'
 # os.environ['PERCONA_TELEMETRY_CHECK_INTERVAL'] = '10'
 # TEL_URL_VAR="PERCONA_TELEMETRY_URL=https://check-dev.percona.com/v1/telemetry/GenericReport"
@@ -30,7 +33,7 @@ telem_root_dir = '/usr/local/percona/telemetry/'
 
 telem_history_dir=telem_root_dir + 'history/'
 
-dev_telem_url='https:\/\/check-dev.percona.com\/v1\/telemetry\/GenericReport'
+dev_telem_url='https:\\/\\/check-dev.percona.com\\/v1\\/telemetry\\/GenericReport'
 
 ta_service_name='percona-telemetry-agent'
 
@@ -81,11 +84,11 @@ def update_ps_options(host, grace_interval="", scrape_interval="", history_keep_
         if 'percona_telemetry_disable' in host.file(mysql_cnf).content_string:
             host.check_output(f"sed -r '/^percona_telemetry_disable=.*$/d' -i {mysql_cnf}")
         if grace_interval:
-            host.check_output(f"sed -r '/^percona_telemetry.grace_interval=.*$/d' -i {mysql_cnf} && sed -r '$ a\percona_telemetry.grace_interval={grace_interval}' -i {mysql_cnf}")
+            host.check_output(f"sed -r '/^percona_telemetry.grace_interval=.*$/d' -i {mysql_cnf} && sed -r '$ a\\percona_telemetry.grace_interval={grace_interval}' -i {mysql_cnf}")
         if history_keep_interval:
-            host.check_output(f"sed -r '/^percona_telemetry.history_keep_interval=.*$/d' -i {mysql_cnf} && sed -r '$ a\percona_telemetry.history_keep_interval={history_keep_interval}' -i {mysql_cnf}")
+            host.check_output(f"sed -r '/^percona_telemetry.history_keep_interval=.*$/d' -i {mysql_cnf} && sed -r '$ a\\percona_telemetry.history_keep_interval={history_keep_interval}' -i {mysql_cnf}")
         if scrape_interval:
-            host.check_output(f"sed -r '/^percona_telemetry.scrape_interval=.*$/d' -i {mysql_cnf} && sed -r '$ a\percona_telemetry.scrape_interval={scrape_interval}' -i {mysql_cnf}")
+            host.check_output(f"sed -r '/^percona_telemetry.scrape_interval=.*$/d' -i {mysql_cnf} && sed -r '$ a\\percona_telemetry.scrape_interval={scrape_interval}' -i {mysql_cnf}")
     cmd = 'systemctl restart mysql'
     host.check_output(cmd)
     time.sleep(5)
@@ -344,9 +347,70 @@ def test_ps_metrics_sent(host):
             assert metric['value'] == ref_active_plugins
         if metric['key'] == 'active_components':
             assert metric['value'] == ref_active_components
-        if metric['key'] == 'installed_packages':
-            assert '\"name\":\"percona-release\",\"version\":\"1.0-27\"' in metric['value']
-            assert '\"name\":\"percona-telemetry-agent\",\"version\":\"0.1-1\",\"repository\":{\"name\":\"tools\",\"component\":\"experimental\"' in metric['value']
-            assert '\"name\":\"percona-server-server\",\"version\":\"8.0.36-28-1\"' in metric['value']
-            assert '\"name\":\"percona-toolkit\",\"version\":\"3.5.7-1\"' in metric['value']
 
+@pytest.mark.parametrize("pack_name", packages_list)
+def test_ps_mandatory_packages(host, pack_name):
+    pillar_ref_name = host.file('/package-testing/telemetry/reference/').listdir()[0]
+    hist_file = host.file(telem_history_dir + pillar_ref_name).content_string
+    hist_values=json.loads(hist_file)
+    hist_metrics_list=hist_values['reports'][0]['metrics']
+    for metric in hist_metrics_list:
+        if metric['key'] == 'installed_packages':
+            hist_packages_dict_str = metric['value']
+            assert pack_name.lower() in hist_packages_dict_str.lower()
+
+def test_ps_packages_values(host):
+    pillar_ref_name = host.file('/package-testing/telemetry/reference/').listdir()[0]
+    hist_file = host.file(telem_history_dir + pillar_ref_name).content_string
+    hist_values=json.loads(hist_file)
+    hist_metrics_list=hist_values['reports'][0]['metrics']
+    for metric in hist_metrics_list:
+        if metric['key'] == 'installed_packages':
+            hist_packages_dict_str = metric['value']
+            hist_packages_dict = json.loads(hist_packages_dict_str)
+            for ind in range(len(hist_packages_dict)):
+                hist_pack_name = hist_packages_dict[ind]['name']
+                hist_pack_version = hist_packages_dict[ind]['version']
+                hist_pack_repo = hist_packages_dict[ind]['repository']
+                dist = host.system_info.distribution
+                # FOR DEB PACKAGES
+                if dist.lower() in DEB_DISTS:
+                    # Get values of the packages installed on the server
+                    # version of package
+                    pack_version_repo = host.run(f'apt-cache -q=0 policy {hist_pack_name} | grep "\\*\\*\\*"')
+                    print(pack_version_repo.stdout)
+                    pack_version_match = re.search(r'[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9]+)?((-|.)[0-9]+)?',pack_version_repo.stdout)
+                    pack_version = pack_version_match.group(0)
+                    # repository name and type
+                    repo_url = host.run(f'apt-cache -q=0 policy {hist_pack_name} | grep -A1 "\\*\\*\\*"| grep "http"')
+                    repo_url_split = repo_url.stdout.strip(" ").split(" ")
+                    url_repo_name = repo_url_split[1].split("/")[3]
+                    url_repo_type = repo_url_split[2].split("/")[1]
+                    if 'repo.percona' in repo_url.stdout and url_repo_type == 'main':
+                        url_repo_type = 'release'
+                    repository_str = "{'name': '" + url_repo_name + "', 'component': '"+ url_repo_type + "'}"
+                else:
+                # FOR RRPM PACKAGES
+                    get_pack_info = host.run(f"yum repoquery --qf '%{{version}}|%{{release}}|%{{from_repo}}' --installed {hist_pack_name}")
+                    pack_info = get_pack_info.stdout.strip('\n').split('|')
+                    pack_version, pack_release, pack_repository = pack_info
+                    pack_release = pack_release.replace('.','-')
+                    pack_full_version = pack_version + '-' + pack_release
+                    pack_version_match = re.search(r'[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9]+)?((-|.)[0-9]+)?', pack_full_version)
+                    pack_version = pack_version_match.group(0)
+                    # print(pack_version)
+                    # get repository info. Values are empty if package was installed from commandline
+                    if pack_repository == '@commandline':
+                        repository_str = "{'name': '', 'component': ''}"
+                    else:
+                        repo_name_full = pack_repository.rstrip('-x86_64')
+                        repo_name = '-'.join(repo_name_full.split('-')[0:-1])
+                        repo_type = repo_name_full.split('-')[-1]
+                        # print(repo_type)
+                        # print(repo_name)
+                        repository_str = "{'name': '" + repo_name + "', 'component': '"+ repo_type + "'}"
+                        # print(pack_version, pack_release, pack_repository, repo_name)
+                # Assert if values in history file differ from installed on server
+                assert pack_version == hist_pack_version, hist_pack_name
+                assert str(hist_pack_repo) == repository_str, hist_pack_name
+                # assert str(package['repository']) == repository_str
