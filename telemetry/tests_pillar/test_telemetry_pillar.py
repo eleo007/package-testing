@@ -12,7 +12,7 @@ from packaging import version
 
 PAK_VERSION = '0.1-1'
 VERSION = 'phase-0.1'
-REVISION = '8502e528'
+REVISION = 'a620a1d8'
 
 RHEL_DISTS = ["redhat", "centos", "rhel", "oracleserver", "ol", "amzn"]
 
@@ -348,8 +348,8 @@ def test_ps_metrics_sent(host):
         if metric['key'] == 'active_components':
             assert metric['value'] == ref_active_components
 
-@pytest.mark.parametrize("pack_name", packages_list)
-def test_ps_mandatory_packages(host, pack_name):
+@pytest.mark.parametrize("pkg_name", packages_list)
+def test_ps_mandatory_packages(host, pkg_name):
     pillar_ref_name = host.file('/package-testing/telemetry/reference/').listdir()[0]
     hist_file = host.file(telem_history_dir + pillar_ref_name).content_string
     hist_values=json.loads(hist_file)
@@ -357,7 +357,7 @@ def test_ps_mandatory_packages(host, pack_name):
     for metric in hist_metrics_list:
         if metric['key'] == 'installed_packages':
             hist_packages_dict_str = metric['value']
-            assert pack_name.lower() in hist_packages_dict_str.lower()
+            assert pkg_name.lower() in hist_packages_dict_str.lower()
 
 def test_ps_packages_values(host):
     pillar_ref_name = host.file('/package-testing/telemetry/reference/').listdir()[0]
@@ -369,20 +369,19 @@ def test_ps_packages_values(host):
             hist_packages_dict_str = metric['value']
             hist_packages_dict = json.loads(hist_packages_dict_str)
             for ind in range(len(hist_packages_dict)):
-                hist_pack_name = hist_packages_dict[ind]['name']
-                hist_pack_version = hist_packages_dict[ind]['version']
-                hist_pack_repo = hist_packages_dict[ind]['repository']
+                hist_pkg_name = hist_packages_dict[ind]['name']
+                hist_pkg_version = hist_packages_dict[ind]['version']
+                hist_pkg_repo = hist_packages_dict[ind]['repository']
                 dist = host.system_info.distribution
                 # FOR DEB PACKAGES
                 if dist.lower() in DEB_DISTS:
                     # Get values of the packages installed on the server
                     # version of package
-                    pack_version_repo = host.run(f'apt-cache -q=0 policy {hist_pack_name} | grep "\\*\\*\\*"')
-                    print(pack_version_repo.stdout)
-                    pack_version_match = re.search(r'[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9]+)?((-|.)[0-9]+)?',pack_version_repo.stdout)
-                    pack_version = pack_version_match.group(0)
+                    pkg_version_repo = host.run(f'apt-cache -q=0 policy {hist_pkg_name} | grep "\\*\\*\\*"')
+                    pkg_version_match = re.search(r'[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9]+)?((-|.)[0-9]+)?',pkg_version_repo.stdout)
+                    pkg_version = pkg_version_match.group(0)
                     # repository name and type
-                    repo_url = host.run(f'apt-cache -q=0 policy {hist_pack_name} | grep -A1 "\\*\\*\\*"| grep "http"')
+                    repo_url = host.run(f'apt-cache -q=0 policy {hist_pkg_name} | grep -A1 "\\*\\*\\*"| grep "http"')
                     repo_url_split = repo_url.stdout.strip(" ").split(" ")
                     url_repo_name = repo_url_split[1].split("/")[3]
                     url_repo_type = repo_url_split[2].split("/")[1]
@@ -391,26 +390,28 @@ def test_ps_packages_values(host):
                     repository_str = "{'name': '" + url_repo_name + "', 'component': '"+ url_repo_type + "'}"
                 else:
                 # FOR RRPM PACKAGES
-                    get_pack_info = host.run(f"yum repoquery --qf '%{{version}}|%{{release}}|%{{from_repo}}' --installed {hist_pack_name}")
-                    pack_info = get_pack_info.stdout.strip('\n').split('|')
-                    pack_version, pack_release, pack_repository = pack_info
-                    pack_release = pack_release.replace('.','-')
-                    pack_full_version = pack_version + '-' + pack_release
-                    pack_version_match = re.search(r'[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9]+)?((-|.)[0-9]+)?', pack_full_version)
-                    pack_version = pack_version_match.group(0)
-                    # print(pack_version)
+                    get_pkg_info = host.run(f"yum repoquery --qf '%{{version}}|%{{release}}|%{{from_repo}}' --installed {hist_pkg_name}")
+                    pkg_info = get_pkg_info.stdout.strip('\n').split('|')
+                    pkg_version, pkg_release, pkg_repository = pkg_info
+                    pkg_release = pkg_release.replace('.','-')
+                    pkg_full_version = pkg_version + '-' + pkg_release
+                    pkg_version_match = re.search(r'[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9]+)?((-|.)[0-9]+)?', pkg_full_version)
+                    pkg_version = pkg_version_match.group(0)
+                    # print(pkg_version)
                     # get repository info. Values are empty if package was installed from commandline
-                    if pack_repository == '@commandline':
+                    if pkg_repository == '@commandline':
                         repository_str = "{'name': '', 'component': ''}"
                     else:
-                        repo_name_full = pack_repository.rstrip('-x86_64')
+                        repo_name_full = pkg_repository.rstrip('-x86_64')
                         repo_name = '-'.join(repo_name_full.split('-')[0:-1])
                         repo_type = repo_name_full.split('-')[-1]
                         # print(repo_type)
                         # print(repo_name)
                         repository_str = "{'name': '" + repo_name + "', 'component': '"+ repo_type + "'}"
-                        # print(pack_version, pack_release, pack_repository, repo_name)
+                        # print(pkg_version, pkg_release, pkg_repository, repo_name)
                 # Assert if values in history file differ from installed on server
-                assert pack_version == hist_pack_version, hist_pack_name
-                assert str(hist_pack_repo) == repository_str, hist_pack_name
+                if hist_pkg_name == 'percona-server-server':
+                    assert pkg_version 
+                assert pkg_version == hist_pkg_version, hist_pkg_name
+                assert str(hist_pkg_repo) == repository_str, hist_pkg_name
                 # assert str(package['repository']) == repository_str
