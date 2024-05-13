@@ -295,18 +295,19 @@ def test_telem_content_gr(host):
 
 def test_telem_pillar_dir_cleaned_up(host):
     # telemetry files of the current server (started) are stored no longer than 1 week or hist keep interval.
-    log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
-    update_ps_options(host, '20', '10', '60')
-    ps_telem_files_num_before = len(host.file(ps_pillar_dir).listdir())
-    time.sleep(120)
-    ps_telem_files_num_after = len(host.file(ps_pillar_dir).listdir())
-    log_file_content = host.file(log_file).content_string
-    removed=re.findall(r'Scheduling file (.*) owned by this server for deletion because it is older than 60 seconds', log_file_content)
-    assert ps_telem_files_num_before < ps_telem_files_num_after
-    assert len(removed) > 0
-    for filename in removed:
-        assert f"Component percona_telemetry reported: \'Removing telemetry file: {ps_pillar_dir}/{filename}" in log_file_content
-        assert filename not in host.file(ps_pillar_dir).listdir()
+    with host.sudo("root"):
+        log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
+        update_ps_options(host, '20', '10', '60')
+        ps_telem_files_num_before = len(host.file(ps_pillar_dir).listdir())
+        time.sleep(120)
+        ps_telem_files_num_after = len(host.file(ps_pillar_dir).listdir())
+        log_file_content = host.file(log_file).content_string
+        removed=re.findall(r'Scheduling file (.*) owned by this server for deletion because it is older than 60 seconds', log_file_content)
+        assert ps_telem_files_num_before < ps_telem_files_num_after
+        assert len(removed) > 0
+        for filename in removed:
+            assert f"Component percona_telemetry reported: \'Removing telemetry file: {ps_pillar_dir}/{filename}" in log_file_content
+            assert filename not in host.file(ps_pillar_dir).listdir()
 
 def test_telem_pillar_dir_cleaned_up_hist_max(host):
     # any telemetry files are stored no longer than 1 week.
@@ -343,8 +344,8 @@ def test_telem_disabled_permanent(host):
         mysql_cnf = '/etc/mysql/mysql.conf.d/mysqld.cnf'
     else:
         mysql_cnf = '/etc/my.cnf'
-    log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
     with host.sudo("root"):
+        log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
         host.check_output('systemctl stop mysql')
         # clean up log file 
         host.check_output(f'truncate -s 0 {log_file}')
@@ -395,11 +396,12 @@ def test_telemetry_scrape_postponed(host):
         assert len(host.file(ps_pillar_dir).listdir()) == 1
 
 def test_telemetry_sending(host):
-    pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
-    time.sleep(20)
-    log_file_content = host.file(telemetry_log_file).content_string
-    assert 'Sending request to host=check-dev.percona.com.","file":"' + ps_pillar_dir + '/' + pillar_ref_file in log_file_content
-    assert 'Received response: 200 OK","file":"' + ps_pillar_dir + '/' + pillar_ref_file in log_file_content
+    with host.sudo("root"):
+        pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
+        time.sleep(20)
+        log_file_content = host.file(telemetry_log_file).content_string
+        assert 'Sending request to host=check-dev.percona.com.","file":"' + ps_pillar_dir + '/' + pillar_ref_file in log_file_content
+        assert 'Received response: 200 OK","file":"' + ps_pillar_dir + '/' + pillar_ref_file in log_file_content
 
 # def test_telemetry_uuid_created(host):
 #     telem_uuid_file="/usr/local/percona/telemetry_uuid"
@@ -409,44 +411,48 @@ def test_telemetry_sending(host):
 #     assert re.search(pattern, telemetry_uuid_content)
 
 def test_telemetry_history_saved(host):
-    pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
-    log_file_content = host.file(telemetry_log_file).content_string
-    assert 'writing metrics to history file","pillar file":"' + ps_pillar_dir + '/' + pillar_ref_file in log_file_content
-    assert 'failed to write history file","file":"' + telem_history_dir + pillar_ref_file not in log_file_content
-    assert len(host.file(telem_history_dir).listdir()) == 1
+    with host.sudo("root"):
+        pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
+        log_file_content = host.file(telemetry_log_file).content_string
+        assert 'writing metrics to history file","pillar file":"' + ps_pillar_dir + '/' + pillar_ref_file in log_file_content
+        assert 'failed to write history file","file":"' + telem_history_dir + pillar_ref_file not in log_file_content
+        assert len(host.file(telem_history_dir).listdir()) == 1
 
 def test_tetemetry_removed_from_pillar(host):
-    pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
-    log_file_content = host.file(telemetry_log_file).content_string
-    assert 'removing metrics file","file":"' + ps_pillar_dir + '/' + pillar_ref_file in log_file_content
-    assert 'failed to remove metrics file, will try on next iteration","file":"' + ps_pillar_dir + '/' + pillar_ref_file not in log_file_content
-    assert len(host.file(ps_pillar_dir).listdir()) == 0
+    with host.sudo("root"):
+        pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
+        log_file_content = host.file(telemetry_log_file).content_string
+        assert 'removing metrics file","file":"' + ps_pillar_dir + '/' + pillar_ref_file in log_file_content
+        assert 'failed to remove metrics file, will try on next iteration","file":"' + ps_pillar_dir + '/' + pillar_ref_file not in log_file_content
+        assert len(host.file(ps_pillar_dir).listdir()) == 0
 
 def test_no_other_errors(host):
     log_file_content = host.file(telemetry_log_file).content_string
     assert '"level":"error"' not in log_file_content
 
 def test_telemetry_history_file_valid_json(host):
-    pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
-    history_file=host.file(telem_history_dir + pillar_ref_file).content_string
-    assert json.loads(history_file)
+    with host.sudo("root"):
+        pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
+        history_file=host.file(telem_history_dir + pillar_ref_file).content_string
+        assert json.loads(history_file)
 
 def test_installed_packages_scraped(host):
     log_file_content = host.file(telemetry_log_file).content_string
     assert 'scraping installed Percona packages' in log_file_content
 
 def test_ta_metrics_sent(host):
-    pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
-    history_file = host.file(telem_history_dir + pillar_ref_file).content_string
-    assert '"id":' in history_file
-    assert '"createTime":' in history_file
-    assert '"instanceId":' in history_file
-    assert '"productFamily":' in history_file
-    assert '"metrics":' in history_file
-    assert '"installed_packages"' in history_file
-    assert '"OS"' in history_file
-    assert '"deployment"' in history_file
-    assert '"hardware_arch"' in history_file
+    with host.sudo("root"):
+        pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
+        history_file = host.file(telem_history_dir + pillar_ref_file).content_string
+        assert '"id":' in history_file
+        assert '"createTime":' in history_file
+        assert '"instanceId":' in history_file
+        assert '"productFamily":' in history_file
+        assert '"metrics":' in history_file
+        assert '"installed_packages"' in history_file
+        assert '"OS"' in history_file
+        assert '"deployment"' in history_file
+        assert '"hardware_arch"' in history_file
 
 def test_ta_metrics_values_sent(host):
     # get OS
@@ -459,8 +465,9 @@ def test_ta_metrics_values_sent(host):
     extracted_uuid = match.group(1)
 
     # check metrics in the history files
-    pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
-    history_file=host.file(telem_history_dir + pillar_ref_file).content_string
+    with host.sudo("root"):
+        pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
+        history_file=host.file(telem_history_dir + pillar_ref_file).content_string
 
     history_dict=json.loads(history_file)
     assert re.search(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',history_dict['reports'][0]['id'])
@@ -479,113 +486,116 @@ def test_ta_metrics_values_sent(host):
 
 def test_ps_metrics_sent(host):
     # check metrics in the history files
-    pillar_ref_name = host.file('/package-testing/telemetry/reference/').listdir()[0]
-    pillar_ref_file = host.file('/package-testing/telemetry/reference/' + pillar_ref_name).content_string
-    reference_dict = json.loads(pillar_ref_file)
-    ref_uptime = reference_dict['uptime']
-    ref_databases_count = reference_dict['databases_count']
-    ref_databases_size = reference_dict['databases_size']
-    ref_se_engines_in_use = str(reference_dict['se_engines_in_use']).replace('\'', '\"').replace(' ', '')
-    ref_db_instance_id = reference_dict['db_instance_id']
-    ref_pillar_version = reference_dict['pillar_version']
-    # ref_replication_info = reference_dict['replication_info']
-    ref_active_plugins = str(reference_dict['active_plugins']).replace('\'', '\"').replace(' ', '')
-    ref_active_components = str(reference_dict['active_components']).replace('\'', '\"').replace(' ', '')
-    # get content of pillar history file
-    history_file = host.file(telem_history_dir + pillar_ref_name).content_string
     with host.sudo("root"):
-        host.run(f'mkdir -p /package-testing/telemetry/reference/hist')
-        host.run(f"cp {telem_history_dir}{pillar_ref_name} /package-testing/telemetry/reference/hist/")
-    history_dict = json.loads(history_file)
-    # check metrics
-    metrics_list=history_dict['reports'][0]['metrics']
-    for metric in metrics_list:
-        if metric['key'] == 'uptime':
-            assert metric['value'] == ref_uptime
-        if metric['key'] == 'databases_count':
-            assert metric['value'] == ref_databases_count
-        if metric['key'] == 'databases_size':
-            assert metric['value'] == ref_databases_size
-        if metric['key'] == 'se_engines_in_use':
-            assert metric['value'] == ref_se_engines_in_use
-        if metric['key'] == 'db_instance_id':
-            assert metric['value'] == ref_db_instance_id
-        if metric['key'] == 'pillar_version':
-            assert metric['value'] == ref_pillar_version
-        if metric['key'] == 'active_plugins':
-            assert metric['value'] == ref_active_plugins
-        if metric['key'] == 'active_components':
-            assert metric['value'] == ref_active_components
+        pillar_ref_name = host.file('/package-testing/telemetry/reference/').listdir()[0]
+        pillar_ref_file = host.file('/package-testing/telemetry/reference/' + pillar_ref_name).content_string
+        reference_dict = json.loads(pillar_ref_file)
+        ref_uptime = reference_dict['uptime']
+        ref_databases_count = reference_dict['databases_count']
+        ref_databases_size = reference_dict['databases_size']
+        ref_se_engines_in_use = str(reference_dict['se_engines_in_use']).replace('\'', '\"').replace(' ', '')
+        ref_db_instance_id = reference_dict['db_instance_id']
+        ref_pillar_version = reference_dict['pillar_version']
+        # ref_replication_info = reference_dict['replication_info']
+        ref_active_plugins = str(reference_dict['active_plugins']).replace('\'', '\"').replace(' ', '')
+        ref_active_components = str(reference_dict['active_components']).replace('\'', '\"').replace(' ', '')
+        # get content of pillar history file
+        history_file = host.file(telem_history_dir + pillar_ref_name).content_string
+        with host.sudo("root"):
+            host.run(f'mkdir -p /package-testing/telemetry/reference/hist')
+            host.run(f"cp {telem_history_dir}{pillar_ref_name} /package-testing/telemetry/reference/hist/")
+        history_dict = json.loads(history_file)
+        # check metrics
+        metrics_list=history_dict['reports'][0]['metrics']
+        for metric in metrics_list:
+            if metric['key'] == 'uptime':
+                assert metric['value'] == ref_uptime
+            if metric['key'] == 'databases_count':
+                assert metric['value'] == ref_databases_count
+            if metric['key'] == 'databases_size':
+                assert metric['value'] == ref_databases_size
+            if metric['key'] == 'se_engines_in_use':
+                assert metric['value'] == ref_se_engines_in_use
+            if metric['key'] == 'db_instance_id':
+                assert metric['value'] == ref_db_instance_id
+            if metric['key'] == 'pillar_version':
+                assert metric['value'] == ref_pillar_version
+            if metric['key'] == 'active_plugins':
+                assert metric['value'] == ref_active_plugins
+            if metric['key'] == 'active_components':
+                assert metric['value'] == ref_active_components
 
 @pytest.mark.parametrize("pkg_name", packages_list)
 def test_ps_mandatory_packages(host, pkg_name):
-    pillar_ref_name = host.file('/package-testing/telemetry/reference/').listdir()[0]
-    hist_file = host.file(telem_history_dir + pillar_ref_name).content_string
-    hist_values=json.loads(hist_file)
-    hist_metrics_list=hist_values['reports'][0]['metrics']
-    for metric in hist_metrics_list:
-        if metric['key'] == 'installed_packages':
-            hist_packages_dict_str = metric['value']
-            assert pkg_name.lower() in hist_packages_dict_str.lower()
+    with host.sudo("root"):
+        pillar_ref_name = host.file('/package-testing/telemetry/reference/').listdir()[0]
+        hist_file = host.file(telem_history_dir + pillar_ref_name).content_string
+        hist_values=json.loads(hist_file)
+        hist_metrics_list=hist_values['reports'][0]['metrics']
+        for metric in hist_metrics_list:
+            if metric['key'] == 'installed_packages':
+                hist_packages_dict_str = metric['value']
+                assert pkg_name.lower() in hist_packages_dict_str.lower()
 
 def test_ps_packages_values(host):
-    pillar_ref_name = host.file('/package-testing/telemetry/reference/').listdir()[0]
-    hist_file = host.file(telem_history_dir + pillar_ref_name).content_string
-    hist_values=json.loads(hist_file)
-    hist_metrics_list=hist_values['reports'][0]['metrics']
-    for metric in hist_metrics_list:
-        if metric['key'] == 'installed_packages':
-            hist_packages_dict_str = metric['value']
-            hist_packages_dict = json.loads(hist_packages_dict_str)
-            for ind in range(len(hist_packages_dict)):
-                hist_pkg_name = hist_packages_dict[ind]['name']
-                hist_pkg_version = hist_packages_dict[ind]['version']
-                hist_pkg_repo = hist_packages_dict[ind]['repository']
-                dist = host.system_info.distribution
-                # FOR DEB PACKAGES
-                if dist.lower() in DEB_DISTS:
-                    # Get values of the packages installed on the server
-                    # version of package
-                    pkg_version_repo = host.run(f'apt-cache -q=0 policy {hist_pkg_name} | grep "\\*\\*\\*"')
-                    pkg_version_match = re.search(r'[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9]+)?((-|.)[0-9]+)?',pkg_version_repo.stdout)
-                    pkg_version = pkg_version_match.group(0)
-                    if re.search(r'[0-9]+\.[0-9]+\.[0-9]+\-[0-9]+\.[0-9]+', pkg_version):
-                        pkg_version = re.sub(r'.([0-9]+)$',r'-\g<1>', pkg_version)
-                    # repository name and type
-                    repo_url = host.run(f'apt-cache -q=0 policy {hist_pkg_name} | grep -A1 "\\*\\*\\*"| grep "http"')
-                    repo_url_split = repo_url.stdout.strip(" ").split(" ")
-                    url_repo_name = repo_url_split[1].split("/")[3]
-                    url_repo_type = repo_url_split[2].split("/")[1]
-                    if 'repo.percona' in repo_url.stdout and url_repo_type == 'main':
-                        url_repo_type = 'release'
-                    repository_str = "{'name': '" + url_repo_name + "', 'component': '"+ url_repo_type + "'}"
-                else:
-                # FOR RRPM PACKAGES
-                    get_pkg_info = host.run(f"yum repoquery --qf '%{{version}}|%{{release}}|%{{from_repo}}' --installed {hist_pkg_name}")
-                    pkg_info = get_pkg_info.stdout.strip('\n').split('|')
-                    pkg_version, pkg_release, pkg_repository = pkg_info
-                    pkg_release = pkg_release.replace('.','-')
-                    pkg_full_version = pkg_version + '-' + pkg_release
-                    pkg_version_match = re.search(r'[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9]+)?((-|.)[0-9]+)?', pkg_full_version)
-                    pkg_version = pkg_version_match.group(0)
-                    # print(pkg_version)
-                    # get repository info. Values are empty if package was installed from commandline
-                    if pkg_repository == '@commandline':
-                        repository_str = "{'name': '', 'component': ''}"
+    with host.sudo("root"):
+        pillar_ref_name = host.file('/package-testing/telemetry/reference/').listdir()[0]
+        hist_file = host.file(telem_history_dir + pillar_ref_name).content_string
+        hist_values=json.loads(hist_file)
+        hist_metrics_list=hist_values['reports'][0]['metrics']
+        for metric in hist_metrics_list:
+            if metric['key'] == 'installed_packages':
+                hist_packages_dict_str = metric['value']
+                hist_packages_dict = json.loads(hist_packages_dict_str)
+                for ind in range(len(hist_packages_dict)):
+                    hist_pkg_name = hist_packages_dict[ind]['name']
+                    hist_pkg_version = hist_packages_dict[ind]['version']
+                    hist_pkg_repo = hist_packages_dict[ind]['repository']
+                    dist = host.system_info.distribution
+                    # FOR DEB PACKAGES
+                    if dist.lower() in DEB_DISTS:
+                        # Get values of the packages installed on the server
+                        # version of package
+                        pkg_version_repo = host.run(f'apt-cache -q=0 policy {hist_pkg_name} | grep "\\*\\*\\*"')
+                        pkg_version_match = re.search(r'[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9]+)?((-|.)[0-9]+)?',pkg_version_repo.stdout)
+                        pkg_version = pkg_version_match.group(0)
+                        if re.search(r'[0-9]+\.[0-9]+\.[0-9]+\-[0-9]+\.[0-9]+', pkg_version):
+                            pkg_version = re.sub(r'.([0-9]+)$',r'-\g<1>', pkg_version)
+                        # repository name and type
+                        repo_url = host.run(f'apt-cache -q=0 policy {hist_pkg_name} | grep -A1 "\\*\\*\\*"| grep "http"')
+                        repo_url_split = repo_url.stdout.strip(" ").split(" ")
+                        url_repo_name = repo_url_split[1].split("/")[3]
+                        url_repo_type = repo_url_split[2].split("/")[1]
+                        if 'repo.percona' in repo_url.stdout and url_repo_type == 'main':
+                            url_repo_type = 'release'
+                        repository_str = "{'name': '" + url_repo_name + "', 'component': '"+ url_repo_type + "'}"
                     else:
-                        repo_name_full = pkg_repository.rstrip('-x86_64')
-                        repo_name = '-'.join(repo_name_full.split('-')[0:-1])
-                        repo_type = repo_name_full.split('-')[-1]
-                        # print(repo_type)
-                        # print(repo_name)
-                        repository_str = "{'name': '" + repo_name + "', 'component': '"+ repo_type + "'}"
-                        # print(pkg_version, pkg_release, pkg_repository, repo_name)
-                # Assert if values in history file differ from installed on server
-                if hist_pkg_name == 'percona-server-server':
-                    assert re.search(r'[0-9]+\.[0-9]+\.[0-9]+\-[0-9]+\-[0-9]+',pkg_version), hist_pkg_name
-                assert pkg_version == hist_pkg_version, hist_pkg_name
-                assert str(hist_pkg_repo) == repository_str, hist_pkg_name
-                # assert str(package['repository']) == repository_str
+                    # FOR RRPM PACKAGES
+                        get_pkg_info = host.run(f"yum repoquery --qf '%{{version}}|%{{release}}|%{{from_repo}}' --installed {hist_pkg_name}")
+                        pkg_info = get_pkg_info.stdout.strip('\n').split('|')
+                        pkg_version, pkg_release, pkg_repository = pkg_info
+                        pkg_release = pkg_release.replace('.','-')
+                        pkg_full_version = pkg_version + '-' + pkg_release
+                        pkg_version_match = re.search(r'[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9]+)?((-|.)[0-9]+)?', pkg_full_version)
+                        pkg_version = pkg_version_match.group(0)
+                        # print(pkg_version)
+                        # get repository info. Values are empty if package was installed from commandline
+                        if pkg_repository == '@commandline':
+                            repository_str = "{'name': '', 'component': ''}"
+                        else:
+                            repo_name_full = pkg_repository.rstrip('-x86_64')
+                            repo_name = '-'.join(repo_name_full.split('-')[0:-1])
+                            repo_type = repo_name_full.split('-')[-1]
+                            # print(repo_type)
+                            # print(repo_name)
+                            repository_str = "{'name': '" + repo_name + "', 'component': '"+ repo_type + "'}"
+                            # print(pkg_version, pkg_release, pkg_repository, repo_name)
+                    # Assert if values in history file differ from installed on server
+                    if hist_pkg_name == 'percona-server-server':
+                        assert re.search(r'[0-9]+\.[0-9]+\.[0-9]+\-[0-9]+\-[0-9]+',pkg_version), hist_pkg_name
+                    assert pkg_version == hist_pkg_version, hist_pkg_name
+                    assert str(hist_pkg_repo) == repository_str, hist_pkg_name
+                    # assert str(package['repository']) == repository_str
 
 def test_telemetry_removed_from_history(host):
     update_ta_options(host, check_interval="10", hist_keep_interval="10")
