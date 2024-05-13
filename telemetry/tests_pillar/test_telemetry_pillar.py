@@ -89,8 +89,8 @@ def update_ps_options(host, grace_interval="", scrape_interval="", history_keep_
             host.check_output(f"sed -r '/^percona_telemetry.history_keep_interval=.*$/d' -i {mysql_cnf} && sed -r '$ a\\percona_telemetry.history_keep_interval={history_keep_interval}' -i {mysql_cnf}")
         if scrape_interval:
             host.check_output(f"sed -r '/^percona_telemetry.scrape_interval=.*$/d' -i {mysql_cnf} && sed -r '$ a\\percona_telemetry.scrape_interval={scrape_interval}' -i {mysql_cnf}")
-    cmd = 'systemctl restart mysql'
-    host.check_output(cmd)
+        cmd = 'systemctl restart mysql'
+        host.check_output(cmd)
     time.sleep(5)
 
 def generate_single_pillar_record(host):
@@ -194,16 +194,17 @@ def test_ta_version(host):
     assert REVISION in result.stdout, result.stdout
 
 def test_ta_defaults_file(host):
-    dist = host.system_info.distribution
-    if dist.lower() in DEB_DISTS:
-        options_file = '/etc/default/percona-telemetry-agent'
-    else:
-        options_file = '/etc/sysconfig/percona-telemetry-agent'
-    defaults_file_content = host.file(options_file).content_string
-    assert 'PERCONA_TELEMETRY_CHECK_INTERVAL' in defaults_file_content
-    assert 'PERCONA_TELEMETRY_HISTORY_KEEP_INTERVAL' in defaults_file_content
-    assert 'PERCONA_TELEMETRY_RESEND_INTERVAL' in defaults_file_content
-    assert 'PERCONA_TELEMETRY_UR' in defaults_file_content
+    with host.sudo("root"):
+        dist = host.system_info.distribution
+        if dist.lower() in DEB_DISTS:
+            options_file = '/etc/default/percona-telemetry-agent'
+        else:
+            options_file = '/etc/sysconfig/percona-telemetry-agent'
+        defaults_file_content = host.file(options_file).content_string
+        assert 'PERCONA_TELEMETRY_CHECK_INTERVAL' in defaults_file_content
+        assert 'PERCONA_TELEMETRY_HISTORY_KEEP_INTERVAL' in defaults_file_content
+        assert 'PERCONA_TELEMETRY_RESEND_INTERVAL' in defaults_file_content
+        assert 'PERCONA_TELEMETRY_UR' in defaults_file_content
 
 ###############################################
 ################## MYSQL ######################
@@ -223,24 +224,26 @@ def test_telem_defaults(host, ta_key, ref_value):
         assert ref_value in telemetry_opt_result
 
 def test_grace_is_waited(host):
-    log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
-    ps_telem_files_num_before = len(host.file(ps_pillar_dir).listdir())
-    update_ps_options(host, '20', '10')
-    time.sleep(15)
-    ps_telem_files_num_after = len(host.file(ps_pillar_dir).listdir())
-    log_file_content = host.file(log_file).content_string
-    assert ps_telem_files_num_before == ps_telem_files_num_after, (ps_telem_files_num_before, ps_telem_files_num_after)
-    assert "Applying Telemetry grace interval 20 seconds" in log_file_content
-    assert "Component percona_telemetry reported: \'Created telemetry file:" not in log_file_content
+    with host.sudo("root"):
+        log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
+        ps_telem_files_num_before = len(host.file(ps_pillar_dir).listdir())
+        update_ps_options(host, '20', '10')
+        time.sleep(15)
+        ps_telem_files_num_after = len(host.file(ps_pillar_dir).listdir())
+        log_file_content = host.file(log_file).content_string
+        assert ps_telem_files_num_before == ps_telem_files_num_after, (ps_telem_files_num_before, ps_telem_files_num_after)
+        assert "Applying Telemetry grace interval 20 seconds" in log_file_content
+        assert "Component percona_telemetry reported: \'Created telemetry file:" not in log_file_content
 
 def test_telem_written(host):
-    log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
-    ps_telem_files_num_before = len(host.file(ps_pillar_dir).listdir())
-    time.sleep(40)
-    ps_telem_files_num_after = len(host.file(ps_pillar_dir).listdir())
-    log_file_content = host.file(log_file).content_string
-    assert ps_telem_files_num_before < ps_telem_files_num_after, (ps_telem_files_num_before, ps_telem_files_num_after)
-    assert "Component percona_telemetry reported: \'Created telemetry file:" in log_file_content
+    with host.sudo("root"):
+        log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
+        ps_telem_files_num_before = len(host.file(ps_pillar_dir).listdir())
+        time.sleep(40)
+        ps_telem_files_num_after = len(host.file(ps_pillar_dir).listdir())
+        log_file_content = host.file(log_file).content_string
+        assert ps_telem_files_num_before < ps_telem_files_num_after, (ps_telem_files_num_before, ps_telem_files_num_after)
+        assert "Component percona_telemetry reported: \'Created telemetry file:" in log_file_content
 
 def test_created_file_params(host):
     telem_file=host.file(ps_pillar_dir).listdir()[-1]
@@ -380,19 +383,19 @@ def test_telem_disabled_permanent(host):
 #########################################
 
 def test_telemetry_scrape_postponed(host):
-    host.run('systemctl stop mysql')
-    host.run(f'rm -rf {ps_pillar_dir}/*')
-    generate_single_pillar_record(host)
-    update_ta_options(host, check_interval='10', url=dev_telem_url)
-    time.sleep(7)
-    ta_log_file_content = host.file(telemetry_log_file).content_string
-    assert "sleeping for 10 seconds before first iteration" in ta_log_file_content
-    assert "start metrics processing iteration" not in ta_log_file_content
-    assert len(host.file(ps_pillar_dir).listdir()) == 1
+    with host.sudo("root"):
+        host.run('systemctl stop mysql')
+        host.run(f'rm -rf {ps_pillar_dir}/*')
+        generate_single_pillar_record(host)
+        update_ta_options(host, check_interval='10', url=dev_telem_url)
+        time.sleep(7)
+        ta_log_file_content = host.file(telemetry_log_file).content_string
+        assert "sleeping for 10 seconds before first iteration" in ta_log_file_content
+        assert "start metrics processing iteration" not in ta_log_file_content
+        assert len(host.file(ps_pillar_dir).listdir()) == 1
 
 def test_telemetry_sending(host):
     pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
-    i = 0
     time.sleep(20)
     log_file_content = host.file(telemetry_log_file).content_string
     assert 'Sending request to host=check-dev.percona.com.","file":"' + ps_pillar_dir + '/' + pillar_ref_file in log_file_content
