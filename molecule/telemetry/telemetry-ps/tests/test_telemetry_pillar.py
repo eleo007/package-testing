@@ -11,8 +11,8 @@ from datetime import datetime
 from packaging import version
 
 PAK_VERSION = '0.1-1'
-VERSION = 'phase-0.1'
-REVISION = 'a620a1d8'
+VERSION = os.getenv("VERSION")
+REVISION = os.getenv("REVISION")
 
 RHEL_DISTS = ["redhat", "centos", "rhel", "oracleserver", "ol", "amzn"]
 
@@ -101,7 +101,6 @@ def generate_single_pillar_record(host):
     while i < 60:
         if len(host.file(ps_pillar_dir).listdir()) < 1:
             time.sleep(1)
-            print('sleeping ' + str(i))
             i += 1
             if i == 59:
                 pytest.fail(f'Telem file was not generated for 1 minute!')
@@ -263,7 +262,6 @@ def test_created_file_params(host):
 
 def test_telem_content(host):
     ps_telem_file_name = host.file(ps_pillar_dir).listdir()
-    print(ps_telem_file_name[-1])
     ps_telem_file_content = host.file(ps_pillar_dir + "/" + ps_telem_file_name[-1]).content_string
     ps_telem_dict=json.loads(ps_telem_file_content)
     with host.sudo("root"):
@@ -289,7 +287,6 @@ def test_telem_content_gr(host):
         host.check_output(f'mysql -e "SET GLOBAL group_replication_bootstrap_group=ON; START GROUP_REPLICATION;"')
     time.sleep(30)
     ps_telem_file_name = host.file(ps_pillar_dir).listdir()
-    print(ps_telem_file_name[-1])
     ps_telem_file_content = host.file(ps_pillar_dir + "/" + ps_telem_file_name[-1]).content_string
     ps_telem_dict=json.loads(ps_telem_file_content)
     assert ps_telem_dict['db_replication_id'] == "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
@@ -467,6 +464,7 @@ def test_ta_metrics_values_sent(host):
     pattern = r'instanceId:([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})'
     match = re.search(pattern, telemetry_uuid_content)
     extracted_uuid = match.group(1)
+    print(f'instanceId = {extracted_uuid}')
 
     # check metrics in the history files
     with host.sudo("root"):
