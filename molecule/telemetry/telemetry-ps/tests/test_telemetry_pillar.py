@@ -129,12 +129,20 @@ def test_ta_package(host):
         assert PAK_VERSION in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
 
 def test_ta_service(host):
+    dist = host.system_info.distribution
+    if dist.lower() in DEB_DISTS:
+        options_file = '/etc/default/percona-telemetry-agent'
+    else:
+        options_file = '/etc/sysconfig/percona-telemetry-agent'
     ta_serv = host.service("percona-telemetry-agent")
     assert ta_serv.is_running
     assert ta_serv.is_enabled
     assert ta_serv.systemd_properties["User"] == 'daemon'
     assert ta_serv.systemd_properties["Group"] == 'percona-telemetry'
-    assert "percona-telemetry-agent" in ta_serv.systemd_properties["EnvironmentFiles"]
+    if ta_serv.systemd_properties["EnvironmentFile"]:
+        assert options_file in ta_serv.systemd_properties["EnvironmentFile"]
+    else:
+        assert options_file in ta_serv.systemd_properties["EnvironmentFiles"]
 
 def test_mysql_service(host):
     mysql_serv = host.service("mysql")
