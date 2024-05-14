@@ -355,32 +355,32 @@
   #   - mysql -e -S/tmp/mysql_21000.sock "stop slave; CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_USER='repl', MASTER_PASSWORD='xyzzy',MASTER_PORT=3600, MASTER_LOG_FILE='binlog.000001';start slave;"
 
 
-  - name: enable the mongo repo pdmdb-7.0
-    command: percona-release enable pdmdb-7.0
+  # - name: enable the mongo repo pdmdb-7.0
+  #   command: percona-release enable pdmdb-7.0
 
-  - name: install Mongo deb packages
-    apt:
-      name: "{{ packages }}"
-      update_cache: yes
-      state: latest
-    vars:
-      packages:
-      - percona-server-mongodb
-      - percona-backup-mongodb
-      - percona-server-mongodb-mongos
-    when: ansible_os_family == "Debian"
+  # - name: install Mongo deb packages
+  #   apt:
+  #     name: "{{ packages }}"
+  #     update_cache: yes
+  #     state: latest
+  #   vars:
+  #     packages:
+  #     - percona-server-mongodb
+  #     - percona-backup-mongodb
+  #     - percona-server-mongodb-mongos
+  #   when: ansible_os_family == "Debian"
 
-  - name: install Mongo rpm packages
-    yum:
-      name: "{{ packages }}"
-      state: latest
-      update_cache: yes
-    vars:
-      packages:
-      - percona-server-mongodb
-      - percona-backup-mongodb
-      - percona-server-mongodb-mongos
-    when: ansible_os_family == "RedHat"
+  # - name: install Mongo rpm packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #     - percona-server-mongodb
+  #     - percona-backup-mongodb
+  #     - percona-server-mongodb-mongos
+  #   when: ansible_os_family == "RedHat"
 
 
 #   - name: enable the ppg repo ppg-16
