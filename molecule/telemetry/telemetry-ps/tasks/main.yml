@@ -159,7 +159,7 @@
       state: latest
     vars:
       packages:
-     - percona-mysql-shell
+      - percona-mysql-shell
     when: ansible_os_family == "Debian"
 
   - name: install Percona Server and backup rpm packages
@@ -169,7 +169,7 @@
       update_cache: yes
     vars:
       packages:
-     - percona-mysql-shell
+      - percona-mysql-shell
     when: ansible_os_family == "RedHat"
 
   - name: start mysql service
