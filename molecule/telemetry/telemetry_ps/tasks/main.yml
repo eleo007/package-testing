@@ -148,6 +148,30 @@
 #      - percona-mysql-shell
     when: ansible_os_family == "RedHat"
 
+# Temporarily for experimental only
+  - name: enable the pdps-8.0.36 
+    command: percona-release enable pdps-8.0.36 
+
+  - name: install Percona Server and backup deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+     - percona-mysql-shell
+    when: ansible_os_family == "Debian"
+
+  - name: install Percona Server and backup rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+     - percona-mysql-shell
+    when: ansible_os_family == "RedHat"
+
   - name: start mysql service
     service: name=mysql state=started
 
