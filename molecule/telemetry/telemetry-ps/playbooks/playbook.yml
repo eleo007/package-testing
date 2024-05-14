@@ -6,4 +6,4 @@
   environment:
     PERCONA_TELEMETRY_URL: "https://check-dev.percona.com/v1/telemetry/GenericReport"
   roles:
-    - role: telemetry_ps
+    - role: telemetry-ps
