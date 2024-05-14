@@ -148,8 +148,8 @@
 #      - percona-mysql-shell
     when: ansible_os_family == "RedHat"
 
-  - name: enable percona-release release
-    command: percona-release enable release
+  - name: enable percona-release original
+    command: percona-release enable original
 
 # Temporarily for experimental only
   - name: enable the pdps-8.0.36 
