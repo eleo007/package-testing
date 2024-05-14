@@ -59,9 +59,6 @@
   - name: Install percona release
     include_tasks: ../../../../tasks/install_percona-release.yml
 
-  - name: enable percona-release tools experimental
-    command: percona-release enable tools experimental
-
 #   - name: Update cache
 #     command: apt update
 #     when: ansible_os_family == "Debian"
@@ -113,7 +110,10 @@
   #   when: ansible_os_family == "RedHat"
 
   - name: enable the ps-80 experimental
-    command: percona-release enable ps-80 experimental
+    command: percona-release enable-only ps-80 experimental
+
+  - name: enable percona-release tools experimental
+    command: percona-release enable tools experimental
 
   - name: install Percona Server and backup deb packages
     apt:
@@ -213,7 +213,7 @@
         - ansible_os_family == "Debian"
 
   - name: copy the GR config file on Debian/Ubuntu
-    template: src=../templates/group_replication.j2 dest=/etc/mysql/conf.d/gr.cnf
+    template: src=../../../../templates/group_replication.j2 dest=/etc/mysql/conf.d/gr.cnf
     when: ansible_os_family == "Debian"
 
   - name: append include for RedHat
