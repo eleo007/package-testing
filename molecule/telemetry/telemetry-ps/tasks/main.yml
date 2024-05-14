@@ -36,6 +36,17 @@
       var: selinux_status
     when: ansible_os_family == "RedHat"
 
+  - name: install policycoreutils-python
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - policycoreutils-python
+    when: (ansible_distribution == "Amazon")
+
+
   - name: Allow mysql to listen on tcp port 33061
     community.general.seport:
       ports: 33061
