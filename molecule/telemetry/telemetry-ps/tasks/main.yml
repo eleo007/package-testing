@@ -26,6 +26,10 @@
       state: enforcing
     when: ansible_os_family == "RedHat"
 
+  - name: Reboot machine to apply fips mode
+    reboot:
+    when: (ansible_distribution == "Amazon")
+
   - name: get selinux status
     command: sestatus
     register: selinux_status
