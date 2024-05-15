@@ -6,7 +6,7 @@ driver:
 platforms:
   - name: orocky9-${BUILD_NUMBER}-${JOB_NAME}
     region: us-west-2
-    image:  ami-00a5d5bcea31bb02c
+    image:  ami-093bd987f8e53e1f2
     vpc_subnet_id: subnet-03136d8c244f56036
     instance_type: t2.micro
     ssh_user: rocky
