@@ -144,7 +144,7 @@
             (ansible_distribution == "Amazon" and lookup('env', 'DESTROY_ENV') == "no") or
             (ansible_distribution == "RedHat" and lookup('env', 'DESTROY_ENV') == "no")
 
-    - name: Setup SSH keys for Rocky Linux or Amazon
+    - name: Setup SSH keys for Rocky Linux
       authorized_key:
         user: rocky
         key: "{{ lookup('file', 'public_keys') }}"
