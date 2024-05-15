@@ -8,7 +8,7 @@ platforms:
     region: us-west-2
     image:  ami-093bd987f8e53e1f2
     vpc_subnet_id: subnet-03136d8c244f56036
-    instance_type: t2.micro
+    instance_type: t2.small
     ssh_user: rocky
     root_device_name: /dev/sda1
     instance_tags:
