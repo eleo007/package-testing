@@ -139,10 +139,12 @@ def test_ta_service(host):
     assert ta_serv.is_enabled
     assert ta_serv.systemd_properties["User"] == 'daemon'
     assert ta_serv.systemd_properties["Group"] == 'percona-telemetry'
-    # if ta_serv.systemd_properties["EnvironmentFile"]:
-    #     assert options_file in ta_serv.systemd_properties["EnvironmentFile"]
-    # else:
-    #     assert options_file in ta_serv.systemd_properties["EnvironmentFiles"]
+    try:
+        ta_serv.systemd_properties["EnvironmentFile"]
+        env_file_name = "EnvironmentFile"
+    except KeyError as error:
+        env_file_name = "EnvironmentFiles"
+    assert options_file in ta_serv.systemd_properties[env_file_name]
 
 def test_mysql_service(host):
     mysql_serv = host.service("mysql")
