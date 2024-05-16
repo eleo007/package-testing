@@ -39,6 +39,8 @@ scenario:
     - create
     - prepare
     - converge
-    - verify
+    - verify test_telemetry_pillar.py
+    - side_effect side_effect_mongo.yaml
+    - verify test_mongo_packages.py
     - cleanup
 
