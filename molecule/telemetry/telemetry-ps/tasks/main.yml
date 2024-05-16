@@ -163,6 +163,10 @@
 #      - percona-mysql-shell
     when: ansible_os_family == "RedHat"
 
+  - name: install Percona Server and backup rpm packages
+    debug:
+      msg: "Main finished"
+
 #   - name: enable percona-release original
 #     command: percona-release enable original
 
