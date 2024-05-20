@@ -142,7 +142,6 @@
       - percona-server-source
       - percona-server-client
       - percona-server-rocksdb
-      - percona-toolkit
       - percona-mysql-router
 #      - percona-mysql-shell
     when: ansible_os_family == "Debian"
@@ -158,7 +157,6 @@
       - percona-server-test
       - percona-server-client
       - percona-server-rocksdb
-      - percona-toolkit
       - percona-mysql-router
 #      - percona-mysql-shell
     when: ansible_os_family == "RedHat"
@@ -181,6 +179,7 @@
       state: latest
     vars:
       packages:
+      - percona-toolkit
       - percona-mysql-shell
     when: ansible_os_family == "Debian"
 
@@ -191,6 +190,7 @@
       update_cache: yes
     vars:
       packages:
+      - percona-toolkit
       - percona-mysql-shell
     when: ansible_os_family == "RedHat"
 
