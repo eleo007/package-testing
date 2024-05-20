@@ -24,6 +24,7 @@ provisioner:
     # cleanup: ../../playbooks/cleanup.yml
     # prepare: ../../playbooks/prepare-pro.yml
     converge: ../../playbooks/playbook.yml
+    side_effect: ../../playbooks/side_effect_mongo.yaml
 verifier:
   name: testinfra
   directory: ../../tests/
@@ -39,8 +40,7 @@ scenario:
     - create
     - prepare
     - converge
-    - verify test_telemetry_pillar.py
-    - side_effect side_effect_mongo.yaml
+    # - verify test_telemetry_pillar.py
+    # - side_effect ../../side_effect_mongo.yaml
     - verify test_mongo_packages.py
     - cleanup
-
