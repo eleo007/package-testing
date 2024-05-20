@@ -14,11 +14,11 @@
     command: /usr/bin/dnf module disable mysql -y
     when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
 
-#   - name: Copy telemetry agent binary
-#     ansible.builtin.copy:
-#       src: /home/eleonora.zinchenko/telemetry-agent/bin/telemetry-agent
-#       dest: telemetry-agent
-#       mode: '777'
+  # - name: Copy telemetry agent binary
+  #   ansible.builtin.copy:
+  #     src: /home/eleonora.zinchenko/telemetry-agent/bin/telemetry-agent
+  #     dest: telemetry-agent
+  #     mode: '777'
 
   # - name: enforce SELinux on CentOS
   #   selinux:
@@ -170,186 +170,213 @@
 #   - name: enable percona-release original
 #     command: percona-release enable original
 
-# # Temporarily for experimental only
-#   - name: enable the pdps-8.0.36 
-#     command: percona-release enable pdps-8.0.36 
+# Temporarily for experimental only
+  - name: enable the pdps-8.0.36 
+    command: percona-release enable pdps-8.0.36 
 
-#   - name: install Percona Server and backup deb packages
-#     apt:
-#       name: "{{ packages }}"
-#       update_cache: yes
-#       state: latest
-#     vars:
-#       packages:
-#       - percona-mysql-shell
-#     when: ansible_os_family == "Debian"
+  - name: install Percona Server and backup deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - percona-mysql-shell
+    when: ansible_os_family == "Debian"
 
-#   - name: install Percona Server and backup rpm packages
-#     yum:
-#       name: "{{ packages }}"
-#       state: latest
-#       update_cache: yes
-#     vars:
-#       packages:
-#       - percona-mysql-shell
-#     when: ansible_os_family == "RedHat"
+  - name: install Percona Server and backup rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - percona-mysql-shell
+    when: ansible_os_family == "RedHat"
 
-#   - name: start mysql service
-#     service: name=mysql state=started
+  - name: start mysql service
+    service: name=mysql state=started
 
-#   - name: set root password on centos
-#     command: /package-testing/setpass_57.sh
-#     when: ansible_os_family == "RedHat"
+  - name: set root password on centos
+    command: /package-testing/setpass_57.sh
+    when: ansible_os_family == "RedHat"
 
-#   - name: restart mysql service
-#     service: name=mysql state=restarted
+  - name: restart mysql service
+    service: name=mysql state=restarted
 
-#   - name: install AppArmor utils for deb
-#     apt:
-#       name: "{{ packages }}"
-#       update_cache: yes
-#       state: latest
-#     vars:
-#       packages:
-#         - apparmor-utils
-#     when: ansible_os_family == "Debian"
+  - name: install AppArmor utils for deb
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+        - apparmor-utils
+    when: ansible_os_family == "Debian"
 
-#   - name: Add log-error-verbosity option
-#     blockinfile:
-#       path: /etc/my.cnf
-#       insertafter: EOF
-#       block: |
-#         early_plugin_load=keyring_file.so
-#         log-error-verbosity=3
-#     when: 
-#         - ansible_os_family == "RedHat"
+  - name: Add log-error-verbosity option
+    blockinfile:
+      path: /etc/my.cnf
+      insertafter: EOF
+      block: |
+        early_plugin_load=keyring_file.so
+        log-error-verbosity=3
+    when: 
+        - ansible_os_family == "RedHat"
 
-#   - name: Add fips_mode option
-#     blockinfile:
-#       path: /etc/mysql/mysql.conf.d/mysqld.cnf
-#       insertafter: EOF
-#       block: |
-#         early_plugin_load=keyring_file.so
-#         log-error-verbosity=3
-#     when: 
-#         - ansible_os_family == "Debian"
+  - name: Add fips_mode option
+    blockinfile:
+      path: /etc/mysql/mysql.conf.d/mysqld.cnf
+      insertafter: EOF
+      block: |
+        early_plugin_load=keyring_file.so
+        log-error-verbosity=3
+    when: 
+        - ansible_os_family == "Debian"
 
-#   - name: copy the GR config file on Debian/Ubuntu
-#     template: src=../../../../templates/group_replication.j2 dest=/etc/mysql/conf.d/gr.cnf
-#     when: ansible_os_family == "Debian"
+  - name: copy the GR config file on Debian/Ubuntu
+    template: src=../../../../templates/group_replication.j2 dest=/etc/mysql/conf.d/gr.cnf
+    when: ansible_os_family == "Debian"
 
-#   - name: append include for RedHat
-#     lineinfile:
-#         path: /etc/my.cnf
-#         line: '!includedir /etc/my.cnf.d'
-#     when: ansible_os_family == "RedHat"
+  - name: append include for RedHat
+    lineinfile:
+        path: /etc/my.cnf
+        line: '!includedir /etc/my.cnf.d'
+    when: ansible_os_family == "RedHat"
 
-#   - name: copy the GR config file on RHEL/CentOS/Amazon
-#     template: src=../../../../templates/group_replication.j2 dest=/etc/my.cnf.d/gr.cnf
-#     when: ansible_os_family == "RedHat"
+  - name: copy the GR config file on RHEL/CentOS/Amazon
+    template: src=../../../../templates/group_replication.j2 dest=/etc/my.cnf.d/gr.cnf
+    when: ansible_os_family == "RedHat"
 
-#   - name: restart mysql service
-#     service: name=mysql state=restarted
+  - name: restart mysql service
+    service: name=mysql state=restarted
 
-#   - name: download and extract world database
-#     command: "{{ item }}"
-#     with_items:
-#     - wget --no-check-certificate -P /package-testing https://raw.githubusercontent.com/Percona-QA/percona-qa/master/sample_db/world.sql
+  - name: download and extract world database
+    command: "{{ item }}"
+    with_items:
+    - wget --no-check-certificate -P /package-testing https://raw.githubusercontent.com/Percona-QA/percona-qa/master/sample_db/world.sql
 
-#   - name: re-run ps_admin to install rocksdb
-#     command: /usr/bin/ps-admin --enable-rocksdb
+  - name: re-run ps_admin to install rocksdb
+    command: /usr/bin/ps-admin --enable-rocksdb
 
-#   - name: install plugins, import world database
-#     command: /package-testing/plugins_test_80.sh ps
+  - name: install plugins, import world database
+    command: /package-testing/plugins_test_80.sh ps
 
-#   - name: install audit_log v2 plugin
-#     command: mysql -uroot -NBe "source /usr/share/mysql/audit_log_filter_linux_install.sql;"
+  - name: install audit_log v2 plugin
+    command: mysql -uroot -NBe "source /usr/share/mysql/audit_log_filter_linux_install.sql;"
 
-#   - name: Update the DB engine
-#     command: mysql -uroot -NBe "USE world3;create table r1 (id int, foo char(25)) engine=rocksdb;insert into r1 (id,foo) values (1,'test'),(2,'wow'),(3,'q');"
-#     register: engine
+  - name: Update the DB engine
+    command: mysql -uroot -NBe "USE world3;create table r1 (id int, foo char(25)) engine=rocksdb;insert into r1 (id,foo) values (1,'test'),(2,'wow'),(3,'q');"
+    register: engine
 
-#   - name: debug
-#     debug:
-#       var: engine
+  - name: debug
+    debug:
+      var: engine
 
-#   - name: enable the pdps-8.0.36
-#     command: percona-release enable pdps-8.0.36
+  - name: enable the pdps-8.0.36
+    command: percona-release enable pdps-8.0.36
 
-#   - name: install Orchestrator deb packages
-#     apt:
-#       name: "{{ packages }}"
-#       update_cache: yes
-#       state: latest
-#     vars:
-#       packages:
-#       - percona-orchestrator-cli
-#       - percona-orchestrator-client
-#       - percona-orchestrator
-#     when: ansible_os_family == "Debian"
+  - name: install Orchestrator deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - percona-orchestrator-cli
+      - percona-orchestrator-client
+      - percona-orchestrator
+    when: ansible_os_family == "Debian"
 
-#   - name: install Orchestrator rpm packages
-#     yum:
-#       name: "{{ packages }}"
-#       state: latest
-#       update_cache: yes
-#     vars:
-#       packages:
-#       - percona-orchestrator-cli
-#       - percona-orchestrator-client
-#       - percona-orchestrator
-#     when: ansible_os_family == "RedHat"
+  - name: install Orchestrator rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - percona-orchestrator-cli
+      - percona-orchestrator-client
+      - percona-orchestrator
+    when: ansible_os_family == "RedHat"
 
 
-#   - name: enable the pdpxc-8.0.35 testing
-#     command: percona-release enable pdpxc-8.0.35 testing
+  - name: enable the pdpxc-8.0.35 testing
+    command: percona-release enable pdpxc-8.0.35 testing
 
-#   - name: install percona-haproxy rpm packages
-#     yum:
-#       name: "{{ packages }}"
-#       state: latest
-#       update_cache: yes
-#     vars:
-#       packages:
-#       - percona-haproxy
-#       - proxysql2
-#       - percona-xtrabackup-80
-#     when: ansible_os_family == "RedHat"
+  - name: install percona-haproxy rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - percona-haproxy
+      - proxysql2
+      - percona-xtrabackup-80
+    when: ansible_os_family == "RedHat"
 
-#   - name: install percona-haproxy deb packages
-#     apt:
-#       name: "{{ packages }}"
-#       update_cache: yes
-#       state: latest
-#     vars:
-#       packages:
-#       - percona-haproxy
-#       - proxysql2
-#       - percona-xtrabackup-80
-#     when: ansible_os_family == "Debian"
+  - name: install percona-haproxy deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - percona-haproxy
+      - proxysql2
+      - percona-xtrabackup-80
+    when: ansible_os_family == "Debian"
 
-#   - name: enable the original repo
-#     command: percona-release enable original
+  - name: enable the original repo
+    command: percona-release enable original
 
-#   - name: install PMM client rpm packages
-#     yum:
-#       name: "{{ packages }}"
-#       state: latest
-#       update_cache: yes
-#     vars:
-#       packages:
-#       - pmm2-client
-#     when: ansible_os_family == "RedHat"
+  - name: install PMM client rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - pmm2-client
+    when: ansible_os_family == "RedHat"
 
-#   - name: install PMM client deb packages
-#     apt:
-#       name: "{{ packages }}"
-#       update_cache: yes
-#       state: latest
-#     vars:
-#       packages:
-#       - pmm2-client
-#     when: ansible_os_family == "Debian"
+  - name: install PMM client deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - pmm2-client
+    when: ansible_os_family == "Debian"
+
+  - name: enable the mongo repo pdmdb-6.0
+    command: percona-release enable pdmdb-6.0
+
+  - name: install Mongo deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - percona-server-mongodb
+      - percona-backup-mongodb
+      - percona-server-mongodb-mongos
+    when: ansible_os_family == "Debian"
+
+  - name: install Mongo rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - percona-server-mongodb
+      - percona-backup-mongodb
+      - percona-server-mongodb-mongos
+    when: ansible_os_family == "RedHat"
 
 #  - block:
 #      - name: run pytest
