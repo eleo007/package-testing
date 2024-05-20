@@ -696,40 +696,40 @@ def test_disable_service(host):
 #         assert "Component percona_telemetry reported: 'Problem during telemetry file write: filesystem error: directory iterator cannot open directory: No such file or directory [/usr/local/percona/telemetry/ps]" in log_file_content
 #         assert mysql_serv.is_running
 
-# def test_path_absent_after_removal(host):
-#     dist = host.system_info.distribution
-#     with host.sudo("root"):
-#         if dist.lower() in DEB_DISTS:
-#             host.check_output("apt autoremove -y percona-server-server")
-#         else:
-#             host.check_output("yum remove -y percona-server-server")
-#         assert not host.file(ps_pillar_dir).exists
+def test_path_absent_after_removal(host):
+    dist = host.system_info.distribution
+    with host.sudo("root"):
+        if dist.lower() in DEB_DISTS:
+            host.check_output("apt autoremove -y percona-server-server")
+        else:
+            host.check_output("yum remove -y percona-server-server")
+        assert not host.file(ps_pillar_dir).exists
 
-# def test_ta_service_removed_deb(host):
-#     dist = host.system_info.distribution
-#     if dist.lower() not in DEB_DISTS:
-#         pytest.skip("This test only for DEB distributions")
-#     with host.sudo("root"):
-#         host.run("systemctl daemon-reload")
-#         ta_serv_result = host.run("systemctl status percona-telemetry-agent").stderr
-#     assert "Unit percona-telemetry-agent.service could not be found." in ta_serv_result
-#     assert host.file(telem_history_dir).exists
+def test_ta_service_removed_deb(host):
+    dist = host.system_info.distribution
+    if dist.lower() not in DEB_DISTS:
+        pytest.skip("This test only for DEB distributions")
+    with host.sudo("root"):
+        # host.run("systemctl daemon-reload")
+        ta_serv_result = host.run("systemctl status percona-telemetry-agent").stderr
+    assert "Unit percona-telemetry-agent.service could not be found." in ta_serv_result
+    assert host.file(telem_history_dir).exists
 
-# def test_ta_service_removed_rpm(host):
-#     dist = host.system_info.distribution
-#     if dist.lower() in DEB_DISTS:
-#         pytest.skip("This test only for RPM distributions")
-#     with host.sudo("root"):
-#         # https://perconadev.atlassian.net/browse/PKG-46
-#         ta_serv_result = host.run("systemctl status percona-telemetry-agent").stderr
-#     assert "Unit percona-telemetry-agent.service could not be found." in ta_serv_result
-#     assert host.file(telem_history_dir).exists
+def test_ta_service_removed_rpm(host):
+    dist = host.system_info.distribution
+    if dist.lower() in DEB_DISTS:
+        pytest.skip("This test only for RPM distributions")
+    with host.sudo("root"):
+        # https://perconadev.atlassian.net/browse/PKG-46
+        ta_serv_result = host.run("systemctl status percona-telemetry-agent").stderr
+    assert "Unit percona-telemetry-agent.service could not be found." in ta_serv_result
+    assert host.file(telem_history_dir).exists
 
-# def test_ta_process_not_running(host):
-#     cmd = 'ps auxww| grep -v grep  | grep -c "percona-telemetry-agent"'
-#     result = host.run(cmd)
-#     stdout = int(result.stdout)
-#     assert stdout == 0
+def test_ta_process_not_running(host):
+    cmd = 'ps auxww| grep -v grep  | grep -c "percona-telemetry-agent"'
+    result = host.run(cmd)
+    stdout = int(result.stdout)
+    assert stdout == 0
 
-# def test_ta_grop_removed(host):
-#     assert not host.group("percona-telemetry").exists
+def test_ta_grop_removed(host):
+    assert not host.group("percona-telemetry").exists
