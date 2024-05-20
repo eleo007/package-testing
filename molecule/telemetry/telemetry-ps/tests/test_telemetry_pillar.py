@@ -171,8 +171,14 @@ def test_ps_pillar_dirs(host):
     assert host.file(ps_pillar_dir).user == 'mysql'
     assert host.file(ps_pillar_dir).group == 'percona-telemetry'
     assert oct(host.file(ps_pillar_dir).mode) == '0o6775'
-    security_attrs = host.run(f'ls -laZ {telem_root_dir} | grep ps').stdout
-    assert 'system_u:object_r:mysqld_db_t:s0' in security_attrs
+    with host.sudo("root"):
+        dist = host.system_info.distribution
+        if dist.lower() in DEB_DISTS:
+            pytest.skip("This check only for RPM distributions")
+        else:
+            security_attrs = host.run(f'ls -laZ {telem_root_dir} | grep ps').stdout
+            assert 'system_u:object_r:mysqld_db_t:s0' in security_attrs
+
 
 def test_ta_log_file(host):
     assert host.file(telemetry_log_file).is_file
