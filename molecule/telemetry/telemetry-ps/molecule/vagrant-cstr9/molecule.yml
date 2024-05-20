@@ -31,7 +31,7 @@ verifier:
     verbose: true
     s: true
 scenario:
-  name: vagrant-cstrl9
+  name: vagrant-cstr9
   destroy_sequence:
     - destroy
   test_sequence:
