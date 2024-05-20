@@ -20,25 +20,25 @@
   #     dest: telemetry-agent
   #     mode: '777'
 
-  # - name: enforce SELinux on CentOS
-  #   selinux:
-  #     policy: targeted
-  #     state: enforcing
-  #   when: ansible_os_family == "RedHat"
+  - name: enforce SELinux on CentOS
+    selinux:
+      policy: targeted
+      state: permissive
+    when: ansible_os_family == "RedHat"
 
   # - name: Reboot machine to apply fips mode
   #   reboot:
   #   when: (ansible_distribution == "Amazon")
 
-  # - name: get selinux status
-  #   command: sestatus
-  #   register: selinux_status
-  #   when: ansible_os_family == "RedHat"
+  - name: get selinux status
+    command: sestatus
+    register: selinux_status
+    when: ansible_os_family == "RedHat"
 
-  # - name: list selinux status
-  #   debug:
-  #     var: selinux_status
-  #   when: ansible_os_family == "RedHat"
+  - name: list selinux status
+    debug:
+      var: selinux_status
+    when: ansible_os_family == "RedHat"
 
   # - name: install policycoreutils-python
   #   yum:
