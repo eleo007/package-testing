@@ -21,9 +21,7 @@
   #     mode: '777'
 
   - name: enforce SELinux on CentOS
-    selinux:
-      policy: targeted
-      state: permissive
+    command: setenforce 0
     when: ansible_os_family == "RedHat"
 
   # - name: Reboot machine to apply fips mode
