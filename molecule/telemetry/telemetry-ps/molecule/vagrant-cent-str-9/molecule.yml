@@ -7,8 +7,8 @@ driver:
   provider:
     name: virtualbox
 platforms:
-  - name: vagrant-ol8
-    box: bento/oracle-8
+  - name: vagrant-cstr9
+    box: bento/centos-stream-9
     groups:
       - bootstrap
     memory: 1024
@@ -31,7 +31,7 @@ verifier:
     verbose: true
     s: true
 scenario:
-  name: vagrant-ol8
+  name: vagrant-cstrl9
   destroy_sequence:
     - destroy
   test_sequence:
