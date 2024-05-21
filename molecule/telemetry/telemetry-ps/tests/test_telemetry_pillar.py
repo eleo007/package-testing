@@ -422,8 +422,15 @@ def test_telemetry_scrape_postponed(host):
 def test_telemetry_sending(host):
     with host.sudo("root"):
         pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
-        time.sleep(20)
-        log_file_content = host.file(telemetry_log_file).content_string
+        time.sleep(10)
+        i = 0
+        while i < 30:
+            log_file_content = host.file(telemetry_log_file).content_string
+            if 'Sending request' not in log_file_content:
+                time.sleep(1)
+                i += 1
+            else:
+                break
         assert 'Sending request to host=check-dev.percona.com.","file":"' + ps_pillar_dir + '/' + pillar_ref_file in log_file_content
         assert 'Received response: 200 OK","file":"' + ps_pillar_dir + '/' + pillar_ref_file in log_file_content
 
