@@ -561,96 +561,96 @@ def test_ps_metrics_sent(host):
             if metric['key'] == 'active_components':
                 assert metric['value'] == ref_active_components
 
-# @pytest.mark.parametrize("pkg_name", packages_list)
-# def test_ps_mandatory_packages(host, pkg_name):
-#     with host.sudo("root"):
-#         pillar_ref_name = host.file('/package-testing/telemetry/reference/').listdir()[0]
-#         hist_file = host.file(telem_history_dir + pillar_ref_name).content_string
-#         hist_values=json.loads(hist_file)
-#         hist_metrics_list=hist_values['reports'][0]['metrics']
-#         for metric in hist_metrics_list:
-#             if metric['key'] == 'installed_packages':
-#                 hist_packages_dict_str = metric['value']
-#                 assert pkg_name.lower() in hist_packages_dict_str.lower()
+@pytest.mark.parametrize("pkg_name", packages_list)
+def test_ps_mandatory_packages(host, pkg_name):
+    with host.sudo("root"):
+        pillar_ref_name = host.file('/package-testing/telemetry/reference/').listdir()[0]
+        hist_file = host.file(telem_history_dir + pillar_ref_name).content_string
+        hist_values=json.loads(hist_file)
+        hist_metrics_list=hist_values['reports'][0]['metrics']
+        for metric in hist_metrics_list:
+            if metric['key'] == 'installed_packages':
+                hist_packages_dict_str = metric['value']
+                assert pkg_name.lower() in hist_packages_dict_str.lower()
 
-# def test_ps_packages_values(host):
-#     with host.sudo("root"):
-#         pillar_ref_name = host.file('/package-testing/telemetry/reference/').listdir()[0]
-#         hist_file = host.file(telem_history_dir + pillar_ref_name).content_string
-#         hist_values=json.loads(hist_file)
-#         hist_metrics_list=hist_values['reports'][0]['metrics']
-#         for metric in hist_metrics_list:
-#             if metric['key'] == 'installed_packages':
-#                 hist_packages_dict_str = metric['value']
-#                 hist_packages_dict = json.loads(hist_packages_dict_str)
-#                 for ind in range(len(hist_packages_dict)):
-#                     hist_pkg_name = hist_packages_dict[ind]['name']
-#                     hist_pkg_version = hist_packages_dict[ind]['version']
-#                     hist_pkg_repo = hist_packages_dict[ind]['repository']
-#                     dist = host.system_info.distribution
-#                     # FOR DEB PACKAGES
-#                     if dist.lower() in DEB_DISTS:
-#                         # Get values of the packages installed on the server
-#                         # version of package
-#                         pkg_version_repo = host.run(f'apt-cache -q=0 policy {hist_pkg_name} | grep "\\*\\*\\*"')
-#                         pkg_version_match = re.search(r'[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9]+)?((-|.)[0-9]+)?',pkg_version_repo.stdout)
-#                         pkg_version = pkg_version_match.group(0)
-#                         if re.search(r'[0-9]+\.[0-9]+\.[0-9]+\-[0-9]+\.[0-9]+', pkg_version):
-#                             pkg_version = re.sub(r'.([0-9]+)$',r'-\g<1>', pkg_version)
-#                         # repository name and type
-#                         repo_url = host.run(f'apt-cache -q=0 policy {hist_pkg_name} | grep -A1 "\\*\\*\\*"| grep "http"')
-#                         repo_url_split = repo_url.stdout.strip(" ").split(" ")
-#                         url_repo_name = repo_url_split[1].split("/")[3]
-#                         url_repo_type = repo_url_split[2].split("/")[1]
-#                         if 'repo.percona' in repo_url.stdout and url_repo_type == 'main':
-#                             url_repo_type = 'release'
-#                         repository_str = "{'name': '" + url_repo_name + "', 'component': '"+ url_repo_type + "'}"
-#                     else:
-#                     # FOR RRPM PACKAGES
-#                         get_pkg_info = host.run(f"yum repoquery --qf '%{{version}}|%{{release}}|%{{from_repo}}' --installed {hist_pkg_name}")
-#                         pkg_info = get_pkg_info.stdout.strip('\n').split('|')
-#                         pkg_version, pkg_release, pkg_repository = pkg_info
-#                         pkg_release = pkg_release.replace('.','-')
-#                         pkg_full_version = pkg_version + '-' + pkg_release
-#                         pkg_version_match = re.search(r'[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9]+)?((-|.)[0-9]+)?', pkg_full_version)
-#                         pkg_version = pkg_version_match.group(0)
-#                         # print(pkg_version)
-#                         # get repository info. Values are empty if package was installed from commandline
-#                         if pkg_repository == '@commandline':
-#                             repository_str = "{'name': '', 'component': ''}"
-#                         else:
-#                             repo_name_full = pkg_repository.rstrip('-x86_64')
-#                             repo_name = '-'.join(repo_name_full.split('-')[0:-1])
-#                             repo_type = repo_name_full.split('-')[-1]
-#                             # print(repo_type)
-#                             # print(repo_name)
-#                             repository_str = "{'name': '" + repo_name + "', 'component': '"+ repo_type + "'}"
-#                             # print(pkg_version, pkg_release, pkg_repository, repo_name)
-#                     # Assert if values in history file differ from installed on server
-#                     if hist_pkg_name == 'percona-server-server':
-#                         assert re.search(r'[0-9]+\.[0-9]+\.[0-9]+\-[0-9]+\-[0-9]+',pkg_version), hist_pkg_name
-#                     assert pkg_version == hist_pkg_version, hist_pkg_name
-#                     assert str(hist_pkg_repo) == repository_str, hist_pkg_name
-#                     # assert str(package['repository']) == repository_str
+def test_ps_packages_values(host):
+    with host.sudo("root"):
+        pillar_ref_name = host.file('/package-testing/telemetry/reference/').listdir()[0]
+        hist_file = host.file(telem_history_dir + pillar_ref_name).content_string
+        hist_values=json.loads(hist_file)
+        hist_metrics_list=hist_values['reports'][0]['metrics']
+        for metric in hist_metrics_list:
+            if metric['key'] == 'installed_packages':
+                hist_packages_dict_str = metric['value']
+                hist_packages_dict = json.loads(hist_packages_dict_str)
+                for ind in range(len(hist_packages_dict)):
+                    hist_pkg_name = hist_packages_dict[ind]['name']
+                    hist_pkg_version = hist_packages_dict[ind]['version']
+                    hist_pkg_repo = hist_packages_dict[ind]['repository']
+                    dist = host.system_info.distribution
+                    # FOR DEB PACKAGES
+                    if dist.lower() in DEB_DISTS:
+                        # Get values of the packages installed on the server
+                        # version of package
+                        pkg_version_repo = host.run(f'apt-cache -q=0 policy {hist_pkg_name} | grep "\\*\\*\\*"')
+                        pkg_version_match = re.search(r'[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9]+)?((-|.)[0-9]+)?',pkg_version_repo.stdout)
+                        pkg_version = pkg_version_match.group(0)
+                        if re.search(r'[0-9]+\.[0-9]+\.[0-9]+\-[0-9]+\.[0-9]+', pkg_version):
+                            pkg_version = re.sub(r'.([0-9]+)$',r'-\g<1>', pkg_version)
+                        # repository name and type
+                        repo_url = host.run(f'apt-cache -q=0 policy {hist_pkg_name} | grep -A1 "\\*\\*\\*"| grep "http"')
+                        repo_url_split = repo_url.stdout.strip(" ").split(" ")
+                        url_repo_name = repo_url_split[1].split("/")[3]
+                        url_repo_type = repo_url_split[2].split("/")[1]
+                        if 'repo.percona' in repo_url.stdout and url_repo_type == 'main':
+                            url_repo_type = 'release'
+                        repository_str = "{'name': '" + url_repo_name + "', 'component': '"+ url_repo_type + "'}"
+                    else:
+                    # FOR RRPM PACKAGES
+                        get_pkg_info = host.run(f"yum repoquery --qf '%{{version}}|%{{release}}|%{{from_repo}}' --installed {hist_pkg_name}")
+                        pkg_info = get_pkg_info.stdout.strip('\n').split('|')
+                        pkg_version, pkg_release, pkg_repository = pkg_info
+                        pkg_release = pkg_release.replace('.','-')
+                        pkg_full_version = pkg_version + '-' + pkg_release
+                        pkg_version_match = re.search(r'[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9]+)?((-|.)[0-9]+)?', pkg_full_version)
+                        pkg_version = pkg_version_match.group(0)
+                        # print(pkg_version)
+                        # get repository info. Values are empty if package was installed from commandline
+                        if pkg_repository == '@commandline':
+                            repository_str = "{'name': '', 'component': ''}"
+                        else:
+                            repo_name_full = pkg_repository.rstrip('-x86_64')
+                            repo_name = '-'.join(repo_name_full.split('-')[0:-1])
+                            repo_type = repo_name_full.split('-')[-1]
+                            # print(repo_type)
+                            # print(repo_name)
+                            repository_str = "{'name': '" + repo_name + "', 'component': '"+ repo_type + "'}"
+                            # print(pkg_version, pkg_release, pkg_repository, repo_name)
+                    # Assert if values in history file differ from installed on server
+                    if hist_pkg_name == 'percona-server-server':
+                        assert re.search(r'[0-9]+\.[0-9]+\.[0-9]+\-[0-9]+\-[0-9]+',pkg_version), hist_pkg_name
+                    assert pkg_version == hist_pkg_version, hist_pkg_name
+                    assert str(hist_pkg_repo) == repository_str, hist_pkg_name
+                    # assert str(package['repository']) == repository_str
 
-# def test_telemetry_removed_from_history(host):
-#     update_ta_options(host, check_interval="10", hist_keep_interval="10")
-#     time.sleep(40)
-#     log_file_content = host.file(telemetry_log_file).content_string
-#     assert len(host.file(telem_history_dir).listdir()) == 0
-#     assert 'cleaning up history metric files","directory":"' + telem_root_dir + 'history' in log_file_content
+def test_telemetry_removed_from_history(host):
+    update_ta_options(host, check_interval="10", hist_keep_interval="10")
+    time.sleep(40)
+    log_file_content = host.file(telemetry_log_file).content_string
+    assert len(host.file(telem_history_dir).listdir()) == 0
+    assert 'cleaning up history metric files","directory":"' + telem_root_dir + 'history' in log_file_content
 
-# def test_stop_service(host):
-#     ta_serv = host.service("percona-telemetry-agent")
-#     with host.sudo("root"):
-#         host.check_output("systemctl stop percona-telemetry-agent")
-#         assert not ta_serv.is_running
+def test_stop_service(host):
+    ta_serv = host.service("percona-telemetry-agent")
+    with host.sudo("root"):
+        host.check_output("systemctl stop percona-telemetry-agent")
+        assert not ta_serv.is_running
 
-# def test_disable_service(host):
-#     ta_serv = host.service("percona-telemetry-agent")
-#     with host.sudo("root"):
-#         host.check_output("systemctl disable percona-telemetry-agent")
-#         assert not ta_serv.is_enabled
+def test_disable_service(host):
+    ta_serv = host.service("percona-telemetry-agent")
+    with host.sudo("root"):
+        host.check_output("systemctl disable percona-telemetry-agent")
+        assert not ta_serv.is_enabled
 
 
 # def test_telemetry_uuid_corrupted(host):
@@ -714,40 +714,40 @@ def test_ps_metrics_sent(host):
 #         assert "Component percona_telemetry reported: 'Problem during telemetry file write: filesystem error: directory iterator cannot open directory: No such file or directory [/usr/local/percona/telemetry/ps]" in log_file_content
 #         assert mysql_serv.is_running
 
-# def test_path_absent_after_removal(host):
-#     dist = host.system_info.distribution
-#     with host.sudo("root"):
-#         if dist.lower() in DEB_DISTS:
-#             host.check_output("apt autoremove -y percona-server-server")
-#         else:
-#             host.check_output("yum remove -y percona-server-server")
-#         assert not host.file(ps_pillar_dir).exists
+def test_path_absent_after_removal(host):
+    dist = host.system_info.distribution
+    with host.sudo("root"):
+        if dist.lower() in DEB_DISTS:
+            host.check_output("apt autoremove -y percona-server-server")
+        else:
+            host.check_output("yum remove -y percona-server-server")
+        assert not host.file(ps_pillar_dir).exists
 
-# def test_ta_service_removed_deb(host):
-#     dist = host.system_info.distribution
-#     if dist.lower() not in DEB_DISTS:
-#         pytest.skip("This test only for DEB distributions")
-#     with host.sudo("root"):
-#         # host.run("systemctl daemon-reload")
-#         ta_serv_result = host.run("systemctl status percona-telemetry-agent").stderr
-#     assert "Unit percona-telemetry-agent.service could not be found." in ta_serv_result
-#     assert host.file(telem_history_dir).exists
+def test_ta_service_removed_deb(host):
+    dist = host.system_info.distribution
+    if dist.lower() not in DEB_DISTS:
+        pytest.skip("This test only for DEB distributions")
+    with host.sudo("root"):
+        # host.run("systemctl daemon-reload")
+        ta_serv_result = host.run("systemctl status percona-telemetry-agent").stderr
+    assert "Unit percona-telemetry-agent.service could not be found." in ta_serv_result
+    assert host.file(telem_history_dir).exists
 
-# def test_ta_service_removed_rpm(host):
-#     dist = host.system_info.distribution
-#     if dist.lower() in DEB_DISTS:
-#         pytest.skip("This test only for RPM distributions")
-#     with host.sudo("root"):
-#         # https://perconadev.atlassian.net/browse/PKG-46
-#         ta_serv_result = host.run("systemctl status percona-telemetry-agent").stderr
-#     assert "Unit percona-telemetry-agent.service could not be found." in ta_serv_result
-#     assert host.file(telem_history_dir).exists
+def test_ta_service_removed_rpm(host):
+    dist = host.system_info.distribution
+    if dist.lower() in DEB_DISTS:
+        pytest.skip("This test only for RPM distributions")
+    with host.sudo("root"):
+        # https://perconadev.atlassian.net/browse/PKG-46
+        ta_serv_result = host.run("systemctl status percona-telemetry-agent").stderr
+    assert "Unit percona-telemetry-agent.service could not be found." in ta_serv_result
+    assert host.file(telem_history_dir).exists
 
-# def test_ta_process_not_running(host):
-#     cmd = 'ps auxww| grep -v grep  | grep -c "percona-telemetry-agent"'
-#     result = host.run(cmd)
-#     stdout = int(result.stdout)
-#     assert stdout == 0
+def test_ta_process_not_running(host):
+    cmd = 'ps auxww| grep -v grep  | grep -c "percona-telemetry-agent"'
+    result = host.run(cmd)
+    stdout = int(result.stdout)
+    assert stdout == 0
 
-# def test_ta_grop_removed(host):
-#     assert not host.group("percona-telemetry").exists
+def test_ta_grop_removed(host):
+    assert not host.group("percona-telemetry").exists
