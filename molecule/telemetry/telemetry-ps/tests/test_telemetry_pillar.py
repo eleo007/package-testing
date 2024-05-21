@@ -430,6 +430,7 @@ def test_telemetry_sending(host):
                 time.sleep(1)
                 i += 1
             else:
+                time.sleep(2)
                 break
         assert 'Sending request to host=check-dev.percona.com.","file":"' + ps_pillar_dir + '/' + pillar_ref_file in log_file_content
         assert 'Received response: 200 OK","file":"' + ps_pillar_dir + '/' + pillar_ref_file in log_file_content
