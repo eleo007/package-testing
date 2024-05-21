@@ -202,15 +202,15 @@
   - name: restart mysql service
     service: name=mysql state=restarted
 
-  - name: install AppArmor utils for deb
-    apt:
-      name: "{{ packages }}"
-      update_cache: yes
-      state: latest
-    vars:
-      packages:
-        - apparmor-utils
-    when: ansible_os_family == "Debian"
+  # - name: install AppArmor utils for deb
+  #   apt:
+  #     name: "{{ packages }}"
+  #     update_cache: yes
+  #     state: latest
+  #   vars:
+  #     packages:
+  #       - apparmor-utils
+  #   when: ansible_os_family == "Debian"
 
   - name: Add log-error-verbosity option
     blockinfile:
