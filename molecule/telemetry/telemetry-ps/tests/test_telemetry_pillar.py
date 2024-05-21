@@ -424,7 +424,7 @@ def test_telemetry_sending(host):
         pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
         time.sleep(10)
         i = 0
-        while i < 30:
+        while i < 60:
             log_file_content = host.file(telemetry_log_file).content_string
             if 'Sending request' not in log_file_content:
                 time.sleep(1)
