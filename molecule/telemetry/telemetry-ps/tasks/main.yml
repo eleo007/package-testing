@@ -21,12 +21,13 @@
   #     mode: '777'
 
   - name: enforce SELinux on CentOS
-    command: setenforce 0
+    command: setenforce 1
     when: ansible_os_family == "RedHat"
+    ignore_errors: true
 
-  # - name: Reboot machine to apply fips mode
-  #   reboot:
-  #   when: (ansible_distribution == "Amazon")
+  - name: Reboot machine to apply fips mode
+    reboot:
+    when: (ansible_distribution == "Amazon")
 
   - name: get selinux status
     command: sestatus
