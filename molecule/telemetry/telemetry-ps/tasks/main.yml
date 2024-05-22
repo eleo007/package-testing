@@ -39,24 +39,24 @@
       var: selinux_status
     when: ansible_os_family == "RedHat"
 
-  # - name: install policycoreutils-python
-  #   yum:
-  #     name: "{{ packages }}"
-  #     state: latest
-  #     update_cache: yes
-  #   vars:
-  #     packages:
-  #     - policycoreutils-python
-  #   when: (ansible_distribution == "Amazon")
+  - name: install policycoreutils-python
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - policycoreutils-python
+    when: (ansible_distribution == "Amazon")
 
 
-  # - name: Allow mysql to listen on tcp port 33061
-  #   community.general.seport:
-  #     ports: 33061
-  #     proto: tcp
-  #     setype: mysqld_port_t
-  #     state: present
-  #   when: ansible_os_family == "RedHat"
+  - name: Allow mysql to listen on tcp port 33061
+    community.general.seport:
+      ports: 33061
+      proto: tcp
+      setype: mysqld_port_t
+      state: present
+    when: ansible_os_family == "RedHat"
 # semanage port -a -t mysqld_port_t -p tcp 33061
 
 #   - name: download and extract world database
