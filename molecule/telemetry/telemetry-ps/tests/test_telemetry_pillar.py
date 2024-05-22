@@ -723,6 +723,10 @@ def test_path_absent_after_removal(host):
             host.check_output("yum remove -y percona-server-server")
         assert not host.file(ps_pillar_dir).exists
 
+def test_ta_package_removed(host):
+    pkg = host.package("percona-telemetry-agent")
+    assert not pkg.is_installed
+
 def test_ta_service_removed_deb(host):
     dist = host.system_info.distribution
     if dist.lower() not in DEB_DISTS:
