@@ -588,6 +588,7 @@ def test_ps_packages_values(host):
                     hist_pkg_version = hist_packages_dict[ind]['version']
                     hist_pkg_repo = hist_packages_dict[ind]['repository']
                     dist = host.system_info.distribution
+                    rel = host.system_info.release
                     # FOR DEB PACKAGES
                     if dist.lower() in DEB_DISTS:
                         # Get values of the packages installed on the server
@@ -606,8 +607,11 @@ def test_ps_packages_values(host):
                             url_repo_type = 'release'
                         repository_str = "{'name': '" + url_repo_name + "', 'component': '"+ url_repo_type + "'}"
                     else:
-                    # FOR RRPM PACKAGES
-                        get_pkg_info = host.run(f"repoquery --qf '%{{version}}|%{{release}}|%{{from_repo}}' --installed {hist_pkg_name}")
+                    # FOR RPM PACKAGES
+                        if (dist == 'amzn' and rel == '2') or (dist == 'centos' and rel == '7'):
+                            get_pkg_info = host.run(f"yum repoquery --qf '%{{version}}|%{{release}}|%{{ui_from_repo}}' --installed {hist_pkg_name}")
+                        else:
+                            get_pkg_info = host.run(f"yum repoquery --qf '%{{version}}|%{{release}}|%{{from_repo}}' --installed {hist_pkg_name}")
                         pkg_info = get_pkg_info.stdout.strip('\n').split('|')
                         pkg_version, pkg_release, pkg_repository = pkg_info
                         pkg_release = pkg_release.replace('.','-')
@@ -619,7 +623,7 @@ def test_ps_packages_values(host):
                         if pkg_repository == '@commandline':
                             repository_str = "{'name': '', 'component': ''}"
                         else:
-                            repo_name_full = pkg_repository.rstrip('-x86_64')
+                            repo_name_full = pkg_repository.strip('@, -x86_64')
                             repo_name = '-'.join(repo_name_full.split('-')[0:-1])
                             repo_type = repo_name_full.split('-')[-1]
                             # print(repo_type)
@@ -628,7 +632,7 @@ def test_ps_packages_values(host):
                             # print(pkg_version, pkg_release, pkg_repository, repo_name)
                     # Assert if values in history file differ from installed on server
                     if hist_pkg_name == 'percona-server-server':
-                        assert re.search(r'[0-9]+\.[0-9]+\.[0-9]+\-[0-9]+\-[0-9]+',pkg_version), hist_pkg_name
+                        assert re.search(r'[0-9]+\.[0-9]+\.[0-9]+\-[0-9]+\-[0-9]+', pkg_version), hist_pkg_name
                     assert pkg_version == hist_pkg_version, hist_pkg_name
                     assert str(hist_pkg_repo) == repository_str, hist_pkg_name
                     # assert str(package['repository']) == repository_str
