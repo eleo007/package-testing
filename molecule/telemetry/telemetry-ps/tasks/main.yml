@@ -54,6 +54,19 @@
       - policycoreutils-python
     when: (ansible_distribution == "Amazon")
 
+  - name: install apparmor-utils
+    apt:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - apparmor-utils
+    when: ansible_distribution == "Debian"
+
+  - name: enforce Apprmor  on DEB
+    command: aa-enforce /usr/sbin/mysqld
+    when: ansible_os_family == "Debian"
 
   - name: Allow mysql to listen on tcp port 33061
     community.general.seport:
