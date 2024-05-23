@@ -150,10 +150,6 @@ def test_ta_service(host):
         env_file_name = "EnvironmentFiles"
     assert options_file in ta_serv.systemd_properties[env_file_name]
 
-def test_mysql_service(host):
-    mysql_serv = host.service("mysql")
-    assert mysql_serv.is_running
-
 def test_ta_dirs(host):
     assert host.file('/usr/local/percona').group == 'percona-telemetry'
     assert oct(host.file('/usr/local/percona').mode) == '0o775'
@@ -172,13 +168,13 @@ def test_ps_pillar_dirs(host):
     assert host.file(ps_pillar_dir).group == 'percona-telemetry'
     assert oct(host.file(ps_pillar_dir).mode) == '0o6775'
     #Skip till fixed
-    # with host.sudo("root"):
-    #     dist = host.system_info.distribution
-    #     if dist.lower() in DEB_DISTS:
-    #         pytest.skip("This check only for RPM distributions")
-    #     else:
-    #         security_attrs = host.run(f'ls -laZ {telem_root_dir} | grep ps').stdout
-    #         assert 'system_u:object_r:mysqld_db_t:s0' in security_attrs
+    with host.sudo("root"):
+        dist = host.system_info.distribution
+        if dist.lower() in DEB_DISTS:
+            pytest.skip("This check only for RPM distributions")
+        else:
+            security_attrs = host.run(f'ls -laZ {telem_root_dir} | grep ps').stdout
+            assert 'system_u:object_r:mysqld_db_t:s0' in security_attrs
 
 
 def test_ta_log_file(host):
@@ -233,6 +229,10 @@ def test_ta_defaults_file(host):
 ###############################################
 ################## MYSQL ######################
 ###############################################
+
+def test_mysql_service(host):
+    mysql_serv = host.service("mysql")
+    assert mysql_serv.is_running
 
 def test_telem_enabled(host):
     with host.sudo("root"):
@@ -607,7 +607,7 @@ def test_ps_packages_values(host):
                         repository_str = "{'name': '" + url_repo_name + "', 'component': '"+ url_repo_type + "'}"
                     else:
                     # FOR RRPM PACKAGES
-                        get_pkg_info = host.run(f"yum repoquery --qf '%{{version}}|%{{release}}|%{{from_repo}}' --installed {hist_pkg_name}")
+                        get_pkg_info = host.run(f"repoquery --qf '%{{version}}|%{{release}}|%{{from_repo}}' --installed {hist_pkg_name}")
                         pkg_info = get_pkg_info.stdout.strip('\n').split('|')
                         pkg_version, pkg_release, pkg_repository = pkg_info
                         pkg_release = pkg_release.replace('.','-')
