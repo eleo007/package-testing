@@ -716,11 +716,15 @@ def test_disable_service(host):
 
 def test_path_absent_after_removal(host):
     dist = host.system_info.distribution
+    rel = host.system_info.release
     with host.sudo("root"):
         if dist.lower() in DEB_DISTS:
             host.check_output("apt autoremove -y percona-server-server")
         else:
-            host.check_output("yum remove -y percona-server-server")
+            if (dist == 'amzn' and rel == '2') or (dist == 'centos' and rel == '7'):
+                host.check_output("yum autoremove -y percona-server-server")
+            else:
+                host.check_output("yum remove -y percona-server-server")
         assert not host.file(ps_pillar_dir).exists
 
 def test_ta_package_removed(host):
