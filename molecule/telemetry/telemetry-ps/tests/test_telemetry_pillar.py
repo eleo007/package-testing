@@ -609,7 +609,7 @@ def test_ps_packages_values(host):
                     else:
                     # FOR RPM PACKAGES
                         if (dist == 'amzn' and rel == '2') or (dist == 'centos' and rel == '7'):
-                            get_pkg_info = host.run(f"yum repoquery --qf '%{{version}}|%{{release}}|%{{ui_from_repo}}' --installed {hist_pkg_name}")
+                            get_pkg_info = host.run(f"repoquery --qf '%{{version}}|%{{release}}|%{{ui_from_repo}}' --installed {hist_pkg_name}")
                         else:
                             get_pkg_info = host.run(f"yum repoquery --qf '%{{version}}|%{{release}}|%{{from_repo}}' --installed {hist_pkg_name}")
                         pkg_info = get_pkg_info.stdout.strip('\n').split('|')
