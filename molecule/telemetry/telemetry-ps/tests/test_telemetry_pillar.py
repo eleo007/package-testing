@@ -594,6 +594,7 @@ def test_ps_packages_values(host):
                         # Get values of the packages installed on the server
                         # version of package
                         pkg_version_repo = host.run(f'apt-cache -q=0 policy {hist_pkg_name} | grep "\\*\\*\\*"')
+                        print(pkg_version_repo)
                         pkg_version_match = re.search(r'[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9]+)?((-|.)[0-9]+)?',pkg_version_repo.stdout)
                         pkg_version = pkg_version_match.group(0)
                         if re.search(r'[0-9]+\.[0-9]+\.[0-9]+\-[0-9]+\.[0-9]+', pkg_version):
