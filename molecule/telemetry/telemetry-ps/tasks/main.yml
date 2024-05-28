@@ -492,188 +492,188 @@
   #   - mysql -e -S/tmp/mysql_21000.sock "stop slave; CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_USER='repl', MASTER_PASSWORD='xyzzy',MASTER_PORT=3600, MASTER_LOG_FILE='binlog.000001';start slave;"
 
 
-  - name: enable the ppg repo ppg-16
-    command: percona-release enable ppg-16
-    when: ansible_os_family == "Debian"
+  # - name: enable the ppg repo ppg-16
+  #   command: percona-release enable ppg-16
+  #   when: ansible_os_family == "Debian"
 
-  - name: install PPG deb packages
-    apt:
-      name: "{{ packages }}"
-      update_cache: yes
-      state: latest
-    vars:
-      packages:
-      - percona-ppg-server-16
-      - percona-pgbouncer
-      - percona-patroni
-      - percona-postgresql-16-pgaudit
-      - percona-pgaudit16-set-user
-      - percona-pgbadger
-      - percona-pgbouncer
-      - percona-pg-gather
-      - percona-pgpool2
-      - percona-postgresql-16-repack
-      - percona-pg-stat-monitor*
-      - percona-postgis
-      - percona-postgresql-16-wal2json
-      - percona-pgbackrest
-      - etcd
-    when: ansible_os_family == "Debian"
+  # - name: install PPG deb packages
+  #   apt:
+  #     name: "{{ packages }}"
+  #     update_cache: yes
+  #     state: latest
+  #   vars:
+  #     packages:
+  #     - percona-ppg-server-16
+  #     - percona-pgbouncer
+  #     - percona-patroni
+  #     - percona-postgresql-16-pgaudit
+  #     - percona-pgaudit16-set-user
+  #     - percona-pgbadger
+  #     - percona-pgbouncer
+  #     - percona-pg-gather
+  #     - percona-pgpool2
+  #     - percona-postgresql-16-repack
+  #     - percona-pg-stat-monitor*
+  #     - percona-postgis
+  #     - percona-postgresql-16-wal2json
+  #     - percona-pgbackrest
+  #     - etcd
+  #   when: ansible_os_family == "Debian"
 
-  - name: setup the ppg repo ppg-16 for rhel
-    command: percona-release setup -y ppg-16
-    when: ansible_os_family == "RedHat"
+  # - name: setup the ppg repo ppg-16 for rhel
+  #   command: percona-release setup -y ppg-16
+  #   when: ansible_os_family == "RedHat"
 
-  - name: Clean dnf oracle linux
-    become: true
-    command: dnf clean all -y
-    when: ansible_os_family == "RedHat" and
-      (ansible_distribution_major_version == "8" or ansible_distribution_major_version == "9")
+  # - name: Clean dnf oracle linux
+  #   become: true
+  #   command: dnf clean all -y
+  #   when: ansible_os_family == "RedHat" and
+  #     (ansible_distribution_major_version == "8" or ansible_distribution_major_version == "9")
 
-  - name: Enable powertools on oracle linux 8
-    become: true
-    command: dnf config-manager --set-enabled ol8_codeready_builder
-    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
+  # - name: Enable powertools on oracle linux 8
+  #   become: true
+  #   command: dnf config-manager --set-enabled ol8_codeready_builder
+  #   when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
 
-  - name: Enable powertools on oracle linux 9
-    become: true
-    command: dnf config-manager --set-enabled ol9_codeready_builder
-    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "9"
+  # - name: Enable powertools on oracle linux 9
+  #   become: true
+  #   command: dnf config-manager --set-enabled ol9_codeready_builder
+  #   when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "9"
 
-  - name: Disable dnf postgresql for RHEL8
-    become: true
-    command: dnf module disable postgresql -y
-    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
+  # - name: Disable dnf postgresql for RHEL8
+  #   become: true
+  #   command: dnf module disable postgresql -y
+  #   when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
 
-  - name: Disable llvm-toolset dnf module for RHEL8
-    become: true
-    command: dnf module disable llvm-toolset -y
-    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
+  # - name: Disable llvm-toolset dnf module for RHEL8
+  #   become: true
+  #   command: dnf module disable llvm-toolset -y
+  #   when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
 
-  - name: install PPG rpm packages
-    yum:
-      name: "{{ packages }}"
-      state: latest
-      update_cache: yes
-    vars:
-      packages:
-      - percona-ppg-server16
-    when: ansible_os_family == "RedHat"
+  # - name: install PPG rpm packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #     - percona-ppg-server16
+  #   when: ansible_os_family == "RedHat"
 
-  - name: Setting facts so that they will be persisted in the fact cache
-    ansible.builtin.set_fact:
-      pgaudit_rhel_package_name: "percona-pgaudit16"
-      postgis_rhel_package_name_prefix: "percona-postgis33_16"
+  # - name: Setting facts so that they will be persisted in the fact cache
+  #   ansible.builtin.set_fact:
+  #     pgaudit_rhel_package_name: "percona-pgaudit16"
+  #     postgis_rhel_package_name_prefix: "percona-postgis33_16"
 
-  - name: Install pgaudit RHEL
-    yum:
-      name: "{{ pgaudit_rhel_package_name }}"
-      state: latest
-      update_cache: yes
-    when: ansible_os_family == "RedHat"
+  # - name: Install pgaudit RHEL
+  #   yum:
+  #     name: "{{ pgaudit_rhel_package_name }}"
+  #     state: latest
+  #     update_cache: yes
+  #   when: ansible_os_family == "RedHat"
 
-  - name: Install pgbackrest RHEL
-    yum:
-      name: percona-pgbackrest
-      state: latest
-      update_cache: yes
-    when: ansible_os_family == "RedHat"
+  # - name: Install pgbackrest RHEL
+  #   yum:
+  #     name: percona-pgbackrest
+  #     state: latest
+  #     update_cache: yes
+  #   when: ansible_os_family == "RedHat"
 
-  - name: Install pgrepack RHEL
-    yum:
-      name: percona-pg_repack16
-      state: latest
-      update_cache: yes
-    when: ansible_os_family == "RedHat"
+  # - name: Install pgrepack RHEL
+  #   yum:
+  #     name: percona-pg_repack16
+  #     state: latest
+  #     update_cache: yes
+  #   when: ansible_os_family == "RedHat"
 
-  - name: Install pg-stat-monitor RHEL
-    yum:
-      name: "{{ packages }}"
-      state: latest
-      update_cache: yes
-    vars:
-      packages:
-        - percona-pg_stat_monitor16
-        # - percona-pg_stat_monitor16-debuginfo
-    when: ansible_os_family == "RedHat"
+  # - name: Install pg-stat-monitor RHEL
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #       - percona-pg_stat_monitor16
+  #       # - percona-pg_stat_monitor16-debuginfo
+  #   when: ansible_os_family == "RedHat"
 
-  - name: Install pgbadger RHEL
-    yum:
-      name: percona-pgbadger
-      state: latest
-      update_cache: yes
-    when: ansible_os_family == "RedHat"
+  # - name: Install pgbadger RHEL
+  #   yum:
+  #     name: percona-pgbadger
+  #     state: latest
+  #     update_cache: yes
+  #   when: ansible_os_family == "RedHat"
 
-  - name: Install percona-pgaudit16_set_user RHEL
-    yum:
-      name: percona-pgaudit16_set_user
-      state: latest
-      update_cache: yes
-    when: ansible_os_family == "RedHat"
+  # - name: Install percona-pgaudit16_set_user RHEL
+  #   yum:
+  #     name: percona-pgaudit16_set_user
+  #     state: latest
+  #     update_cache: yes
+  #   when: ansible_os_family == "RedHat"
 
-  - name: Install percona-pgbouncer RHEL
-    yum:
-      name: percona-pgbouncer
-      state: latest
-      update_cache: yes
-    when: ansible_os_family == "RedHat"
+  # - name: Install percona-pgbouncer RHEL
+  #   yum:
+  #     name: percona-pgbouncer
+  #     state: latest
+  #     update_cache: yes
+  #   when: ansible_os_family == "RedHat"
 
-  - name: Install percona-pgpool RHEL
-    yum:
-      name: "{{ packages }}"
-      state: latest
-      update_cache: yes
-    vars:
-      packages:
-        - percona-pgpool-II-pg16
-        - percona-pgpool-II-pg16-extensions
-    when: ansible_os_family == "RedHat"
+  # - name: Install percona-pgpool RHEL
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #       - percona-pgpool-II-pg16
+  #       - percona-pgpool-II-pg16-extensions
+  #   when: ansible_os_family == "RedHat"
 
-  - name: Install percona-postgis RHEL
-    yum:
-      name: "{{ packages }}"
-      state: latest
-      update_cache: yes
-    vars:
-      packages:
-      - "{{postgis_rhel_package_name_prefix}}"
-    when: ansible_distribution_major_version == "7"
+  # - name: Install percona-postgis RHEL
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #     - "{{postgis_rhel_package_name_prefix}}"
+  #   when: ansible_distribution_major_version == "7"
 
-  - name: Enable llvm-toolset for RHEL8 to install PostGIS
-    become: true
-    command: dnf module enable llvm-toolset -y
-    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
+  # - name: Enable llvm-toolset for RHEL8 to install PostGIS
+  #   become: true
+  #   command: dnf module enable llvm-toolset -y
+  #   when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
 
-  - name: Install percona-postgis RHEL
-    yum:
-      name: "{{ packages }}"
-      state: latest
-      update_cache: yes
-    vars:
-      packages:
-      - "{{postgis_rhel_package_name_prefix}}"
-    when: ansible_distribution_major_version == "8" or ansible_distribution_major_version == "9"
+  # - name: Install percona-postgis RHEL
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #     - "{{postgis_rhel_package_name_prefix}}"
+  #   when: ansible_distribution_major_version == "8" or ansible_distribution_major_version == "9"
 
-  - name: Install percona-wal2json16 RHEL
-    yum:
-      name: percona-wal2json16
-      state: latest
-      update_cache: yes
-    when: ansible_os_family == "RedHat"
+  # - name: Install percona-wal2json16 RHEL
+  #   yum:
+  #     name: percona-wal2json16
+  #     state: latest
+  #     update_cache: yes
+  #   when: ansible_os_family == "RedHat"
 
-  - name: Install percona-pg_gather RHEL
-    yum:
-      name: percona-pg_gather
-      state: latest
-      update_cache: yes
-    when: ansible_os_family == "RedHat"
+  # - name: Install percona-pg_gather RHEL
+  #   yum:
+  #     name: percona-pg_gather
+  #     state: latest
+  #     update_cache: yes
+  #   when: ansible_os_family == "RedHat"
   
-  - name: Install percona-pg_gather RHEL
-    yum:
-      name: etcd
-      state: latest
-      update_cache: yes
-    when: ansible_os_family == "RedHat"
+  # - name: Install percona-pg_gather RHEL
+  #   yum:
+  #     name: etcd
+  #     state: latest
+  #     update_cache: yes
+  #   when: ansible_os_family == "RedHat"
 
 
 ####################OLD STAFF
