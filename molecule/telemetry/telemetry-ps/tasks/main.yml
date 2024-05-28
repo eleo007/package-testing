@@ -127,6 +127,74 @@
   #     - proxysql2
   #   when: ansible_os_family == "RedHat"
 
+## UPGRADE
+
+  - name: enable the pdps-8.0.35 experimental
+    command: percona-release enable-only pdps-8.0.35
+
+  - name: enable the ps-80 experimental
+    command: percona-release enable-only ps-80 experimental
+
+  - name: enable percona-release telemetry experimental
+    command: percona-release enable telemetry experimental
+
+  - name: install Percona Server and backup deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - percona-server-server
+      - percona-server-test
+      - percona-server-source
+      - percona-server-client
+      - percona-server-rocksdb
+      - percona-mysql-router
+#      - percona-mysql-shell
+    when: ansible_os_family == "Debian"
+
+  - name: install Percona Server and backup rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - percona-server-server
+      - percona-server-test
+      - percona-server-client
+      - percona-server-rocksdb
+      - percona-mysql-router
+#      - percona-mysql-shell
+    when: ansible_os_family == "RedHat"
+
+  - name: start mysql service
+    service: name=mysql state=started
+
+  - name: set root password on centos
+    command: /package-testing/setpass_57.sh
+    when: ansible_os_family == "RedHat"
+
+  - name: restart mysql service
+    service: name=mysql state=restarted
+
+  - name: install AppArmor utils for deb
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+        - apparmor-utils
+    when: ansible_os_family == "Debian"
+
+  - name: enforce Apprmor  on DEB
+    command: aa-enforce /usr/sbin/mysqld
+    when: ansible_os_family == "Debian"
+
+## UPGRADE
+
   - name: enable the ps-80 experimental
     command: percona-release enable-only ps-80 experimental
 
@@ -197,29 +265,29 @@
       - percona-mysql-shell
     when: ansible_os_family == "RedHat"
 
-  - name: start mysql service
-    service: name=mysql state=started
+  # - name: start mysql service
+  #   service: name=mysql state=started
 
-  - name: set root password on centos
-    command: /package-testing/setpass_57.sh
-    when: ansible_os_family == "RedHat"
+  # - name: set root password on centos
+  #   command: /package-testing/setpass_57.sh
+  #   when: ansible_os_family == "RedHat"
 
-  - name: restart mysql service
-    service: name=mysql state=restarted
+  # - name: restart mysql service
+  #   service: name=mysql state=restarted
 
-  - name: install AppArmor utils for deb
-    apt:
-      name: "{{ packages }}"
-      update_cache: yes
-      state: latest
-    vars:
-      packages:
-        - apparmor-utils
-    when: ansible_os_family == "Debian"
+  # - name: install AppArmor utils for deb
+  #   apt:
+  #     name: "{{ packages }}"
+  #     update_cache: yes
+  #     state: latest
+  #   vars:
+  #     packages:
+  #       - apparmor-utils
+  #   when: ansible_os_family == "Debian"
 
-  - name: enforce Apprmor  on DEB
-    command: aa-enforce /usr/sbin/mysqld
-    when: ansible_os_family == "Debian"
+  # - name: enforce Apprmor  on DEB
+  #   command: aa-enforce /usr/sbin/mysqld
+  #   when: ansible_os_family == "Debian"
 
   - name: Add log-error-verbosity option
     blockinfile:
