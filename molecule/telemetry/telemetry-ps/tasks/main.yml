@@ -438,10 +438,12 @@
   - name: Check apparmor content
     command: cat /etc/apparmor.d/usr.sbin.mysqld
     register: apparmor_content
+    when: ansible_os_family == "Debian"
 
   - name: Debug apparmor content
     debug:
       var: apparmor_content
+    when: ansible_os_family == "Debian"
 
   # - name: install Mongo deb packages
   #   apt:
