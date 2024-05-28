@@ -594,7 +594,7 @@ def test_ps_packages_values(host):
                         # Get values of the packages installed on the server
                         # version of package
                         pkg_version_repo = host.run(f'apt-cache -q=0 policy {hist_pkg_name} | grep "\\*\\*\\*"')
-                        print(pkg_version_repo)
+                        print(pkg_version_repo.stdout)
                         pkg_version_match = re.search(r'[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9]+)?((-|.)[0-9]+)?',pkg_version_repo.stdout)
                         pkg_version = pkg_version_match.group(0)
                         if re.search(r'[0-9]+\.[0-9]+\.[0-9]+\-[0-9]+\.[0-9]+', pkg_version):
@@ -611,6 +611,8 @@ def test_ps_packages_values(host):
                     # FOR RPM PACKAGES
                         if (dist == 'amzn' and rel == '2') or (dist == 'centos' and rel == '7'):
                             get_pkg_info = host.run(f"repoquery --qf '%{{version}}|%{{release}}|%{{ui_from_repo}}' --installed {hist_pkg_name}")
+                            if hist_pkg_name == 'percona-release':
+                                print(get_pkg_info.stdout)
                         else:
                             get_pkg_info = host.run(f"yum repoquery --qf '%{{version}}|%{{release}}|%{{from_repo}}' --installed {hist_pkg_name}")
                         pkg_info = get_pkg_info.stdout.strip('\n').split('|')
