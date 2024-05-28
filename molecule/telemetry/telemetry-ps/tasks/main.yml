@@ -193,6 +193,12 @@
     command: aa-enforce /usr/sbin/mysqld
     when: ansible_os_family == "Debian"
 
+  - name: append include for Debian
+    lineinfile:
+        path: /etc/apparmor.d/usr.sbin.mysqld
+        line: '#somecustomtext'
+    when: ansible_os_family == "Debian"
+
 ## UPGRADE
 
   - name: enable the ps-80 experimental
@@ -428,6 +434,14 @@
 
   - name: enable the mongo repo pdmdb-6.0
     command: percona-release enable pdmdb-6.0
+
+  - name: Check apparmor content
+    command: cat /etc/apparmor.d/usr.sbin.mysqld
+    register: apparmor_content
+
+  - name: Debug apparmor content
+    debug:
+      var: apparmor_content
 
   # - name: install Mongo deb packages
   #   apt:
