@@ -152,7 +152,7 @@ def test_ta_service(host):
 
 def test_ta_dirs(host):
     dist = host.system_info.distribution
-    rel = host.system_info.codename
+    rel = host.system_info.release
     assert host.file('/usr/local/percona').group == 'percona-telemetry'
     if dist.lower() in DEB_DISTS and rel=='10':
         assert oct(host.file('/usr/local/percona').mode) in ['0o2775','0o775']
