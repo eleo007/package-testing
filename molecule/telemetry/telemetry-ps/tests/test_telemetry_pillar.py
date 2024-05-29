@@ -151,8 +151,13 @@ def test_ta_service(host):
     assert options_file in ta_serv.systemd_properties[env_file_name]
 
 def test_ta_dirs(host):
+    dist = host.system_info.distribution
+    rel = host.system_info.codename
     assert host.file('/usr/local/percona').group == 'percona-telemetry'
-    assert oct(host.file('/usr/local/percona').mode) == '0o775'
+    if dist.lower() in DEB_DISTS and rel=='10':
+        assert oct(host.file('/usr/local/percona').mode) in ['0o2775','0o775']
+    else:
+        assert oct(host.file('/usr/local/percona').mode) == '0o775'
     assert host.file(telem_root_dir).is_directory
     assert host.file(telem_root_dir).user == 'daemon'
     assert host.file(telem_root_dir).group == 'percona-telemetry'
