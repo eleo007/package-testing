@@ -161,7 +161,10 @@ def test_ta_dirs(host):
     assert host.file(telem_root_dir).is_directory
     assert host.file(telem_root_dir).user == 'daemon'
     assert host.file(telem_root_dir).group == 'percona-telemetry'
-    assert oct(host.file(telem_root_dir).mode) == '0o755'
+    if dist.lower() in DEB_DISTS and rel=='10':
+        assert oct(host.file(telem_root_dir).mode) in ['0o2775','0o775']
+    else:
+        assert oct(host.file(telem_root_dir).mode) == '0o755'
     assert host.file(telem_history_dir).is_directory
     assert host.file(telem_history_dir).user == 'daemon'
     assert host.file(telem_root_dir).group == 'percona-telemetry'
@@ -628,7 +631,7 @@ def test_ps_packages_values(host):
                         pkg_version = pkg_version_match.group(0)
                         # print(pkg_version)
                         # get repository info. Values are empty if package was installed from commandline
-                        if pkg_repository in ['@commandline','installed'] or re.search(r'\\@', pkg_repository):
+                        if pkg_repository in ['@commandline','installed'] or re.search(r'\/@*', pkg_repository):
                             repository_str = "{'name': '', 'component': ''}"
                         else:
                             repo_name_full = pkg_repository.strip('@, -x86_64')
