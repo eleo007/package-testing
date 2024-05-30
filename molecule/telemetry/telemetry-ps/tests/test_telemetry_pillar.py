@@ -162,13 +162,16 @@ def test_ta_dirs(host):
     assert host.file(telem_root_dir).user == 'daemon'
     assert host.file(telem_root_dir).group == 'percona-telemetry'
     if dist.lower() in DEB_DISTS and rel=='10':
-        assert oct(host.file(telem_root_dir).mode) in ['0o2775','0o775']
+        assert oct(host.file(telem_root_dir).mode) in ['0o2755','0o755']
     else:
         assert oct(host.file(telem_root_dir).mode) == '0o755'
     assert host.file(telem_history_dir).is_directory
     assert host.file(telem_history_dir).user == 'daemon'
-    assert host.file(telem_root_dir).group == 'percona-telemetry'
+    assert host.file(telem_history_dir).group == 'percona-telemetry'
     assert oct(host.file(telem_history_dir).mode) == '0o6755'
+    assert host.file('/usr/local/percona/telemetry_uuid').is_file
+    assert host.file('/usr/local/percona/telemetry_uuid').group == 'percona-telemetry'
+    assert oct(host.file('/usr/local/percona/telemetry_uuid').mode) == '0o664'
 
 def test_ps_pillar_dirs(host):
     assert host.file(ps_pillar_dir).is_directory
