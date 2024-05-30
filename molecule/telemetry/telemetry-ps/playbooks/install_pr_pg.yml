@@ -19,7 +19,7 @@
       - percona-pg-gather
       - percona-pgpool2
       - percona-postgresql-16-repack
-      - percona-pg-stat-monitor*
+      - percona-pg-stat-monitor16
       - percona-postgis
       - percona-postgresql-16-wal2json
       - percona-pgbackrest
@@ -39,12 +39,39 @@
   - name: Enable powertools on oracle linux 8
     become: true
     command: dnf config-manager --set-enabled ol8_codeready_builder
-    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8" and ansible_distribution == "OracleLinux"
 
   - name: Enable powertools on oracle linux 9
     become: true
     command: dnf config-manager --set-enabled ol9_codeready_builder
-    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "9"
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "9" and ansible_distribution == "OracleLinux"
+
+  - name: Enable powertools on Rocky Linux 8
+    command: "{{ item }}" 
+    with_items:
+      - dnf install dnf-plugins-core
+      - dnf module enable llvm-toolset
+      - dnf config-manager --set-enabled powertools
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8" and ansible_distribution == "Rocky"
+
+  - name: Enable powertools on Rocky Linux 9
+    command: "{{ item }}" 
+    with_items:
+      - dnf install dnf-plugins-core
+      - dnf module enable llvm-toolset
+      - dnf config-manager --set-enabled crb
+      - dnf install perl-IPC-Run -y
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "9" and ansible_distribution == "Rocky"
+
+  - name: Enable powertools on RHEL 8
+    become: true
+    command: yum --enablerepo=codeready-builder-for-rhel-8-rhui-rpms
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8" and ansible_distribution == "RedHat"
+
+  - name: Enable powertools on RHEL 9
+    become: true
+    command: yum --enablerepo=codeready-builder-for-rhel-9-rhui-rpms
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "9" and ansible_distribution == "RedHat"
 
   - name: Disable dnf postgresql for RHEL8
     become: true
@@ -148,7 +175,7 @@
   - name: Enable llvm-toolset for RHEL8 to install PostGIS
     become: true
     command: dnf module enable llvm-toolset -y
-    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
+    when: ansible_os_family == "RedHat"
 
   - name: Install percona-postgis RHEL
     yum:

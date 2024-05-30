@@ -1,0 +1,84 @@
+  - name: install PPG repository package
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - postgresql-common
+    when: ansible_os_family == "Debian"
+
+  - name: install PPG apt repository
+    command: /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+    when: ansible_os_family == "Debian"
+
+  - name: install PG repo
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+      disable_gpg_check: yes
+    vars:
+      packages:
+      - "https://download.postgresql.org/pub/repos/yum/reporpms/EL-{{ ansible_distribution_major_version }}-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
+    when: ansible_os_family == "RedHat"
+
+  - name: disable the built-in PostgreSQL module
+    command: /usr/bin/dnf -qy module disable postgresql
+    when: ansible_os_family == "RedHat"
+
+  - name: install PPG deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - postgresql-16
+      - patroni 
+      - postgresql-16-pgaudit
+      - pgbadger 
+      - pgbouncer
+      - postgresql-16-pgpool2
+      - postgresql-16-repack
+      - postgis 
+      - postgresql-16-wal2json
+      - pgbackrest
+    when: ansible_os_family == "Debian"
+
+  - name: install PPG rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+      skip_broken: yes
+    vars:
+      packages:
+      - patroni
+      - pgaudit_16
+      - pgbackrest
+      - pgbouncer 
+      - pg_repack_16 
+      - pgbadger 
+      - pgpool-II
+      - wal2json_16 
+    when: ansible_os_family == "RedHat"
+
+  - name: make changes for postgis
+    command: "{{ item }}" 
+    with_items:
+      - yum install epel-release
+      - dnf module enable -y llvm-toolset
+      - dnf config-manager --set-enabled ol8_codeready_builder
+    when: ansible_os_family == "RedHat"
+
+  - name: install PPG rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+      skip_broken: yes
+    vars:
+      packages:
+      - postgis34_16 
+    when: ansible_os_family == "RedHat"

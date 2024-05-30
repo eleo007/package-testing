@@ -14,6 +14,10 @@
     command: /usr/bin/dnf module disable mysql -y
     when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
 
+  - name: setup epel 7 repo
+    yum: name=epel-release state=present
+    when: (ansible_os_family == "RedHat" and ansible_distribution_major_version == "7") or (ansible_distribution == "Amazon" and ansible_distribution_major_version == "2")
+
   # - name: Copy telemetry agent binary
   #   ansible.builtin.copy:
   #     src: /home/eleonora.zinchenko/telemetry-agent/bin/telemetry-agent
