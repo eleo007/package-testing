@@ -264,7 +264,7 @@ def test_grace_is_waited(host):
         ps_telem_files_num_before = len(host.file(ps_pillar_dir).listdir())
         update_ps_options(host, '20', '10')
         # we wait 5 sec after options update, so here we need to check grace before 20 mins after restart.
-        time.sleep(12)
+        time.sleep(10)
         ps_telem_files_num_after = len(host.file(ps_pillar_dir).listdir())
         log_file_content = host.file(log_file).content_string
         assert "Applying Telemetry grace interval 20 seconds" in log_file_content
