@@ -220,6 +220,7 @@
     become: true
     command: "{{ item }}"
     with_items:
+      - yum install epel-release
       - dnf module enable llvm-toolset -y
       - dnf  install dnf-plugins-core -y
       - dnf config-manager --set-enabled crb -y
