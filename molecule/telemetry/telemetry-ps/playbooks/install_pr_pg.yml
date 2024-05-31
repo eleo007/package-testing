@@ -80,7 +80,7 @@
     become: true
     command: "{{ item }}"
     with_items:
-      - yum --enablerepo=codeready-builder-for-rhel-9-rhui-rpms
+      - yum --enablerepo=codeready-builder-for-rhel-9-x86_64-rpms
       - dnf config-manager --set-enabled codeready-builder-for-rhel-9-x86_64-rpms
     when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "9" and ansible_distribution == "RedHat"
 
