@@ -23,8 +23,16 @@
       - percona-postgis
       - percona-postgresql-16-wal2json
       - percona-pgbackrest
-      - etcd
     when: ansible_os_family == "Debian"
+
+  - name: install PPG deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      - etcd
+    when: ansible_os_family == "Debian" and ansible_distribution_release != "bookworm"
 
   - name: setup the ppg repo ppg-16 for rhel
     command: percona-release setup -y ppg-16
@@ -196,7 +204,7 @@
     command: "{{ item }}"
     with_items:
       - dnf module enable llvm-toolset -y
-      - dnf config-manager --set-enabled codeready-builder-for-rhel-8-x86_64-rpms
+      - dnf config-manager --set-enabled codeready-builder-for-rhel-8-rhui-rpms
     when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8" and ansible_distribution == "RedHat"
 
   - name: Enable llvm-toolset for RHEL9 to install PostGIS
