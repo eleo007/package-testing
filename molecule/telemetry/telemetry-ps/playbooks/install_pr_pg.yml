@@ -199,6 +199,7 @@
       - dnf module enable llvm-toolset -y
       - dnf config-manager --set-enabled ol9_codeready_builder
     when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "9" and ansible_distribution == "OracleLinux"
+    ignore_errors: true
 
   - name: Enable llvm-toolset for RHEL8 to install PostGIS
     become: true
@@ -225,6 +226,7 @@
       - dnf  install dnf-plugins-core -y
       - dnf config-manager --set-enabled crb -y
     when: ansible_os_family == "RedHat" and ansible_distribution == "Rocky"
+    ignore_errors: true
 
   - name: Install percona-postgis RHEL
     yum:
@@ -235,6 +237,7 @@
       packages:
       - "{{postgis_rhel_package_name_prefix}}"
     when: ansible_distribution_major_version == "8" or ansible_distribution_major_version == "9"
+    ignore_errors: true
 
   - name: Install percona-wal2json16 RHEL
     yum:
