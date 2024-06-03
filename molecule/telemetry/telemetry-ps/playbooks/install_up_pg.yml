@@ -1,3 +1,53 @@
+  - name: Enable powertools on oracle linux 8
+    become: true
+    command: dnf config-manager --set-enabled ol8_codeready_builder
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8" and ansible_distribution == "OracleLinux"
+
+  - name: Enable powertools on oracle linux 9
+    become: true
+    command: dnf config-manager --set-enabled ol9_codeready_builder
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "9" and ansible_distribution == "OracleLinux"
+
+  - name: Enable powertools on Rocky Linux 8
+    command: "{{ item }}" 
+    with_items:
+      - dnf install -y dnf-plugins-core
+      - dnf module enable -y llvm-toolset
+      - dnf config-manager --set-enabled -y powertools
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8" and ansible_distribution == "Rocky"
+
+  - name: Enable powertools on Rocky Linux 9
+    command: "{{ item }}" 
+    with_items:
+      - dnf install -y dnf-plugins-core
+      - dnf module enable -y llvm-toolset
+      - dnf config-manager --set-enabled -y crb
+      - dnf install perl-IPC-Run -y
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "9" and ansible_distribution == "Rocky"
+
+  - name: Enable powertools on RHEL 8
+    become: true
+    command: yum --enablerepo=codeready-builder-for-rhel-8-rhui-rpms
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8" and ansible_distribution == "RedHat"
+
+  - name: Enable powertools on RHEL 9
+    become: true
+    command: "{{ item }}"
+    with_items:
+      - yum --enablerepo=codeready-builder-for-rhel-9-x86_64-rpms
+      - dnf config-manager --set-enabled codeready-builder-for-rhel-9-x86_64-rpms
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "9" and ansible_distribution == "RedHat"
+
+  - name: Disable dnf postgresql for RHEL8
+    become: true
+    command: dnf module disable postgresql -y
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
+
+  - name: Disable llvm-toolset dnf module for RHEL8
+    become: true
+    command: dnf module disable llvm-toolset -y
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
+
   - name: install PPG repository package
     apt:
       name: "{{ packages }}"
@@ -64,13 +114,49 @@
       - wal2json_16 
     when: ansible_os_family == "RedHat"
 
-  - name: make changes for postgis
-    command: "{{ item }}" 
+  - name: Enable llvm-toolset for OracleLinux8 to install PostGIS
+    become: true
+    command: "{{ item }}"
+    with_items:
+      - dnf module enable llvm-toolset -y
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8" and ansible_distribution == "OracleLinux"
+
+  - name: Enable llvm-toolset for OracleLinux9 to install PostGIS
+    become: true
+    command: "{{ item }}"
+    with_items:
+      - yum install -y epel-release
+      - dnf module enable llvm-toolset -y
+      - dnf config-manager --set-enabled ol9_codeready_builder
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "9" and ansible_distribution == "OracleLinux"
+    ignore_errors: true
+
+  - name: Enable llvm-toolset for RHEL8 to install PostGIS
+    become: true
+    command: "{{ item }}"
+    with_items:
+      - dnf module enable llvm-toolset -y
+      - dnf config-manager --set-enabled codeready-builder-for-rhel-8-rhui-rpms
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8" and ansible_distribution == "RedHat"
+
+  - name: Enable llvm-toolset for RHEL9 to install PostGIS
+    become: true
+    command: "{{ item }}"
+    with_items:
+      - dnf module enable llvm-toolset -y
+      - dnf config-manager --set-enabled codeready-builder-for-rhel-9-x86_64-rpms
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "9" and ansible_distribution == "RedHat"
+
+  - name: Enable llvm-toolset for Rocky8&9 to install PostGIS
+    become: true
+    command: "{{ item }}"
     with_items:
       - yum install epel-release
-      - dnf module enable -y llvm-toolset
-      - dnf config-manager --set-enabled ol8_codeready_builder
-    when: ansible_os_family == "RedHat"
+      - dnf module enable llvm-toolset -y
+      - dnf  install dnf-plugins-core -y
+      - dnf config-manager --set-enabled crb -y
+    when: ansible_os_family == "RedHat" and ansible_distribution == "Rocky"
+    ignore_errors: true
 
   - name: install PPG rpm packages
     yum:
