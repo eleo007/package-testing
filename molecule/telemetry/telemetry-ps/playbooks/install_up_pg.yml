@@ -37,6 +37,7 @@
       - yum --enablerepo=codeready-builder-for-rhel-9-x86_64-rpms
       - dnf config-manager --set-enabled codeready-builder-for-rhel-9-x86_64-rpms
     when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "9" and ansible_distribution == "RedHat"
+    ignore_errors: true
 
   - name: Disable dnf postgresql for RHEL8
     become: true
@@ -74,7 +75,7 @@
     when: ansible_os_family == "RedHat"
 
   - name: disable the built-in PostgreSQL module
-    command: /usr/bin/dnf -qy module disable postgresql
+    command: dnf -qy module disable postgresql
     when: ansible_os_family == "RedHat"
 
   - name: install PPG deb packages

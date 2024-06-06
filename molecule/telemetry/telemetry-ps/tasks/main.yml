@@ -436,19 +436,14 @@
     register: apparmor_content
     when: ansible_os_family == "Debian"
 
-  - name: Debug apparmor content
-    debug:
-      var: apparmor_content
-    when: ansible_os_family == "Debian"
-
   - name: Include mongo packages install
     include_tasks: ../playbooks/install_monga.yml
 
   # - name: Include Percona PG install
   #   include_tasks: ../playbooks/install_pr_pg.yml
 
-  - name: Include Upstream PG install
-    include_tasks: ../playbooks/install_up_pg.yml
+  # - name: Include Upstream PG install
+  #   include_tasks: ../playbooks/install_up_pg.yml
 
   # - name: Include PS 57
   #   include_tasks: ../playbooks/install_up_pg.yml

@@ -22,7 +22,7 @@ RHEL_DISTS = ["redhat", "centos", "rhel", "oracleserver", "ol", "amzn"]
 
 DEB_DISTS = ["debian", "ubuntu"]
 
-packages_list=['percona-toolkit','percona-Server-Server', 'percona-xtrabackup', 'percona-toolkit', 'percona-orchestrator', 'percona-haproxy', \
+packages_list = ['percona-toolkit','percona-server-server', 'percona-xtrabackup', 'percona-toolkit', 'percona-orchestrator', 'percona-haproxy', \
                'proxysql2', 'percona-mysql-shell', 'percona-mysql-router', 'pmm2-client']
 
 os.environ['PERCONA_TELEMETRY_URL'] = 'https://check-dev.percona.com/v1/telemetry/GenericReport'
@@ -42,9 +42,9 @@ dev_telem_url='https:\\/\\/check-dev.percona.com\\/v1\\/telemetry\\/GenericRepor
 ta_service_name='percona-telemetry-agent'
 
 telemetry_defaults=[["RootPath", "/usr/local/percona/telemetry"],["PSMetricsPath", "/usr/local/percona/telemetry/ps"],
-         ["PSMDBMetricsPath", "/usr/local/percona/telemetry/psmdb"],["PXCMetricsPath", "/usr/local/percona/telemetry/pxc"],
-        ["PGMetricsPath", "/usr/local/percona/telemetry/pg"], ["HistoryPath", "/usr/local/percona/telemetry/history"],
-        ["CheckInterval", 86400], ["HistoryKeepInterval", 604800]
+        ["PSMDBMongodMetricsPath", "/usr/local/percona/telemetry/psmdb"],["PSMDBMongosMetricsPath", "/usr/local/percona/telemetry/psmdbs"],
+        ["PXCMetricsPath", "/usr/local/percona/telemetry/pxc"], ["PGMetricsPath", "/usr/local/percona/telemetry/pg"],
+        ["HistoryPath", "/usr/local/percona/telemetry/history"], ["CheckInterval", 86400], ["HistoryKeepInterval", 604800]
     ]
 
 platform_defaults=[["ResendTimeout", 60], ["URL","https://check.percona.com/v1/telemetry/GenericReport"]
@@ -459,12 +459,12 @@ def test_telemetry_sending(host):
         assert 'Sending request to host=check-dev.percona.com.","file":"' + ps_pillar_dir + '/' + pillar_ref_file in log_file_content
         assert 'Received response: 200 OK","file":"' + ps_pillar_dir + '/' + pillar_ref_file in log_file_content
 
-# def test_telemetry_uuid_created(host):
-#     telem_uuid_file="/usr/local/percona/telemetry_uuid"
-#     assert host.file(telem_uuid_file).is_file
-#     pattern = r'instanceId:([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})'
-#     telemetry_uuid_content = host.file(telem_uuid_file).content_string
-#     assert re.search(pattern, telemetry_uuid_content)
+def test_telemetry_uuid_created(host):
+    telem_uuid_file="/usr/local/percona/telemetry_uuid"
+    assert host.file(telem_uuid_file).is_file
+    pattern = r'instanceId:([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})'
+    telemetry_uuid_content = host.file(telem_uuid_file).content_string
+    assert re.search(pattern, telemetry_uuid_content)
 
 def test_telemetry_history_saved(host):
     with host.sudo("root"):
@@ -481,10 +481,6 @@ def test_tetemetry_removed_from_pillar(host):
         assert 'removing metrics file","file":"' + ps_pillar_dir + '/' + pillar_ref_file in log_file_content
         assert 'failed to remove metrics file, will try on next iteration","file":"' + ps_pillar_dir + '/' + pillar_ref_file not in log_file_content
         assert len(host.file(ps_pillar_dir).listdir()) == 0
-
-def test_no_other_errors(host):
-    log_file_content = host.file(telemetry_log_file).content_string
-    assert '"level":"error"' not in log_file_content
 
 def test_telemetry_history_file_valid_json(host):
     with host.sudo("root"):
@@ -667,6 +663,11 @@ def test_telemetry_removed_from_history(host):
     log_file_content = host.file(telemetry_log_file).content_string
     assert len(host.file(telem_history_dir).listdir()) == 0
     assert 'cleaning up history metric files","directory":"' + telem_root_dir + 'history' in log_file_content
+    assert 'error removing metric file, skipping' not in log_file_content
+
+def test_no_other_errors(host):
+    log_file_content = host.file(telemetry_log_file).content_string
+    assert '"level":"error"' not in log_file_content
 
 def test_stop_service(host):
     ta_serv = host.service("percona-telemetry-agent")
