@@ -15,7 +15,7 @@ from packaging import version
 
 PAK_VERSION = '0.1-1'
 VERSION = 'phase-0.1'
-REVISION = '13b74807'
+REVISION = '8e0fcc3'
 
 RHEL_DISTS = ["redhat", "centos", "rhel", "oracleserver", "ol", "amzn"]
 
@@ -38,9 +38,9 @@ dev_telem_url='https:\/\/check-dev.percona.com\/v1\/telemetry\/GenericReport'
 ta_service_name='percona-telemetry-agent'
 
 telemetry_defaults=[["RootPath", "/usr/local/percona/telemetry"],["PSMetricsPath", "/usr/local/percona/telemetry/ps"],
-         ["PSMDBMetricsPath", "/usr/local/percona/telemetry/psmdb"],["PXCMetricsPath", "/usr/local/percona/telemetry/pxc"],
-        ["PGMetricsPath", "/usr/local/percona/telemetry/pg"], ["HistoryPath", "/usr/local/percona/telemetry/history"],
-        ["CheckInterval", 86400], ["HistoryKeepInterval", 604800]
+        ["PSMDBMongodMetricsPath", "/usr/local/percona/telemetry/psmdb"],["PSMDBMongosMetricsPath", "/usr/local/percona/telemetry/psmdbs"],
+        ["PXCMetricsPath", "/usr/local/percona/telemetry/pxc"], ["PGMetricsPath", "/usr/local/percona/telemetry/pg"],
+        ["HistoryPath", "/usr/local/percona/telemetry/history"], ["CheckInterval", 86400], ["HistoryKeepInterval", 604800]
     ]
 
 platform_defaults=[["ResendTimeout", 60], ["URL","https://check.percona.com/v1/telemetry/GenericReport"]
@@ -171,7 +171,7 @@ def test_ta_telemetry_default_values(host, ta_key, ref_value):
     log_file_params = host.file(telemetry_log_file).content_string.partition('\n')[0]
     cur_values=json.loads(log_file_params)
     telem_config=cur_values["config"]["Telemetry"]
-    assert len(telem_config) == 8
+    assert len(telem_config) == 9
     assert telem_config[ta_key] == ref_value
 
 @pytest.mark.parametrize("ta_key, ref_value", platform_defaults)
@@ -239,10 +239,6 @@ def test_tetemetry_removed_from_pillar(host,copy_pillar_metrics):
         assert 'removing metrics file","file":"' + telem_root_dir + pillar + '/' + copy_pillar_metrics[pillar] in log_file_content
         assert 'failed to remove metrics file, will try on next iteration","file":"' + telem_root_dir + pillar + '/' + copy_pillar_metrics[pillar] not in log_file_content
         assert len(host.file(telem_root_dir + pillar).listdir()) == 0
-
-def test_no_other_errors(host):
-    log_file_content = host.file(telemetry_log_file).content_string
-    assert '"level":"error"' not in log_file_content
 
 def test_telemetry_history_file_valid_json(host, copy_pillar_metrics):
     for pillar in pillars_list:
@@ -332,7 +328,7 @@ def test_ps_metrics_sent(host, copy_pillar_metrics):
             assert metric['value'] == "[\"file://component_percona_telemetry\"]"
         if metric['key'] == 'installed_packages':
             assert '\"name\":\"percona-release\",\"version\":\"1.0-27\"' in metric['value']
-            assert '\"name\":\"percona-telemetry-agent\",\"version\":\"0.1-1\",\"repository\":{\"name\":\"tools\",\"component\":\"experimental\"' in metric['value']
+            assert '\"name\":\"percona-telemetry-agent\",\"version\":\"0.1-1\",\"repository\":{\"name\":\"telemetry\",\"component\":\"experimental\"' in metric['value']
 
 def test_pg_metrics_sent(host, copy_pillar_metrics):
     # check metrics in the history files
@@ -386,6 +382,10 @@ def test_telemetry_removed_from_history(host):
     log_file_content = host.file(telemetry_log_file).content_string
     assert len(host.file(telem_history_dir).listdir()) == 0
     assert 'cleaning up history metric files","directory":"' + telem_root_dir + 'history' in log_file_content
+
+def test_no_other_errors(host):
+    log_file_content = host.file(telemetry_log_file).content_string
+    assert '"level":"error"' not in log_file_content
 
 def test_telemetry_uuid_corrupted(host):
     telemetry_uuid_content = host.file('/usr/local/percona/telemetry_uuid').content_string
