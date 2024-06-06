@@ -207,7 +207,7 @@ def test_ta_telemetry_default_values(host, ta_key, ref_value):
     log_file_params = host.file(telemetry_log_file).content_string.partition('\n')[0]
     cur_values=json.loads(log_file_params)
     telem_config=cur_values["config"]["Telemetry"]
-    assert len(telem_config) == 8
+    assert len(telem_config) == 9
     assert telem_config[ta_key] == ref_value
 
 @pytest.mark.parametrize("ta_key, ref_value", platform_defaults)
@@ -612,7 +612,7 @@ def test_ps_packages_values(host):
                         # version of package
                         pkg_version_repo = host.run(f'apt-cache -q=0 policy {hist_pkg_name} | grep "\\*\\*\\*"')
                         print(pkg_version_repo.stdout)
-                        pkg_version_match = re.search(r'[0-9]+(\.[0-9]+)?(\.[0-9]+)?(-[0-9]+)?((-|.)[0-9]+)?',pkg_version_repo.stdout)
+                        pkg_version_match = re.search(r'[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9]+)?((-|.)[0-9]+)?',pkg_version_repo.stdout)
                         pkg_version = pkg_version_match.group(0)
                         if re.search(r'[0-9]+\.[0-9]+\.[0-9]+\-[0-9]+\.[0-9]+', pkg_version):
                             pkg_version = re.sub(r'.([0-9]+)$',r'-\g<1>', pkg_version)
