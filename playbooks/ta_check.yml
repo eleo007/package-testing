@@ -68,8 +68,8 @@
   - name: Install percona release
     include_tasks: ../tasks/install_percona-release.yml
 
-  - name: enable percona-release tools experimental
-    command: percona-release enable tools experimental
+  - name: enable percona-release telemetry experimental
+    command: percona-release enable telemetry experimental
 
 #   - name: Update cache
 #     command: apt update
