@@ -208,8 +208,8 @@
   - name: enable the ps-80 experimental
     command: percona-release enable-only ps-80 experimental
 
-  - name: enable percona-release telemetry experimental
-    command: percona-release enable telemetry experimental
+  - name: enable prel experimental
+    command: percona-release enable prel experimental
 
   - name: install Percona Server and backup deb packages
     apt:
