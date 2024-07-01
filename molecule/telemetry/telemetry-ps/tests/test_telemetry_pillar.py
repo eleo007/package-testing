@@ -261,6 +261,16 @@ def test_telem_enabled(host):
         result = host.check_output(cmd)
         assert result == "1"
 
+def test_ps_apparmor_file(host):
+    with host.sudo("root"):
+        dist = host.system_info.distribution
+        if dist.lower() in DEB_DISTS:
+            aparr_file_content = host.file("/etc/apparmor.d/usr.sbin.mysqld").content_string
+            assert "/usr/local/percona/telemetry/ps/ rw" in aparr_file_content
+            assert "/usr/local/percona/telemetry/ps/** rw," in aparr_file_content
+        else:
+            pytest.skip("This check only for DEB distributions")
+
 @pytest.mark.parametrize("ta_key, ref_value", ps_telemetry_defaults)
 def test_telem_defaults(host, ta_key, ref_value):
     with host.sudo("root"):
