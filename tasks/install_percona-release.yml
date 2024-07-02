@@ -3,11 +3,11 @@
 - name: Install percona-release package Debian
   when: ansible_os_family == "Debian"
   apt:
-    deb: https://repo.percona.com/apt/percona-release_latest.generic_all.deb
+    deb: https://repo.percona.com/prel/apt/pool/main/p/percona-release/percona-release_1.0-27.generic_all.deb
 
 - name: Install percona-release package RedHat
   when: ansible_os_family == "RedHat"
-  command: yum -y install https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+  command: yum -y install https://repo.percona.com/prel/yum/release/latest/RPMS/x86_64/percona-release-1.0-27.noarch.rpm
 #  args:
 #    warn: no
 
