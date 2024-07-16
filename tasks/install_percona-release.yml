@@ -5,6 +5,7 @@
   apt:
     #deb: https://repo.percona.com/apt/percona-release_latest.generic_all.deb
     deb: https://repo.percona.com/apt/percona-release_latest.generic_all.deb
+    force: true
 
 - name: Install percona-release package RedHat
   when: ansible_os_family == "RedHat"
