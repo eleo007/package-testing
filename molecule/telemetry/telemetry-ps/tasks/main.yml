@@ -250,8 +250,8 @@
 #     command: percona-release enable original
 
 # Temporarily for experimental only
-  - name: enable the pdps-8.0.36 
-    command: percona-release enable pdps-8.0.36 
+  - name: enable the pdps-8.0.36
+    command: percona-release enable pdps-8.0.36
 
   - name: install Percona Server and backup deb packages
     apt:
@@ -353,91 +353,91 @@
   - name: Update the DB engine
     command: mysql -uroot -NBe "USE world3;create table r1 (id int, foo char(25)) engine=rocksdb;insert into r1 (id,foo) values (1,'test'),(2,'wow'),(3,'q');"
 
-  - name: enable the pdps-8.0.36
-    command: percona-release enable pdps-8.0.36
+  # - name: enable the pdps-8.0.36
+  #   command: percona-release enable pdps-8.0.36
 
-  - name: install Orchestrator deb packages
-    apt:
-      name: "{{ packages }}"
-      update_cache: yes
-      state: latest
-    vars:
-      packages:
-      - percona-orchestrator-cli
-      - percona-orchestrator-client
-      - percona-orchestrator
-    when: ansible_os_family == "Debian"
+  # - name: install Orchestrator deb packages
+  #   apt:
+  #     name: "{{ packages }}"
+  #     update_cache: yes
+  #     state: latest
+  #   vars:
+  #     packages:
+  #     - percona-orchestrator-cli
+  #     - percona-orchestrator-client
+  #     - percona-orchestrator
+  #   when: ansible_os_family == "Debian"
 
-  - name: install Orchestrator rpm packages
-    yum:
-      name: "{{ packages }}"
-      state: latest
-      update_cache: yes
-    vars:
-      packages:
-      - percona-orchestrator-cli
-      - percona-orchestrator-client
-      - percona-orchestrator
-    when: ansible_os_family == "RedHat"
+  # - name: install Orchestrator rpm packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #     - percona-orchestrator-cli
+  #     - percona-orchestrator-client
+  #     - percona-orchestrator
+  #   when: ansible_os_family == "RedHat"
 
 
-  - name: enable the pdpxc-8.0.35 testing
-    command: percona-release enable pdpxc-8.0.35 testing
+  # - name: enable the pdpxc-8.0.35 testing
+  #   command: percona-release enable pdpxc-8.0.35 testing
 
-  - name: install percona-haproxy rpm packages
-    yum:
-      name: "{{ packages }}"
-      state: latest
-      update_cache: yes
-    vars:
-      packages:
-      - percona-haproxy
-      - proxysql2
-      - percona-xtrabackup-80
-    when: ansible_os_family == "RedHat"
+  # - name: install percona-haproxy rpm packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #     - percona-haproxy
+  #     - proxysql2
+  #     - percona-xtrabackup-80
+  #   when: ansible_os_family == "RedHat"
 
-  - name: install percona-haproxy deb packages
-    apt:
-      name: "{{ packages }}"
-      update_cache: yes
-      state: latest
-    vars:
-      packages:
-      - percona-haproxy
-      - proxysql2
-      - percona-xtrabackup-80
-    when: ansible_os_family == "Debian"
+  # - name: install percona-haproxy deb packages
+  #   apt:
+  #     name: "{{ packages }}"
+  #     update_cache: yes
+  #     state: latest
+  #   vars:
+  #     packages:
+  #     - percona-haproxy
+  #     - proxysql2
+  #     - percona-xtrabackup-80
+  #   when: ansible_os_family == "Debian"
 
-  - name: enable the original repo
-    command: percona-release enable original
+  # - name: enable the original repo
+  #   command: percona-release enable original
 
-  - name: install PMM client rpm packages
-    yum:
-      name: "{{ packages }}"
-      state: latest
-      update_cache: yes
-    vars:
-      packages:
-      - pmm2-client
-    when: ansible_os_family == "RedHat"
+  # - name: install PMM client rpm packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #     - pmm2-client
+  #   when: ansible_os_family == "RedHat"
 
-  - name: install PMM client deb packages
-    apt:
-      name: "{{ packages }}"
-      update_cache: yes
-      state: latest
-    vars:
-      packages:
-      - pmm2-client
-    when: ansible_os_family == "Debian"
+  # - name: install PMM client deb packages
+  #   apt:
+  #     name: "{{ packages }}"
+  #     update_cache: yes
+  #     state: latest
+  #   vars:
+  #     packages:
+  #     - pmm2-client
+  #   when: ansible_os_family == "Debian"
 
   - name: Check apparmor content
     command: cat /etc/apparmor.d/usr.sbin.mysqld
     register: apparmor_content
     when: ansible_os_family == "Debian"
 
-  - name: Include mongo packages install
-    include_tasks: ../playbooks/install_monga.yml
+  # - name: Include mongo packages install
+  #   include_tasks: ../playbooks/install_monga.yml
 
   # - name: Include Percona PG install
   #   include_tasks: ../playbooks/install_pr_pg.yml
