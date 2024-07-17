@@ -4,7 +4,7 @@
   shell: |
     wget https://repo.percona.com/apt/percona-release_latest.generic_all.deb
     apt install ./percona-release_latest.generic_all.deb
-    apt updat
+    apt update
   # apt:
   #   #deb: https://repo.percona.com/apt/percona-release_latest.generic_all.deb
   #   deb: https://repo.percona.com/apt/percona-release_latest.generic_all.deb
