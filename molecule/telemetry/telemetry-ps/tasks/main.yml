@@ -133,8 +133,8 @@
 
 # ## UPGRADE
 
-#   - name: enable the pdps-8.0.35 experimental
-#     command: percona-release enable-only pdps-8.0.35
+   - name: enable the pdps-8.0.36
+     command: percona-release enable-only pdps-8.0.36
 
 #   - name: enable the ps-80 experimental
 #     command: percona-release enable-only ps-80 experimental
@@ -142,66 +142,66 @@
 #   - name: enable percona-release telemetry experimental
 #     command: percona-release enable telemetry experimental
 
-#   - name: install Percona Server and backup deb packages
-#     apt:
-#       name: "{{ packages }}"
-#       update_cache: yes
-#       state: latest
-#     vars:
-#       packages:
-#       - percona-server-server
-#       - percona-server-test
-#       - percona-server-source
-#       - percona-server-client
-#       - percona-server-rocksdb
-#       - percona-mysql-router
-# #      - percona-mysql-shell
-#     when: ansible_os_family == "Debian"
+   - name: install Percona Server and backup deb packages
+     apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - percona-server-server
+      - percona-server-test
+      - percona-server-source
+      - percona-server-client
+      - percona-server-rocksdb
+      - percona-mysql-router
+#      - percona-mysql-shell
+    when: ansible_os_family == "Debian"
 
-#   - name: install Percona Server and backup rpm packages
-#     yum:
-#       name: "{{ packages }}"
-#       state: latest
-#       update_cache: yes
-#     vars:
-#       packages:
-#       - percona-server-server
-#       - percona-server-test
-#       - percona-server-client
-#       - percona-server-rocksdb
-#       - percona-mysql-router
-# #      - percona-mysql-shell
-#     when: ansible_os_family == "RedHat"
+  - name: install Percona Server and backup rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - percona-server-server
+      - percona-server-test
+      - percona-server-client
+      - percona-server-rocksdb
+      - percona-mysql-router
+#      - percona-mysql-shell
+    when: ansible_os_family == "RedHat"
 
-#   - name: start mysql service
-#     service: name=mysql state=started
+  - name: start mysql service
+    service: name=mysql state=started
 
-#   - name: set root password on centos
-#     command: /package-testing/setpass_57.sh
-#     when: ansible_os_family == "RedHat"
+  - name: set root password on centos
+    command: /package-testing/setpass_57.sh
+    when: ansible_os_family == "RedHat"
 
-#   - name: restart mysql service
-#     service: name=mysql state=restarted
+  - name: restart mysql service
+    service: name=mysql state=restarted
 
-#   - name: install AppArmor utils for deb
-#     apt:
-#       name: "{{ packages }}"
-#       update_cache: yes
-#       state: latest
-#     vars:
-#       packages:
-#         - apparmor-utils
-#     when: ansible_os_family == "Debian"
+  - name: install AppArmor utils for deb
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+        - apparmor-utils
+    when: ansible_os_family == "Debian"
 
-#   - name: enforce Apprmor  on DEB
-#     command: aa-enforce /usr/sbin/mysqld
-#     when: ansible_os_family == "Debian"
+  - name: enforce Apprmor  on DEB
+    command: aa-enforce /usr/sbin/mysqld
+    when: ansible_os_family == "Debian"
 
-#   - name: append include for Debian
-#     lineinfile:
-#         path: /etc/apparmor.d/usr.sbin.mysqld
-#         line: '#somecustomtext'
-#     when: ansible_os_family == "Debian"
+  - name: append include for Debian
+    lineinfile:
+        path: /etc/apparmor.d/usr.sbin.mysqld
+        line: '#somecustomtext'
+    when: ansible_os_family == "Debian"
 
 # ## UPGRADE
 
@@ -226,8 +226,8 @@
       - percona-mysql-router
 #      - percona-mysql-shell
     when: ansible_os_family == "Debian"
-    environment:
-      PERCONA_TELEMETRY_DISABLE: "1"
+#    environment:
+#      PERCONA_TELEMETRY_DISABLE: "1"
 
   - name: install Percona Server and backup rpm packages
     yum:
@@ -243,8 +243,8 @@
       - percona-mysql-router
 #      - percona-mysql-shell
     when: ansible_os_family == "RedHat"
-    environment:
-      PERCONA_TELEMETRY_DISABLE: "1"
+#    environment:
+#      PERCONA_TELEMETRY_DISABLE: "1"
 
   - name: install Percona Server and backup rpm packages
     debug:
