@@ -279,12 +279,12 @@
       - percona-mysql-shell
     when: ansible_os_family == "RedHat"
 
-  - name: start mysql service
-    service: name=mysql state=started
+  # - name: start mysql service
+  #   service: name=mysql state=started
 
-  - name: set root password on centos
-    command: /package-testing/setpass_57.sh
-    when: ansible_os_family == "RedHat"
+  # - name: set root password on centos
+  #   command: /package-testing/setpass_57.sh
+  #   when: ansible_os_family == "RedHat"
 
   - name: restart mysql service
     service: name=mysql state=restarted
@@ -299,9 +299,9 @@
         - apparmor-utils
     when: ansible_os_family == "Debian"
 
-  - name: enforce Apprmor  on DEB
-    command: aa-enforce /usr/sbin/mysqld
-    when: ansible_os_family == "Debian"
+  # - name: enforce Apprmor  on DEB
+  #   command: aa-enforce /usr/sbin/mysqld
+  #   when: ansible_os_family == "Debian"
 
   - name: Add log-error-verbosity option
     blockinfile:
