@@ -387,6 +387,7 @@
 
   - name: enable the pdpxc-8.0.35 testing
     command: percona-release enable pdpxc-8.0.35 testing
+    when: ansible_distribution_release != "noble"
 
   - name: install percona-haproxy rpm packages
     yum:
@@ -410,7 +411,7 @@
       - percona-haproxy
       - proxysql2
       - percona-xtrabackup-80
-    when: ansible_os_family == "Debian"
+    when: ansible_os_family == "Debian" and ansible_distribution_release != "noble"
 
   - name: enable the original repo
     command: percona-release enable original
