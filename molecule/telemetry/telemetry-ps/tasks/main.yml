@@ -441,6 +441,11 @@
     register: apparmor_content
     when: ansible_os_family == "Debian"
 
+  - name: debug apparmor_content
+    debug:
+      var: apparmor_content
+    when: ansible_os_family == "Debian"  
+
   # - name: Include mongo packages install
   #   include_tasks: ../playbooks/install_monga.yml
 
