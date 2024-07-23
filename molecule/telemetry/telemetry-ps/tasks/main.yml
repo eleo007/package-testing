@@ -200,6 +200,7 @@
   - name: append include for Debian
     lineinfile:
         path: /etc/apparmor.d/usr.sbin.mysqld
+        insertafter: '^# Allow access to openssl config'
         line: '#somecustomtext'
     when: ansible_os_family == "Debian"
 
@@ -299,9 +300,9 @@
         - apparmor-utils
     when: ansible_os_family == "Debian"
 
-  # - name: enforce Apprmor  on DEB
-  #   command: aa-enforce /usr/sbin/mysqld
-  #   when: ansible_os_family == "Debian"
+  - name: enforce Apprmor  on DEB
+    command: aa-enforce /usr/sbin/mysqld
+    when: ansible_os_family == "Debian"
 
   - name: Add log-error-verbosity option
     blockinfile:
