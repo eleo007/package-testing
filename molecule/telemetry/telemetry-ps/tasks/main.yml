@@ -133,76 +133,76 @@
 
 # ## UPGRADE
 
-  - name: enable the pdps-8.0.36
-    command: percona-release enable-only pdps-8.0.36
+#   - name: enable the pdps-8.0.36
+#     command: percona-release enable-only pdps-8.0.36
 
-#   - name: enable the ps-80 experimental
-#     command: percona-release enable-only ps-80 experimental
+# #   - name: enable the ps-80 experimental
+# #     command: percona-release enable-only ps-80 experimental
 
-#   - name: enable percona-release telemetry experimental
-#     command: percona-release enable telemetry experimental
+# #   - name: enable percona-release telemetry experimental
+# #     command: percona-release enable telemetry experimental
 
-  - name: install Percona Server and backup deb packages
-    apt:
-      name: "{{ packages }}"
-      update_cache: yes
-      state: latest
-    vars:
-      packages:
-      - percona-server-server
-      - percona-server-test
-      - percona-server-source
-      - percona-server-client
-      - percona-server-rocksdb
-      - percona-mysql-router
-#      - percona-mysql-shell
-    when: ansible_os_family == "Debian"
+#   - name: install Percona Server and backup deb packages
+#     apt:
+#       name: "{{ packages }}"
+#       update_cache: yes
+#       state: latest
+#     vars:
+#       packages:
+#       - percona-server-server
+#       - percona-server-test
+#       - percona-server-source
+#       - percona-server-client
+#       - percona-server-rocksdb
+#       - percona-mysql-router
+# #      - percona-mysql-shell
+#     when: ansible_os_family == "Debian"
 
-  - name: install Percona Server and backup rpm packages
-    yum:
-      name: "{{ packages }}"
-      state: latest
-      update_cache: yes
-    vars:
-      packages:
-      - percona-server-server
-      - percona-server-test
-      - percona-server-client
-      - percona-server-rocksdb
-      - percona-mysql-router
-#      - percona-mysql-shell
-    when: ansible_os_family == "RedHat"
+#   - name: install Percona Server and backup rpm packages
+#     yum:
+#       name: "{{ packages }}"
+#       state: latest
+#       update_cache: yes
+#     vars:
+#       packages:
+#       - percona-server-server
+#       - percona-server-test
+#       - percona-server-client
+#       - percona-server-rocksdb
+#       - percona-mysql-router
+# #      - percona-mysql-shell
+#     when: ansible_os_family == "RedHat"
 
-  - name: start mysql service
-    service: name=mysql state=started
+#   - name: start mysql service
+#     service: name=mysql state=started
 
-  - name: set root password on centos
-    command: /package-testing/setpass_57.sh
-    when: ansible_os_family == "RedHat"
+#   - name: set root password on centos
+#     command: /package-testing/setpass_57.sh
+#     when: ansible_os_family == "RedHat"
 
-  - name: restart mysql service
-    service: name=mysql state=restarted
+#   - name: restart mysql service
+#     service: name=mysql state=restarted
 
-  - name: install AppArmor utils for deb
-    apt:
-      name: "{{ packages }}"
-      update_cache: yes
-      state: latest
-    vars:
-      packages:
-        - apparmor-utils
-    when: ansible_os_family == "Debian"
+#   - name: install AppArmor utils for deb
+#     apt:
+#       name: "{{ packages }}"
+#       update_cache: yes
+#       state: latest
+#     vars:
+#       packages:
+#         - apparmor-utils
+#     when: ansible_os_family == "Debian"
+ß
+#   - name: enforce Apprmor  on DEB
+#     command: aa-enforce /usr/sbin/mysqld
+#     when: ansible_os_family == "Debian"
 
-  - name: enforce Apprmor  on DEB
-    command: aa-enforce /usr/sbin/mysqld
-    when: ansible_os_family == "Debian"
-
-  - name: append include for Debian
-    lineinfile:
-        path: /etc/apparmor.d/usr.sbin.mysqld
-        insertafter: '^# Allow access to openssl config'
-        line: '#somecustomtext'
-    when: ansible_os_family == "Debian"
+#   - name: append include for Debian
+#     lineinfile:
+#         path: /etc/apparmor.d/usr.sbin.mysqld
+#         insertafter: '^# Allow access to openssl config'
+#         line: '#somecustomtext'
+#     when: ansible_os_family == "Debian"
 
 # ## UPGRADE
 
@@ -247,16 +247,13 @@
 #    environment:
 #      PERCONA_TELEMETRY_DISABLE: "1"
 
-  - name: install Percona Server and backup rpm packages
-    debug:
-      msg: "Main finished"
-
 #   - name: enable percona-release original
 #     command: percona-release enable original
 
 # Temporarily for experimental only
   - name: enable the pdps-8.0.36
     command: percona-release enable pdps-8.0.36
+    when: ansible_architecture == "x86_64"
 
   - name: install Percona Server and backup deb packages
     apt:
@@ -267,7 +264,7 @@
       packages:
       - percona-toolkit
       - percona-mysql-shell
-    when: ansible_os_family == "Debian"
+    when: ansible_os_family == "Debian" and ansible_architecture == "x86_64"
 
   - name: install Percona Server and backup rpm packages
     yum:
@@ -278,7 +275,8 @@
       packages:
       - percona-toolkit
       - percona-mysql-shell
-    when: ansible_os_family == "RedHat"
+    when: ansible_os_family == "RedHat" and ansible_architecture == "x86_64"
+
 
   # - name: start mysql service
   #   service: name=mysql state=started
@@ -360,6 +358,7 @@
 
   - name: enable the pdps-8.0.36
     command: percona-release enable pdps-8.0.36
+    when: ansible_architecture == "x86_64"
 
   - name: install Orchestrator deb packages
     apt:
@@ -371,7 +370,8 @@
       - percona-orchestrator-cli
       - percona-orchestrator-client
       - percona-orchestrator
-    when: ansible_os_family == "Debian"
+    when: ansible_os_family == "Debian" and ansible_architecture == "x86_64"
+
 
   - name: install Orchestrator rpm packages
     yum:
@@ -383,12 +383,12 @@
       - percona-orchestrator-cli
       - percona-orchestrator-client
       - percona-orchestrator
-    when: ansible_os_family == "RedHat"
+    when: ansible_os_family == "RedHat" and ansible_architecture == "x86_64"
 
 
   - name: enable the pdpxc-8.0.35 testing
     command: percona-release enable pdpxc-8.0.35 testing
-    when: ansible_distribution_release != "noble"
+    when: ansible_distribution_release != "noble" and ansible_architecture == "x86_64"
 
   - name: install percona-haproxy rpm packages
     yum:
@@ -400,7 +400,7 @@
       - percona-haproxy
       - proxysql2
       - percona-xtrabackup-80
-    when: ansible_os_family == "RedHat"
+    when: ansible_os_family == "RedHat" and ansible_architecture == "x86_64"
 
   - name: install percona-haproxy deb packages
     apt:
@@ -412,10 +412,12 @@
       - percona-haproxy
       - proxysql2
       - percona-xtrabackup-80
-    when: ansible_os_family == "Debian" and ansible_distribution_release != "noble"
+    when: ansible_os_family == "Debian" and ansible_distribution_release != "noble" and ansible_architecture == "x86_64"
 
   - name: enable the original repo
     command: percona-release enable original
+    when: ansible_architecture == "x86_64"
+
 
   - name: install PMM client rpm packages
     yum:
@@ -425,7 +427,7 @@
     vars:
       packages:
       - pmm2-client
-    when: ansible_os_family == "RedHat"
+    when: ansible_os_family == "RedHat" and ansible_architecture == "x86_64"
 
   - name: install PMM client deb packages
     apt:
@@ -435,17 +437,17 @@
     vars:
       packages:
       - pmm2-client
-    when: ansible_os_family == "Debian"
+    when: ansible_os_family == "Debian" and ansible_architecture == "x86_64"
 
-  - name: Check apparmor content
-    command: cat /etc/apparmor.d/usr.sbin.mysqld
-    register: apparmor_content
-    when: ansible_os_family == "Debian"
+  # - name: Check apparmor content
+  #   command: cat /etc/apparmor.d/usr.sbin.mysqld
+  #   register: apparmor_content
+  #   when: ansible_os_family == "Debian"
 
-  - name: debug apparmor_content
-    debug:
-      var: apparmor_content
-    when: ansible_os_family == "Debian"  
+  # - name: debug apparmor_content
+  #   debug:
+  #     var: apparmor_content
+  #   when: ansible_os_family == "Debian"  
 
   # - name: Include mongo packages install
   #   include_tasks: ../playbooks/install_monga.yml

@@ -22,7 +22,10 @@ RHEL_DISTS = ["redhat", "centos", "rhel", "oracleserver", "ol", "amzn"]
 
 DEB_DISTS = ["debian", "ubuntu"]
 
-packages_list = ['percona-toolkit','percona-server-server', 'percona-xtrabackup', 'percona-toolkit', 'percona-orchestrator', 'percona-haproxy', \
+# not all the tools have aarch support so we install not all the packages on it
+packages_list = ['percona-server-server', 'percona-server-client']
+if 'aarch64' not in host.system_info.arch:    
+    packages_list = packages_list + ['percona-xtrabackup', 'percona-toolkit', 'percona-orchestrator', 'percona-haproxy', \
                'proxysql2', 'percona-mysql-shell', 'percona-mysql-router', 'pmm2-client']
 
 os.environ['PERCONA_TELEMETRY_URL'] = 'https://check-dev.percona.com/v1/telemetry/GenericReport'
