@@ -356,8 +356,8 @@
   - name: Update the DB engine
     command: mysql -uroot -NBe "USE world3;create table r1 (id int, foo char(25)) engine=rocksdb;insert into r1 (id,foo) values (1,'test'),(2,'wow'),(3,'q');"
 
-  - name: enable the pdps-8.0.36
-    command: percona-release enable pdps-8.0.36
+  - name: enable the pdps-8.0 testing
+    command: percona-release enable pdps-8.0 testing
     when: ansible_architecture == "x86_64"
 
   - name: install Orchestrator deb packages
