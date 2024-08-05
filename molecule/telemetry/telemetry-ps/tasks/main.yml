@@ -370,6 +370,7 @@
       - percona-orchestrator-cli
       - percona-orchestrator-client
       - percona-orchestrator
+      - percona-xtrabackup-80
     when: ansible_os_family == "Debian" and ansible_architecture == "x86_64"
 
 
@@ -383,6 +384,7 @@
       - percona-orchestrator-cli
       - percona-orchestrator-client
       - percona-orchestrator
+      - percona-xtrabackup-80
     when: ansible_os_family == "RedHat" and ansible_architecture == "x86_64"
 
 
@@ -399,9 +401,7 @@
       packages:
       - percona-haproxy
       - proxysql2
-      - percona-xtrabackup-80
     when: ansible_os_family == "RedHat" and ansible_architecture == "x86_64"
-
   - name: install percona-haproxy deb packages
     apt:
       name: "{{ packages }}"
@@ -411,7 +411,6 @@
       packages:
       - percona-haproxy
       - proxysql2
-      - percona-xtrabackup-80
     when: ansible_os_family == "Debian" and ansible_distribution_release != "noble" and ansible_architecture == "x86_64"
 
   - name: enable the original repo
