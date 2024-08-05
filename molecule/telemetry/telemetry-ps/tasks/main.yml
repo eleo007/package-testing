@@ -192,7 +192,7 @@
 #       packages:
 #         - apparmor-utils
 #     when: ansible_os_family == "Debian"
-ß
+
 #   - name: enforce Apprmor  on DEB
 #     command: aa-enforce /usr/sbin/mysqld
 #     when: ansible_os_family == "Debian"
