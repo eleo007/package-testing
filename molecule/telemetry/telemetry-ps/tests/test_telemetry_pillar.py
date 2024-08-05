@@ -23,10 +23,8 @@ RHEL_DISTS = ["redhat", "centos", "rhel", "oracleserver", "ol", "amzn"]
 DEB_DISTS = ["debian", "ubuntu"]
 
 # not all the tools have aarch support so we install not all the packages on it
-packages_list = ['percona-server-server', 'percona-server-client']
-if 'aarch64' not in host.system_info.arch:    
-    packages_list = packages_list + ['percona-xtrabackup', 'percona-toolkit', 'percona-orchestrator', 'percona-haproxy', \
-               'proxysql2', 'percona-mysql-shell', 'percona-mysql-router', 'pmm2-client']
+packages_list = ['percona-server-server', 'percona-server-client', 'percona-xtrabackup', 'percona-toolkit', 'percona-orchestrator', 'percona-haproxy', \
+                 'proxysql2', 'percona-mysql-shell', 'percona-mysql-router', 'pmm2-client']
 
 os.environ['PERCONA_TELEMETRY_URL'] = 'https://check-dev.percona.com/v1/telemetry/GenericReport'
 # os.environ['PERCONA_TELEMETRY_CHECK_INTERVAL'] = '10'
@@ -594,6 +592,10 @@ def test_ps_metrics_sent(host):
 @pytest.mark.parametrize("pkg_name", packages_list)
 def test_ps_mandatory_packages(host, pkg_name):
     with host.sudo("root"):
+        # not all the tools have aarch support so we install not all the packages on it
+        if 'aarch64' in host.system_info.arch and pkg_name in ['percona-xtrabackup', 'percona-toolkit', 'percona-orchestrator', 'percona-haproxy', \
+               'proxysql2', 'percona-mysql-shell', 'percona-mysql-router', 'pmm2-client']:
+            pytest.skip("This package not supported by aarch") 
         pillar_ref_name = host.file('/package-testing/telemetry/reference/').listdir()[0]
         hist_file = host.file(telem_history_dir + pillar_ref_name).content_string
         hist_values=json.loads(hist_file)

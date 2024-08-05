@@ -129,7 +129,7 @@
             jid: "{{ item.ansible_job_id }}"
           register: ec2_jobs
           until: ec2_jobs.finished
-          retries: 300
+          retries: 10
           with_items: "{{ server.results }}"
 
       rescue:
