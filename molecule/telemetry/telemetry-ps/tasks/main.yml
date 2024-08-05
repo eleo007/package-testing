@@ -206,22 +206,6 @@
 
 # ## UPGRADE
 
-
-
-  - name: enable the telemetry experimental
-    command: percona-release enable telemetry experimental
-
-  - name: install Percona Server and backup deb packages
-    apt:
-      name: "{{ packages }}"
-      update_cache: yes
-      state: latest
-    vars:
-      packages:
-      - percona-telemetry-agent
-#      - percona-mysql-shell
-    when: ansible_os_family == "Debian"
-
   - name: enable the ps-80 testing
     command: percona-release enable-only ps-80 testing
 
