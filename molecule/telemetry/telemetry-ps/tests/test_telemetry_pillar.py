@@ -758,6 +758,13 @@ def test_disable_service(host):
 #         assert "Component percona_telemetry reported: 'Problem during telemetry file write: filesystem error: directory iterator cannot open directory: No such file or directory [/usr/local/percona/telemetry/ps]" in log_file_content
 #         assert mysql_serv.is_running
 
+def test_log_rotation(host):
+    with host.sudo("root"):
+        log_files_num = len(host.file('/var/log/percona/').listdir())
+        assert log_files_num != 0
+        host.check_output("logrotate -f /etc/logrotate.d/percona-telemetry-agent")
+        assert log_files_num == 0
+
 def test_path_absent_after_removal(host):
     dist = host.system_info.distribution
     rel = host.system_info.release
