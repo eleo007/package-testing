@@ -780,7 +780,7 @@ def test_log_rotation(host):
         log_files_num = len(host.file(telem_log_dir).listdir())
         assert log_files_num == 2
         # we do not rorate empty files but error log is empty by default so we need to write smth into it
-        host.check_output(f"echo 'String for test' >> {telem_error_log_file}").group 
+        host.check_output(f"echo 'String for test' >> {telem_error_log_file}")
         host.check_output("logrotate -f /etc/logrotate.d/percona-telemetry-agent")
         assert log_files_num == 4
         log_files_list = host.file(telem_log_dir).listdir()
