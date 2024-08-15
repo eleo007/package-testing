@@ -699,7 +699,7 @@ def test_no_other_errors(host):
     with host.sudo("root"):
         log_file_content = host.file(telem_log_file).content_string
         assert '"level":"error"' not in log_file_content
-        assert host.file(telem_error_log_file).size = 0
+        assert host.file(telem_error_log_file).size == 0
 
 def test_stop_service(host):
     ta_serv = host.service("percona-telemetry-agent")
