@@ -32,6 +32,7 @@ os.environ['PERCONA_TELEMETRY_URL'] = 'https://check-dev.percona.com/v1/telemetr
 
 telem_log_dir = "/var/log/percona/telemetry-agent/"
 telem_log_file = telem_log_dir + "telemetry-agent.log"
+telem_error_log_file = telem_log_dir + "telemetry-agent-error.log"
 
 pillars_list=["ps", "pg", "psmdb"]
 
@@ -197,10 +198,10 @@ def test_ta_log_file(host):
     assert host.file(telem_log_file).user == 'daemon'
     assert host.file(telem_log_file).group == 'percona-telemetry'
     assert oct(host.file(telem_log_file).mode) == '0o660'
-    assert host.file(telem_log_dir + "telemetry-agent-error.log").is_file
-    assert host.file(telem_log_dir + "telemetry-agent-error.log").user == 'daemon'
-    assert host.file(telem_log_dir + "telemetry-agent-error.log").group == 'percona-telemetry'
-    assert oct(host.file(telem_log_dir + "telemetry-agent-error.log").mode) == '0o660'
+    assert host.file(telem_error_log_file).is_file
+    assert host.file(telem_error_log_file).user == 'daemon'
+    assert host.file(telem_error_log_file).group == 'percona-telemetry'
+    assert oct(host.file(telem_error_log_file).mode) == '0o660'
 
 
 def test_ta_rotation(host):
@@ -698,6 +699,7 @@ def test_no_other_errors(host):
     with host.sudo("root"):
         log_file_content = host.file(telem_log_file).content_string
         assert '"level":"error"' not in log_file_content
+        assert host.file(telem_error_log_file).size = 0
 
 def test_stop_service(host):
     ta_serv = host.service("percona-telemetry-agent")
@@ -776,9 +778,18 @@ def test_disable_service(host):
 def test_log_rotation(host):
     with host.sudo("root"):
         log_files_num = len(host.file(telem_log_dir).listdir())
-        assert log_files_num != 0
+        assert log_files_num == 2
+        # we do not rorate empty files but error log is empty by default so we need to write smth into it
+        host.check_output(f"echo 'String for test' >> {telem_error_log_file}").group 
         host.check_output("logrotate -f /etc/logrotate.d/percona-telemetry-agent")
-        assert log_files_num == 0
+        assert log_files_num == 4
+        log_files_list = host.file(telem_log_dir).listdir()
+        assert re.search(r'telemetry-agent.log-[0-9]+.gz', log_files_list)
+        assert re.search(r'telemetry-agent-error.log-[0-9]+.gz', log_files_list)
+        # # remove old rotated logsm add with old date and rotate again to check that no more than 4 logs are kept
+        # host.check_output(f"touch {telem_log_dir}/telemetry-agent.log-20240812.gz {telem_log_dir}/telemetry-agent.log-20240812.gz telemetry-agent.log-20240812.gz")
+        # host.check_output(f"rm -rf {telem_log_dir}/*.gz")
+
 
 # def test_path_absent_after_removal(host):
 #     dist = host.system_info.distribution
