@@ -200,7 +200,7 @@ def test_ta_log_file(host):
     assert host.file(telem_log_dir + "telemetry-agent-error.log").is_file
     assert host.file(telem_log_dir + "telemetry-agent-error.log").user == 'daemon'
     assert host.file(telem_log_dir + "telemetry-agent-error.log").group == 'percona-telemetry'
-    assert oct(host.file(telem_log_file + "telemetry-agent-error.log").mode) == '0o660'
+    assert oct(host.file(telem_log_dir + "telemetry-agent-error.log").mode) == '0o660'
 
 
 def test_ta_rotation(host):
@@ -215,19 +215,21 @@ def test_ta_rotation(host):
 
 @pytest.mark.parametrize("ta_key, ref_value", telemetry_defaults)
 def test_ta_telemetry_default_values(host, ta_key, ref_value):
-    log_file_params = host.file(telem_log_file).content_string.partition('\n')[0]
-    cur_values=json.loads(log_file_params)
-    telem_config=cur_values["config"]["Telemetry"]
-    assert len(telem_config) == 9
-    assert telem_config[ta_key] == ref_value
+    with host.sudo("root"):
+        log_file_params = host.file(telem_log_file).content_string.partition('\n')[0]
+        cur_values=json.loads(log_file_params)
+        telem_config=cur_values["config"]["Telemetry"]
+        assert len(telem_config) == 9
+        assert telem_config[ta_key] == ref_value
 
 @pytest.mark.parametrize("ta_key, ref_value", platform_defaults)
 def test_ta_platform_default_values(host, ta_key, ref_value):
-    log_file_params = host.file(telem_log_file).content_string.partition('\n')[0]
-    cur_values=json.loads(log_file_params)
-    platform_config=cur_values["config"]["Platform"]
-    assert len(platform_config) == 2
-    assert platform_config[ta_key] == ref_value
+    with host.sudo("root"):
+        log_file_params = host.file(telem_log_file).content_string.partition('\n')[0]
+        cur_values=json.loads(log_file_params)
+        platform_config=cur_values["config"]["Platform"]
+        assert len(platform_config) == 2
+        assert platform_config[ta_key] == ref_value
 
 def test_ta_version(host):
     cmd = "/usr/bin/percona-telemetry-agent --version"
@@ -510,8 +512,9 @@ def test_telemetry_history_file_valid_json(host):
         assert json.loads(history_file)
 
 def test_installed_packages_scraped(host):
-    log_file_content = host.file(telem_log_file).content_string
-    assert 'scraping installed Percona packages' in log_file_content
+    with host.sudo("root"):
+        log_file_content = host.file(telem_log_file).content_string
+        assert 'scraping installed Percona packages' in log_file_content
 
 def test_ta_metrics_sent(host):
     with host.sudo("root"):
@@ -683,16 +686,18 @@ def test_ps_packages_values(host):
                     # assert str(package['repository']) == repository_str
 
 def test_telemetry_removed_from_history(host):
-    update_ta_options(host, check_interval="10", hist_keep_interval="10")
-    time.sleep(40)
-    log_file_content = host.file(telem_log_file).content_string
-    assert len(host.file(telem_history_dir).listdir()) == 0
-    assert 'cleaning up history metric files","directory":"' + telem_root_dir + 'history' in log_file_content
-    assert 'error removing metric file, skipping' not in log_file_content
+    with host.sudo("root"):
+        update_ta_options(host, check_interval="10", hist_keep_interval="10")
+        time.sleep(40)
+        log_file_content = host.file(telem_log_file).content_string
+        assert len(host.file(telem_history_dir).listdir()) == 0
+        assert 'cleaning up history metric files","directory":"' + telem_root_dir + 'history' in log_file_content
+        assert 'error removing metric file, skipping' not in log_file_content
 
 def test_no_other_errors(host):
-    log_file_content = host.file(telem_log_file).content_string
-    assert '"level":"error"' not in log_file_content
+    with host.sudo("root"):
+        log_file_content = host.file(telem_log_file).content_string
+        assert '"level":"error"' not in log_file_content
 
 def test_stop_service(host):
     ta_serv = host.service("percona-telemetry-agent")
@@ -770,7 +775,7 @@ def test_disable_service(host):
 
 def test_log_rotation(host):
     with host.sudo("root"):
-        log_files_num = len(host.file(telem_log_dir + "telemetry-agent/").listdir())
+        log_files_num = len(host.file(telem_log_dir).listdir())
         assert log_files_num != 0
         host.check_output("logrotate -f /etc/logrotate.d/percona-telemetry-agent")
         assert log_files_num == 0
