@@ -785,8 +785,9 @@ def test_log_rotation(host):
         log_files_num_after = len(host.file(telem_log_dir).listdir())
         assert log_files_num_after == 4
         log_files_list = host.file(telem_log_dir).listdir()
-        assert re.search(r'telemetry-agent.log-[0-9]+.gz', log_files_list)
-        assert re.search(r'telemetry-agent-error.log-[0-9]+.gz', log_files_list)
+        log_files_string = ''.join(log_files_list)
+        assert re.search(r'telemetry-agent.log-[0-9]+.gz', log_files_string)
+        assert re.search(r'telemetry-agent-error.log-[0-9]+.gz', log_files_string)
         # # remove old rotated logsm add with old date and rotate again to check that no more than 4 logs are kept
         # host.check_output(f"touch {telem_log_dir}/telemetry-agent.log-20240812.gz {telem_log_dir}/telemetry-agent.log-20240812.gz telemetry-agent.log-20240812.gz")
         # host.check_output(f"rm -rf {telem_log_dir}/*.gz")
