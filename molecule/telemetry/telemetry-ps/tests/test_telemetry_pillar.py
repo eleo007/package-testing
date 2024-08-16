@@ -807,7 +807,13 @@ def test_path_absent_after_removal(host):
         assert not host.file(ps_pillar_dir).exists
 
 def test_ta_package_removed(host):
-    pkg = host.package("percona-telemetry-agent")
+    with host.sudo("root"):
+        pkg = host.package("percona-telemetry-agent")
+        if pkg.is_installed:
+            if dist.lower() in DEB_DISTS:
+                host.check_output("apt autoremove -y percona-telemetry-agent")
+            else:
+                host.check_output("yum remove -y percona-server-server")       
     assert not pkg.is_installed
 
 def test_ta_service_removed_deb(host):
