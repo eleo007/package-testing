@@ -807,6 +807,7 @@ def test_path_absent_after_removal(host):
         assert not host.file(ps_pillar_dir).exists
 
 def test_ta_package_removed(host):
+    dist = host.system_info.distribution
     with host.sudo("root"):
         pkg = host.package("percona-telemetry-agent")
         if pkg.is_installed:
