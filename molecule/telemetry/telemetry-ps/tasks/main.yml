@@ -207,7 +207,7 @@
 # ## UPGRADE
 
   - name: enable the telemetry experimental
-    command: percona-release enable-only telemetry experimental
+    command: percona-release enable-only ps-80
 
   - name: install TA packages
     apt:
