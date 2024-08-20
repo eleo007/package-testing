@@ -14,8 +14,11 @@ import testinfra.utils.ansible_runner
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('all')
 
+# PAK_VERSION is with build value 1.0.1-2
+# VERSION is TA output and is without build value 1.0.1
+
 PAK_VERSION = os.getenv("VERSION")
-VERSION = os.getenv("VERSION")
+VERSION = re.search(r'[0-9]+\.[0-9]+\.[0-9]+', PAK_VERSION).group(0)
 REVISION = os.getenv("REVISION")
 
 RHEL_DISTS = ["redhat", "centos", "rhel", "oracleserver", "ol", "amzn"]
