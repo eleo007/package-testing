@@ -230,7 +230,7 @@
     when: ansible_os_family == "RedHat"
 
   - name: enable the ps-80 testing
-    command: percona-release enable-only ps-80 testing
+    command: percona-release enable ps-80 testing
 
   # - name: enable prel experimental
   #   command: percona-release enable prel experimental
