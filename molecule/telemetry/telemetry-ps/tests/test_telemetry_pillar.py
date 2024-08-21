@@ -14,58 +14,49 @@ import testinfra.utils.ansible_runner
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('all')
 
-# PAK_VERSION is with build value 1.0.1-2
-# VERSION is TA output and is without build value 1.0.1
+# pak_version is with build value 1.0.1-2
+# version is TA output and is without build value 1.0.1
 
-PAK_VERSION = os.getenv("VERSION")
-VERSION = re.search(r'[0-9]+\.[0-9]+\.[0-9]+', PAK_VERSION).group(0)
-REVISION = os.getenv("REVISION")
+pak_version = os.getenv("version")
+version = re.search(r'[0-9]+\.[0-9]+\.[0-9]+', pak_version).group(0)
+revision = os.getenv("revision")
 
-RHEL_DISTS = ["redhat", "centos", "rhel", "oracleserver", "ol", "amzn"]
+rhel_dists = ["redhat", "centos", "rhel", "oracleserver", "ol", "amzn"]
+deb_dists = ["debian", "ubuntu"]
 
-DEB_DISTS = ["debian", "ubuntu"]
-
-# not all the tools have aarch support so we install not all the packages on it
+# list of packages that should be gathered by TA to check whether they are gathered
 packages_list = ['percona-server-server', 'percona-server-client', 'percona-xtrabackup', 'percona-toolkit', 'percona-orchestrator', 'percona-haproxy', \
                  'proxysql2', 'percona-mysql-shell', 'percona-mysql-router', 'pmm2-client']
 
-os.environ['PERCONA_TELEMETRY_URL'] = 'https://check-dev.percona.com/v1/telemetry/GenericReport'
-# os.environ['PERCONA_TELEMETRY_CHECK_INTERVAL'] = '10'
-# TEL_URL_VAR="PERCONA_TELEMETRY_URL=https://check-dev.percona.com/v1/telemetry/GenericReport"
+#os.environ['PERCONA_TELEMETRY_URL'] = 'https://check-dev.percona.com/v1/telemetry/GenericReport'
 
-telem_log_dir = "/var/log/percona/telemetry-agent/"
-telem_log_file = telem_log_dir + "telemetry-agent.log"
-telem_error_log_file = telem_log_dir + "telemetry-agent-error.log"
+ta_root_dir = '/usr/local/percona/telemetry/'
+ta_pillar_dir_ps = ta_root_dir + 'ps'
+ta_history_dir = ta_root_dir + 'history/'
+ta_log_dir = "/var/log/percona/telemetry-agent/"
+ta_log_file = ta_log_dir + "telemetry-agent.log"
+ta_error_log_file = ta_log_dir + "telemetry-agent-error.log"
 
-pillars_list=["ps", "pg", "psmdb"]
-
-telem_root_dir = '/usr/local/percona/telemetry/'
-
-telem_history_dir = telem_root_dir + 'history/'
-
-dev_telem_url='https:\\/\\/check-dev.percona.com\\/v1\\/telemetry\\/GenericReport'
-
-ta_service_name='percona-telemetry-agent'
-
-telemetry_defaults=[["RootPath", "/usr/local/percona/telemetry"],["PSMetricsPath", "/usr/local/percona/telemetry/ps"],
+ta_agent_defaults=[["RootPath", "/usr/local/percona/telemetry"],["PSMetricsPath", "/usr/local/percona/telemetry/ps"],
         ["PSMDBMongodMetricsPath", "/usr/local/percona/telemetry/psmdb"],["PSMDBMongosMetricsPath", "/usr/local/percona/telemetry/psmdbs"],
         ["PXCMetricsPath", "/usr/local/percona/telemetry/pxc"], ["PGMetricsPath", "/usr/local/percona/telemetry/pg"],
         ["HistoryPath", "/usr/local/percona/telemetry/history"], ["CheckInterval", 86400], ["HistoryKeepInterval", 604800]
     ]
 
-platform_defaults=[["ResendTimeout", 60], ["URL","https://check.percona.com/v1/telemetry/GenericReport"]
+ta_platform_defaults=[["ResendTimeout", 60], ["URL","https://check.percona.com/v1/telemetry/GenericReport"]
     ]
 
-ps_telemetry_defaults=[["percona_telemetry.grace_interval", "86400"], ["percona_telemetry.history_keep_interval", "604800"],
+ta_dev_url='https:\\/\\/check-dev.percona.com\\/v1\\/telemetry\\/GenericReport'
+
+ps_telem_defaults=[["percona_telemetry.grace_interval", "86400"], ["percona_telemetry.history_keep_interval", "604800"],
                        ["percona_telemetry.scrape_interval", "86400"], ["percona_telemetry.telemetry_root_dir", "/usr/local/percona/telemetry/ps"],
                        ["percona_telemetry_disable","OFF"]
                     ]
 
-ps_pillar_dir = telem_root_dir + 'ps'
 
-def set_ta_defaults(host, check_interval="", hist_keep_interval="", resend_timeout="", url=""):
+def set_ta_options(host, check_interval="", hist_keep_interval="", resend_timeout="", url=""):
     dist = host.system_info.distribution
-    if dist.lower() in DEB_DISTS:
+    if dist.lower() in deb_dists:
         options_file = '/etc/default/percona-telemetry-agent'
     else:
         options_file = '/etc/sysconfig/percona-telemetry-agent'
@@ -81,14 +72,13 @@ def set_ta_defaults(host, check_interval="", hist_keep_interval="", resend_timeo
 
 def update_ta_options(host, check_interval="", hist_keep_interval="", resend_timeout="", url=""):
     with host.sudo("root"):
-        set_ta_defaults(host, check_interval, hist_keep_interval, resend_timeout, url)
-        cmd = 'systemctl restart ' + ta_service_name
-        host.check_output(cmd)
+        set_ta_options(host, check_interval, hist_keep_interval, resend_timeout, url)
+        host.check_output('systemctl restart percona-telemetry-agent')
     time.sleep(1)
 
 def update_ps_options(host, grace_interval="", scrape_interval="", history_keep_interval=""):
     dist = host.system_info.distribution
-    if dist.lower() in DEB_DISTS:
+    if dist.lower() in deb_dists:
         mysql_cnf = '/etc/mysql/mysql.conf.d/mysqld.cnf'
     else:
         mysql_cnf = '/etc/my.cnf'
@@ -101,25 +91,24 @@ def update_ps_options(host, grace_interval="", scrape_interval="", history_keep_
             host.check_output(f"sed -r '/^percona_telemetry.history_keep_interval=.*$/d' -i {mysql_cnf} && sed -r '$ a\\percona_telemetry.history_keep_interval={history_keep_interval}' -i {mysql_cnf}")
         if scrape_interval:
             host.check_output(f"sed -r '/^percona_telemetry.scrape_interval=.*$/d' -i {mysql_cnf} && sed -r '$ a\\percona_telemetry.scrape_interval={scrape_interval}' -i {mysql_cnf}")
-        cmd = 'systemctl restart mysql'
-        host.check_output(cmd)
+        host.check_output('systemctl restart mysql')
     time.sleep(5)
 
 def generate_single_pillar_record(host):
     i = 0
     update_ps_options(host, "20","10")
     while i < 60:
-        if len(host.file(ps_pillar_dir).listdir()) < 1:
+        if len(host.file(ta_pillar_dir_ps).listdir()) < 1:
             time.sleep(1)
             i += 1
             if i == 59:
                 pytest.fail(f'Telem file was not generated for 1 minute!')
-        elif len(host.file(ps_pillar_dir).listdir()) == 1:
+        elif len(host.file(ta_pillar_dir_ps).listdir()) == 1:
             with host.sudo("root"):
                 host.run('systemctl stop mysql')
-                telem_file_name=host.file(ps_pillar_dir).listdir()[0]
+                telem_file_name=host.file(ta_pillar_dir_ps).listdir()[0]
                 host.run(f'mkdir -p /package-testing/telemetry/reference/')
-                host.run(f'cp {ps_pillar_dir}/{telem_file_name} /package-testing/telemetry/reference/')
+                host.run(f'cp {ta_pillar_dir_ps}/{telem_file_name} /package-testing/telemetry/reference/')
                 return telem_file_name
         else:
             pytest.fail(f'More than 1 telemetry file was generated!')
@@ -128,19 +117,23 @@ def generate_single_pillar_record(host):
 ############# TA PACKAGE  ###############
 #########################################
 
-
 def test_ta_package(host):
     dist = host.system_info.distribution
     pkg = host.package("percona-telemetry-agent")
     assert pkg.is_installed
-    if dist.lower() in DEB_DISTS:
-        assert PAK_VERSION in pkg.version, pkg.version
+    if dist.lower() in deb_dists:
+        assert pak_version in pkg.version, pkg.version
     else:
-        assert PAK_VERSION in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
+        assert pak_version in pkg.version+'-'+pkg.release, pkg.version+'-'+pkg.release
+
+def test_ta_version(host):
+    result = host.run("/usr/bin/percona-telemetry-agent --version")
+    assert version in result.stdout, result.stdout
+    assert revision in result.stdout, result.stdout
 
 def test_ta_service(host):
     dist = host.system_info.distribution
-    if dist.lower() in DEB_DISTS:
+    if dist.lower() in deb_dists:
         options_file = '/etc/default/percona-telemetry-agent'
     else:
         options_file = '/etc/sysconfig/percona-telemetry-agent'
@@ -160,56 +153,41 @@ def test_ta_dirs(host):
     dist = host.system_info.distribution
     rel = host.system_info.release
     assert host.file('/usr/local/percona').group == 'percona-telemetry'
-    if dist.lower() in DEB_DISTS and rel=='10':
+    if dist.lower() in deb_dists and rel=='10':
         assert oct(host.file('/usr/local/percona').mode) in ['0o2775','0o775']
     else:
         assert oct(host.file('/usr/local/percona').mode) == '0o775'
-    assert host.file(telem_root_dir).is_directory
-    assert host.file(telem_root_dir).user == 'daemon'
-    assert host.file(telem_root_dir).group == 'percona-telemetry'
-    if dist.lower() in DEB_DISTS and rel=='10':
-        assert oct(host.file(telem_root_dir).mode) in ['0o2755','0o755']
+    assert host.file(ta_root_dir).is_directory
+    assert host.file(ta_root_dir).user == 'daemon'
+    assert host.file(ta_root_dir).group == 'percona-telemetry'
+    if dist.lower() in deb_dists and rel=='10':
+        assert oct(host.file(ta_root_dir).mode) in ['0o2755','0o755']
     else:
-        assert oct(host.file(telem_root_dir).mode) == '0o755'
-    assert host.file(telem_history_dir).is_directory
-    assert host.file(telem_history_dir).user == 'daemon'
-    assert host.file(telem_history_dir).group == 'percona-telemetry'
-    assert oct(host.file(telem_history_dir).mode) == '0o6755'
+        assert oct(host.file(ta_root_dir).mode) == '0o755'
+    assert host.file(ta_history_dir).is_directory
+    assert host.file(ta_history_dir).user == 'daemon'
+    assert host.file(ta_history_dir).group == 'percona-telemetry'
+    assert oct(host.file(ta_history_dir).mode) == '0o6755'
     assert host.file('/usr/local/percona/telemetry_uuid').is_file
     assert host.file('/usr/local/percona/telemetry_uuid').group == 'percona-telemetry'
     assert oct(host.file('/usr/local/percona/telemetry_uuid').mode) == '0o664'
 
-def test_ps_pillar_dirs(host):
-    assert host.file(ps_pillar_dir).is_directory
-    assert host.file(ps_pillar_dir).user == 'mysql'
-    assert host.file(ps_pillar_dir).group == 'percona-telemetry'
-    assert oct(host.file(ps_pillar_dir).mode) == '0o6775'
-    #Skip till fixed
-    with host.sudo("root"):
-        dist = host.system_info.distribution
-        if dist.lower() in DEB_DISTS:
-            pytest.skip("This check only for RPM distributions")
-        else:
-            security_attrs = host.run(f'ls -laZ {telem_root_dir} | grep ps').stdout
-            assert 'system_u:object_r:mysqld_db_t:s0' in security_attrs
+def test_ta_log_files(host):
+    assert host.file(ta_log_dir).user == 'daemon'
+    assert host.file(ta_log_dir).group == 'percona-telemetry'
+    assert oct(host.file(ta_log_dir).mode) == '0o775'
+    assert host.file(ta_log_file).is_file
+    assert host.file(ta_log_file).user == 'daemon'
+    assert host.file(ta_log_file).group == 'percona-telemetry'
+    assert oct(host.file(ta_log_file).mode) == '0o660'
+    assert host.file(ta_error_log_file).is_file
+    assert host.file(ta_error_log_file).user == 'daemon'
+    assert host.file(ta_error_log_file).group == 'percona-telemetry'
+    assert oct(host.file(ta_error_log_file).mode) == '0o660'
 
-def test_ta_log_file(host):
-    assert host.file(telem_log_dir).user == 'daemon'
-    assert host.file(telem_log_dir).group == 'percona-telemetry'
-    assert oct(host.file(telem_log_dir).mode) == '0o775'
-    assert host.file(telem_log_file).is_file
-    assert host.file(telem_log_file).user == 'daemon'
-    assert host.file(telem_log_file).group == 'percona-telemetry'
-    assert oct(host.file(telem_log_file).mode) == '0o660'
-    assert host.file(telem_error_log_file).is_file
-    assert host.file(telem_error_log_file).user == 'daemon'
-    assert host.file(telem_error_log_file).group == 'percona-telemetry'
-    assert oct(host.file(telem_error_log_file).mode) == '0o660'
-
-
-def test_ta_rotation(host):
+def test_ta_rotation_params(host):
     rotate_file_content = host.file("/etc/logrotate.d/percona-telemetry-agent").content_string
-    assert(telem_log_dir + "telemetry-agent*.log") in rotate_file_content
+    assert(ta_log_dir + "telemetry-agent*.log") in rotate_file_content
     assert 'weekly' in rotate_file_content
     assert 'rotate 4' in rotate_file_content
     assert 'compress' in rotate_file_content
@@ -217,34 +195,10 @@ def test_ta_rotation(host):
     assert 'notifempty' in rotate_file_content
     assert 'copytruncate' in rotate_file_content
 
-@pytest.mark.parametrize("ta_key, ref_value", telemetry_defaults)
-def test_ta_telemetry_default_values(host, ta_key, ref_value):
-    with host.sudo("root"):
-        log_file_params = host.file(telem_log_file).content_string.partition('\n')[0]
-        cur_values=json.loads(log_file_params)
-        telem_config=cur_values["config"]["Telemetry"]
-        assert len(telem_config) == 9
-        assert telem_config[ta_key] == ref_value
-
-@pytest.mark.parametrize("ta_key, ref_value", platform_defaults)
-def test_ta_platform_default_values(host, ta_key, ref_value):
-    with host.sudo("root"):
-        log_file_params = host.file(telem_log_file).content_string.partition('\n')[0]
-        cur_values=json.loads(log_file_params)
-        platform_config=cur_values["config"]["Platform"]
-        assert len(platform_config) == 2
-        assert platform_config[ta_key] == ref_value
-
-def test_ta_version(host):
-    cmd = "/usr/bin/percona-telemetry-agent --version"
-    result = host.run(cmd)
-    assert VERSION in result.stdout, result.stdout
-    assert REVISION in result.stdout, result.stdout
-
 def test_ta_defaults_file(host):
     with host.sudo("root"):
         dist = host.system_info.distribution
-        if dist.lower() in DEB_DISTS:
+        if dist.lower() in deb_dists:
             options_file = '/etc/default/percona-telemetry-agent'
         else:
             options_file = '/etc/sysconfig/percona-telemetry-agent'
@@ -252,76 +206,106 @@ def test_ta_defaults_file(host):
         assert 'PERCONA_TELEMETRY_CHECK_INTERVAL' in defaults_file_content
         assert 'PERCONA_TELEMETRY_HISTORY_KEEP_INTERVAL' in defaults_file_content
         assert 'PERCONA_TELEMETRY_RESEND_INTERVAL' in defaults_file_content
-        assert 'PERCONA_TELEMETRY_UR' in defaults_file_content
+        assert 'PERCONA_TELEMETRY_URL' in defaults_file_content
 
-# ###############################################
-# ################## MYSQL ######################
-# ###############################################
+@pytest.mark.parametrize("ta_key, ref_value", ta_agent_defaults)
+def test_ta_telem_default_values(host, ta_key, ref_value):
+    with host.sudo("root"):
+        log_file_params = host.file(ta_log_file).content_string.partition('\n')[0]
+        cur_values=json.loads(log_file_params)
+        telem_config=cur_values["config"]["Telemetry"]
+        assert len(telem_config) == 9
+        assert telem_config[ta_key] == ref_value
 
-def test_mysql_service(host):
+@pytest.mark.parametrize("ta_key, ref_value", ta_platform_defaults)
+def test_ta_platform_default_values(host, ta_key, ref_value):
+    with host.sudo("root"):
+        log_file_params = host.file(ta_log_file).content_string.partition('\n')[0]
+        cur_values=json.loads(log_file_params)
+        platform_config=cur_values["config"]["Platform"]
+        assert len(platform_config) == 2
+        assert platform_config[ta_key] == ref_value
+
+###############################################
+################## MYSQL ######################
+###############################################
+
+
+def test_ps_ta_dir(host):
+    assert host.file(ta_pillar_dir_ps).is_directory
+    assert host.file(ta_pillar_dir_ps).user == 'mysql'
+    assert host.file(ta_pillar_dir_ps).group == 'percona-telemetry'
+    assert oct(host.file(ta_pillar_dir_ps).mode) == '0o6775'
+    #Skip till fixed
+    with host.sudo("root"):
+        dist = host.system_info.distribution
+        if dist.lower() in deb_dists:
+            pytest.skip("This check only for RPM distributions")
+        else:
+            security_attrs = host.run(f'ls -laZ {ta_root_dir} | grep ps').stdout
+            assert 'system_u:object_r:mysqld_db_t:s0' in security_attrs
+
+def test_ps_service(host):
     # on centos and amznlinux2 the host.service("mysql") does not return is_running true 
     # when manually accessing server and checking systemctl the service is running
     dist = host.system_info.distribution
     rel = host.system_info.release
     if (dist == 'amzn' and rel == '2') or (dist == 'centos' and rel == '7'):
-        cmd = 'ps auxww| grep -v grep  | grep -c "mysql"'
-        result = host.run(cmd)
+        result = host.run('ps auxww| grep -v grep  | grep -c "mysql"')
         stdout = int(result.stdout)
         assert stdout == 1
     else:
         mysql_serv = host.service("mysql")
         assert mysql_serv.is_running
 
-def test_telem_enabled(host):
+def test_ps_telem_enabled(host):
     with host.sudo("root"):
-        cmd = 'mysql -Ns -e "select count(*) from mysql.component where component_urn=\'file://component_percona_telemetry\';"'
-        result = host.check_output(cmd)
+        result = host.check_output('mysql -Ns -e "select count(*) from mysql.component where component_urn=\'file://component_percona_telemetry\';"')
         assert result == "1"
 
 def test_ps_apparmor_file(host):
     with host.sudo("root"):
         dist = host.system_info.distribution
-        if dist.lower() in DEB_DISTS:
+        if dist.lower() in deb_dists:
             aparr_file_content = host.file("/etc/apparmor.d/usr.sbin.mysqld").content_string
             assert "/usr/local/percona/telemetry/ps/ rw" in aparr_file_content
             assert "/usr/local/percona/telemetry/ps/** rw," in aparr_file_content
         else:
             pytest.skip("This check only for DEB distributions")
 
-@pytest.mark.parametrize("ta_key, ref_value", ps_telemetry_defaults)
-def test_telem_defaults(host, ta_key, ref_value):
+@pytest.mark.parametrize("ta_key, ref_value", ps_telem_defaults)
+def test_ps_telem_defaults(host, ta_key, ref_value):
     with host.sudo("root"):
-        cmd = f'mysql -Ns -e "show variables like \'{ta_key}\';"'
-        telemetry_opt_result = host.check_output(cmd)
+        telemetry_opt_result = host.check_output(f'mysql -Ns -e "show variables like \'{ta_key}\';"')
         assert ref_value in telemetry_opt_result
 
-def test_grace_is_waited(host):
+def test_ps_grace_is_waited(host):
     with host.sudo("root"):
         log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
-        ps_telem_files_num_before = len(host.file(ps_pillar_dir).listdir())
+        ps_telem_files_num_before = len(host.file(ta_pillar_dir_ps).listdir())
         update_ps_options(host, '20', '10')
         # we wait 5 sec after options update, so here we need to check grace before 20 mins after restart.
         time.sleep(10)
-        ps_telem_files_num_after = len(host.file(ps_pillar_dir).listdir())
+        ps_telem_files_num_after = len(host.file(ta_pillar_dir_ps).listdir())
         log_file_content = host.file(log_file).content_string
         assert "Applying Telemetry grace interval 20 seconds" in log_file_content
         assert ps_telem_files_num_before == ps_telem_files_num_after, (ps_telem_files_num_before, ps_telem_files_num_after)
         assert "Component percona_telemetry reported: \'Created telemetry file:" not in log_file_content
 
 
-def test_telem_written(host):
+def test_ps_telem_written(host):
     with host.sudo("root"):
         log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
-        ps_telem_files_num_before = len(host.file(ps_pillar_dir).listdir())
+        ps_telem_files_num_before = len(host.file(ta_pillar_dir_ps).listdir())
         time.sleep(40)
-        ps_telem_files_num_after = len(host.file(ps_pillar_dir).listdir())
+        ps_telem_files_num_after = len(host.file(ta_pillar_dir_ps).listdir())
         log_file_content = host.file(log_file).content_string
         assert ps_telem_files_num_before < ps_telem_files_num_after, (ps_telem_files_num_before, ps_telem_files_num_after)
         assert "Component percona_telemetry reported: \'Created telemetry file:" in log_file_content
 
-def test_created_file_params(host):
-    telem_file=host.file(ps_pillar_dir).listdir()[-1]
-    assert oct(host.file(ps_pillar_dir + "/" + telem_file).mode) == '0o644'
+def test_ps_created_file_params(host):
+    telem_file=host.file(ta_pillar_dir_ps).listdir()[-1]
+    assert oct(host.file(ta_pillar_dir_ps + "/" + telem_file).mode) == '0o644'
     assert telem_file.split('.')[-1] == 'json'
     # check that epoch date is correct
     filename_epoch = telem_file.split('-')[0]
@@ -331,9 +315,9 @@ def test_created_file_params(host):
     assert diff_dates.total_seconds() < 1800
 
 
-def test_telem_content(host):
-    ps_telem_file_name = host.file(ps_pillar_dir).listdir()
-    ps_telem_file_content = host.file(ps_pillar_dir + "/" + ps_telem_file_name[-1]).content_string
+def test_ps_telem_content(host):
+    ps_telem_file_name = host.file(ta_pillar_dir_ps).listdir()
+    ps_telem_file_content = host.file(ta_pillar_dir_ps + "/" + ps_telem_file_name[-1]).content_string
     ps_telem_dict=json.loads(ps_telem_file_content)
     with host.sudo("root"):
         db_instance_id_ref = host.check_output(f'mysql -Ns -e "select @@server_uuid;"')
@@ -352,57 +336,55 @@ def test_telem_content(host):
         assert ps_telem_dict['se_engines_in_use'] == ["InnoDB","ROCKSDB"]
         assert int(ps_telem_dict['databases_size']) > 2600000
 
-def test_telem_content_gr(host):
+def test_ps_telem_content_gr(host):
     # we check it separately BC it does not work with RocksDB
     with host.sudo("root"):
         host.check_output(f'mysql -e "SET GLOBAL group_replication_bootstrap_group=ON; START GROUP_REPLICATION;"')
     time.sleep(30)
-    ps_telem_file_name = host.file(ps_pillar_dir).listdir()
-    ps_telem_file_content = host.file(ps_pillar_dir + "/" + ps_telem_file_name[-1]).content_string
+    ps_telem_file_name = host.file(ta_pillar_dir_ps).listdir()
+    ps_telem_file_content = host.file(ta_pillar_dir_ps + "/" + ps_telem_file_name[-1]).content_string
     ps_telem_dict=json.loads(ps_telem_file_content)
     assert ps_telem_dict['db_replication_id'] == "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
     assert ps_telem_dict['group_replication_info']['role'] == "PRIMARY"
     assert ps_telem_dict['group_replication_info']['single_primary_mode'] == "1"
     assert ps_telem_dict['group_replication_info']['group_size'] == "1"
 
-def test_telem_pillar_dir_cleaned_up(host):
+def test_ps_telem_pillar_dir_cleaned_up(host):
     # telemetry files of the current server (started) are stored no longer than 1 week or hist keep interval.
     with host.sudo("root"):
         log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
         update_ps_options(host, '20', '10', '60')
-        ps_telem_files_num_before = len(host.file(ps_pillar_dir).listdir())
+        ps_telem_files_num_before = len(host.file(ta_pillar_dir_ps).listdir())
         time.sleep(120)
-        ps_telem_files_num_after = len(host.file(ps_pillar_dir).listdir())
+        ps_telem_files_num_after = len(host.file(ta_pillar_dir_ps).listdir())
         log_file_content = host.file(log_file).content_string
         removed=re.findall(r'Scheduling file (.*) owned by this server for deletion because it is older than 60 seconds', log_file_content)
         assert ps_telem_files_num_before < ps_telem_files_num_after
         assert len(removed) > 0
         for filename in removed:
-            assert f"Component percona_telemetry reported: \'Removing telemetry file: {ps_pillar_dir}/{filename}" in log_file_content
-            assert filename not in host.file(ps_pillar_dir).listdir()
+            assert f"Component percona_telemetry reported: \'Removing telemetry file: {ta_pillar_dir_ps}/{filename}" in log_file_content
+            assert filename not in host.file(ta_pillar_dir_ps).listdir()
 
-def test_telem_pillar_dir_cleaned_up_hist_max(host):
+def test_ps_telem_pillar_dir_cleaned_up_hist_max(host):
     # any telemetry files are stored no longer than 1 week.
     # create telem file with timestamp older than 1 week
     with host.sudo("root"):
         log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
-        host.check_output(f"touch {ps_pillar_dir}/1711821793-test-old-history.json")
+        host.check_output(f"touch {ta_pillar_dir_ps}/1711821793-test-old-history.json")
         time.sleep(30)
         log_file_content = host.file(log_file).content_string
         assert re.findall(r'Scheduling file 1711821793-test-old-history.json owned by other server for deletion because it is older than 604800 seconds', log_file_content)
-        assert "1711821793-test-old-history.json" not in host.file(ps_pillar_dir).listdir()
+        assert "1711821793-test-old-history.json" not in host.file(ta_pillar_dir_ps).listdir()
 
-def test_telem_disable_running(host):
+def test_ps_telem_disable_running(host):
     with host.sudo("root"):
         update_ps_options(host, '20', '10', '604800') 
-        cmd = f'mysql -Ns -e "UNINSTALL COMPONENT \'file://component_percona_telemetry\';"'
-        host.check_output(cmd)
-        cmd = f'mysql -Ns -e "show variables like \'percona_telemetry%\';"'
-        telemetry_opt_result = host.check_output(cmd)
+        host.check_output(f'mysql -Ns -e "UNINSTALL COMPONENT \'file://component_percona_telemetry\';"')
+        telemetry_opt_result = host.check_output(f'mysql -Ns -e "show variables like \'percona_telemetry%\';"')
         percona_telemetry_disable_result = host.check_output(f'mysql -Ns -e  "select @@percona_telemetry_disable;"')
-        ps_telem_files_num_before=len(host.file(ps_pillar_dir).listdir())
+        ps_telem_files_num_before=len(host.file(ta_pillar_dir_ps).listdir())
         time.sleep(40)
-        ps_telem_files_num_after=len(host.file(ps_pillar_dir).listdir())
+        ps_telem_files_num_after=len(host.file(ta_pillar_dir_ps).listdir())
         assert 'percona_telemetry.grace_interval' not in telemetry_opt_result
         assert 'percona_telemetry.history_keep_interval' not in telemetry_opt_result
         assert 'percona_telemetry.scrape_interval' not in telemetry_opt_result
@@ -410,9 +392,9 @@ def test_telem_disable_running(host):
         assert percona_telemetry_disable_result == '0'
         assert ps_telem_files_num_before == ps_telem_files_num_after
 
-def test_telem_disabled_permanent(host):
+def test_ps_telem_disabled_permanent(host):
     dist = host.system_info.distribution
-    if dist.lower() in DEB_DISTS:
+    if dist.lower() in deb_dists:
         mysql_cnf = '/etc/mysql/mysql.conf.d/mysqld.cnf'
     else:
         mysql_cnf = '/etc/my.cnf'
@@ -451,21 +433,22 @@ def test_telem_disabled_permanent(host):
         assert 'percona_telemetry.telemetry_root_dir' not in telemetry_opt_result
         assert percona_telemetry_disable_result == '1'
 
-# #########################################
-# ############# TA FUNCTIONS  #############
-# #########################################
+#########################################
+############# TA FUNCTIONS  #############
+#########################################
 
+# We generate 1 record nd copy generated file to '/package-testing/telemetry/reference/'
 def test_telemetry_scrape_postponed(host):
     with host.sudo("root"):
         host.run('systemctl stop mysql')
-        host.run(f'rm -rf {ps_pillar_dir}/*')
+        host.run(f'rm -rf {ta_pillar_dir_ps}/*')
         generate_single_pillar_record(host)
-        update_ta_options(host, check_interval='10', url=dev_telem_url)
+        update_ta_options(host, check_interval='10', url=ta_dev_url)
         time.sleep(7)
-        ta_log_file_content = host.file(telem_log_file).content_string
+        ta_log_file_content = host.file(ta_log_file).content_string
         assert "sleeping for 10 seconds before first iteration" in ta_log_file_content
         assert "start metrics processing iteration" not in ta_log_file_content
-        assert len(host.file(ps_pillar_dir).listdir()) == 1
+        assert len(host.file(ta_pillar_dir_ps).listdir()) == 1
 
 def test_telemetry_sending(host):
     with host.sudo("root"):
@@ -473,7 +456,7 @@ def test_telemetry_sending(host):
         time.sleep(10)
         i = 0
         while i < 60:
-            log_file_content = host.file(telem_log_file).content_string
+            log_file_content = host.file(ta_log_file).content_string
             if 'Sending request' not in log_file_content:
                 time.sleep(1)
                 i += 1
@@ -483,8 +466,8 @@ def test_telemetry_sending(host):
             else:
                 time.sleep(1)
                 break
-        assert 'Sending request to host=check-dev.percona.com.","file":"' + ps_pillar_dir + '/' + pillar_ref_file in log_file_content
-        assert 'Received response: 200 OK","file":"' + ps_pillar_dir + '/' + pillar_ref_file in log_file_content
+        assert 'Sending request to host=check-dev.percona.com.","file":"' + ta_pillar_dir_ps + '/' + pillar_ref_file in log_file_content
+        assert 'Received response: 200 OK","file":"' + ta_pillar_dir_ps + '/' + pillar_ref_file in log_file_content
 
 def test_telemetry_uuid_created(host):
     telem_uuid_file="/usr/local/percona/telemetry_uuid"
@@ -496,34 +479,34 @@ def test_telemetry_uuid_created(host):
 def test_telemetry_history_saved(host):
     with host.sudo("root"):
         pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
-        log_file_content = host.file(telem_log_file).content_string
-        assert 'writing metrics to history file","pillar file":"' + ps_pillar_dir + '/' + pillar_ref_file in log_file_content
-        assert 'failed to write history file","file":"' + telem_history_dir + pillar_ref_file not in log_file_content
-        assert len(host.file(telem_history_dir).listdir()) == 1
+        log_file_content = host.file(ta_log_file).content_string
+        assert 'writing metrics to history file","pillar file":"' + ta_pillar_dir_ps + '/' + pillar_ref_file in log_file_content
+        assert 'failed to write history file","file":"' + ta_history_dir + pillar_ref_file not in log_file_content
+        assert len(host.file(ta_history_dir).listdir()) == 1
 
 def test_tetemetry_removed_from_pillar(host):
     with host.sudo("root"):
         pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
-        log_file_content = host.file(telem_log_file).content_string
-        assert 'removing metrics file","file":"' + ps_pillar_dir + '/' + pillar_ref_file in log_file_content
-        assert 'failed to remove metrics file, will try on next iteration","file":"' + ps_pillar_dir + '/' + pillar_ref_file not in log_file_content
-        assert len(host.file(ps_pillar_dir).listdir()) == 0
+        log_file_content = host.file(ta_log_file).content_string
+        assert 'removing metrics file","file":"' + ta_pillar_dir_ps + '/' + pillar_ref_file in log_file_content
+        assert 'failed to remove metrics file, will try on next iteration","file":"' + ta_pillar_dir_ps + '/' + pillar_ref_file not in log_file_content
+        assert len(host.file(ta_pillar_dir_ps).listdir()) == 0
 
 def test_telemetry_history_file_valid_json(host):
     with host.sudo("root"):
         pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
-        history_file=host.file(telem_history_dir + pillar_ref_file).content_string
+        history_file=host.file(ta_history_dir + pillar_ref_file).content_string
         assert json.loads(history_file)
 
 def test_installed_packages_scraped(host):
     with host.sudo("root"):
-        log_file_content = host.file(telem_log_file).content_string
+        log_file_content = host.file(ta_log_file).content_string
         assert 'scraping installed Percona packages' in log_file_content
 
 def test_ta_metrics_sent(host):
     with host.sudo("root"):
         pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
-        history_file = host.file(telem_history_dir + pillar_ref_file).content_string
+        history_file = host.file(ta_history_dir + pillar_ref_file).content_string
         assert '"id":' in history_file
         assert '"createTime":' in history_file
         assert '"instanceId":' in history_file
@@ -548,7 +531,7 @@ def test_ta_metrics_values_sent(host):
     # check metrics in the history files
     with host.sudo("root"):
         pillar_ref_file = host.file('/package-testing/telemetry/reference/').listdir()[0]
-        history_file=host.file(telem_history_dir + pillar_ref_file).content_string
+        history_file=host.file(ta_history_dir + pillar_ref_file).content_string
 
     history_dict=json.loads(history_file)
     assert re.search(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',history_dict['reports'][0]['id'])
@@ -581,10 +564,10 @@ def test_ps_metrics_sent(host):
         ref_active_plugins = str(reference_dict['active_plugins']).replace('\'', '\"').replace(' ', '')
         ref_active_components = str(reference_dict['active_components']).replace('\'', '\"').replace(' ', '')
         # get content of pillar history file
-        history_file = host.file(telem_history_dir + pillar_ref_name).content_string
+        history_file = host.file(ta_history_dir + pillar_ref_name).content_string
         with host.sudo("root"):
             host.run(f'mkdir -p /package-testing/telemetry/reference/hist')
-            host.run(f"cp {telem_history_dir}{pillar_ref_name} /package-testing/telemetry/reference/hist/")
+            host.run(f"cp {ta_history_dir}{pillar_ref_name} /package-testing/telemetry/reference/hist/")
         history_dict = json.loads(history_file)
         # check metrics
         metrics_list=history_dict['reports'][0]['metrics']
@@ -614,7 +597,7 @@ def test_ps_mandatory_packages(host, pkg_name):
                'proxysql2', 'percona-mysql-shell', 'percona-mysql-router', 'pmm2-client']:
             pytest.skip("This package not supported by aarch") 
         pillar_ref_name = host.file('/package-testing/telemetry/reference/').listdir()[0]
-        hist_file = host.file(telem_history_dir + pillar_ref_name).content_string
+        hist_file = host.file(ta_history_dir + pillar_ref_name).content_string
         hist_values=json.loads(hist_file)
         hist_metrics_list=hist_values['reports'][0]['metrics']
         for metric in hist_metrics_list:
@@ -625,7 +608,7 @@ def test_ps_mandatory_packages(host, pkg_name):
 def test_ps_packages_values(host):
     with host.sudo("root"):
         pillar_ref_name = host.file('/package-testing/telemetry/reference/').listdir()[0]
-        hist_file = host.file(telem_history_dir + pillar_ref_name).content_string
+        hist_file = host.file(ta_history_dir + pillar_ref_name).content_string
         hist_values=json.loads(hist_file)
         hist_metrics_list=hist_values['reports'][0]['metrics']
         for metric in hist_metrics_list:
@@ -639,7 +622,7 @@ def test_ps_packages_values(host):
                     dist = host.system_info.distribution
                     rel = host.system_info.release
                     # FOR DEB PACKAGES
-                    if dist.lower() in DEB_DISTS:
+                    if dist.lower() in deb_dists:
                         # Get values of the packages installed on the server
                         # version of package
                         pkg_version_repo = host.run(f'apt-cache -q=0 policy {hist_pkg_name} | grep "\\*\\*\\*"')
@@ -693,16 +676,16 @@ def test_telemetry_removed_from_history(host):
     with host.sudo("root"):
         update_ta_options(host, check_interval="10", hist_keep_interval="10")
         time.sleep(40)
-        log_file_content = host.file(telem_log_file).content_string
-        assert len(host.file(telem_history_dir).listdir()) == 0
-        assert 'cleaning up history metric files","directory":"' + telem_root_dir + 'history' in log_file_content
+        log_file_content = host.file(ta_log_file).content_string
+        assert len(host.file(ta_history_dir).listdir()) == 0
+        assert 'cleaning up history metric files","directory":"' + ta_root_dir + 'history' in log_file_content
         assert 'error removing metric file, skipping' not in log_file_content
 
 def test_no_other_errors(host):
     with host.sudo("root"):
-        log_file_content = host.file(telem_log_file).content_string
+        log_file_content = host.file(ta_log_file).content_string
         assert '"level":"error"' not in log_file_content
-        assert host.file(telem_error_log_file).size == 0
+        assert host.file(ta_error_log_file).size == 0
 
 def test_stop_service(host):
     ta_serv = host.service("percona-telemetry-agent")
@@ -725,10 +708,10 @@ def test_disable_service(host):
 # #     with host.sudo("root"):
 # #         host.run("echo instanceId:123 > /usr/local/percona/telemetry_uuid")
 # #     update_ta_options(host, check_interval="10", hist_keep_interval="604800")
-# #     pillar_dir=telem_root_dir + 'ps'
+# #     pillar_dir=ta_root_dir + 'ps'
 # #     host.check_output(f"cp -p /package-testing/telemetry/ps-test-file.json {pillar_dir}/$(date +%s)-ps-test-file.json")
 # #     time.sleep(15)
-# #     log_file_content_after = host.file(telem_log_file).content_string
+# #     log_file_content_after = host.file(ta_log_file).content_string
 # #     telemetry_uuid_content_after = host.file('/usr/local/percona/telemetry_uuid').content_string
 # #     assert "open/usr/local/percona/telemetry_uuid: permission denied" not in log_file_content_after
 # #     assert re.search(pattern, telemetry_uuid_content)
@@ -739,13 +722,13 @@ def test_disable_service(host):
 # #         #block sending with iptables
 # #         host.check_output("iptables -I OUTPUT -d check-dev.percona.com -j DROP")
 # #         update_ta_options(host, check_interval="10")
-# #         pillar_dir=telem_root_dir + 'ps'
+# #         pillar_dir=ta_root_dir + 'ps'
 # #         host.run(f"rm {pillar_dir}/*")
 # #         host.check_output(f"cp -p /package-testing/telemetry/ps-test-file.json {pillar_dir}/$(date +%s)-ps-test-file.json")
 # #         time.sleep(70)
 # #         #revert
 # #         host.run("iptables -D OUTPUT -d  check-dev.percona.com -j DROP")
-# #         log_file_content = host.file(telem_log_file).content_string
+# #         log_file_content = host.file(ta_log_file).content_string
 # #         assert "error during sending telemetry, will try on next iteration" in log_file_content
 # #         assert "i/o timeout" in log_file_content
 # #         assert len(host.file(pillar_dir).listdir()) == 1
@@ -758,19 +741,19 @@ def test_disable_service(host):
 # #     with host.sudo("root"):
 # #         log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
 # #         update_ps_options(host, '20', '10')
-# #         host.check_output(f'chown root:root {ps_pillar_dir}')
+# #         host.check_output(f'chown root:root {ta_pillar_dir_ps}')
 # #         time.sleep(30)
 # #         log_file_content = host.file(log_file).content_string
 # #         mysql_serv = host.service("mysql")
 # #         assert "Problem during telemetry file write: Permission denied" in log_file_content
 # #         assert mysql_serv.is_running
-# #         host.check_output(f'chown mysql:percona-telemetry {ps_pillar_dir}')
+# #         host.check_output(f'chown mysql:percona-telemetry {ta_pillar_dir_ps}')
 
 # # def test_telem_path_absent(host):
 # #     with host.sudo("root"):
 # #         log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
 # #         update_ps_options(host, '20', '10')
-# #         cmd = f'rm -rf {ps_pillar_dir}'
+# #         cmd = f'rm -rf {ta_pillar_dir_ps}'
 # #         host.check_output(cmd)
 # #         time.sleep(30)
 # #         log_file_content = host.file(log_file).content_string
@@ -780,41 +763,41 @@ def test_disable_service(host):
 
 def test_log_rotation(host):
     with host.sudo("root"):
-        log_files_num_before = len(host.file(telem_log_dir).listdir())
+        log_files_num_before = len(host.file(ta_log_dir).listdir())
         assert log_files_num_before == 2
         # we do not rorate empty files but error log is empty by default so we need to write smth into it
-        host.check_output(f"echo 'String for test' >> {telem_error_log_file}")
+        host.check_output(f"echo 'String for test' >> {ta_error_log_file}")
         host.check_output("logrotate -f /etc/logrotate.d/percona-telemetry-agent")
-        log_files_num_after = len(host.file(telem_log_dir).listdir())
+        log_files_num_after = len(host.file(ta_log_dir).listdir())
         assert log_files_num_after == 4
-        log_files_list = host.file(telem_log_dir).listdir()
+        log_files_list = host.file(ta_log_dir).listdir()
         log_files_string = ''.join(log_files_list)
         assert re.search(r'telemetry-agent.log-[0-9]+.gz', log_files_string)
         assert re.search(r'telemetry-agent-error.log-[0-9]+.gz', log_files_string)
         # # remove old rotated logsm add with old date and rotate again to check that no more than 4 logs are kept
-        # host.check_output(f"touch {telem_log_dir}/telemetry-agent.log-20240812.gz {telem_log_dir}/telemetry-agent.log-20240812.gz telemetry-agent.log-20240812.gz")
-        # host.check_output(f"rm -rf {telem_log_dir}/*.gz")
+        # host.check_output(f"touch {ta_log_dir}/telemetry-agent.log-20240812.gz {ta_log_dir}/telemetry-agent.log-20240812.gz telemetry-agent.log-20240812.gz")
+        # host.check_output(f"rm -rf {ta_log_dir}/*.gz")
 
 
 def test_path_absent_after_removal(host):
     dist = host.system_info.distribution
     rel = host.system_info.release
     with host.sudo("root"):
-        if dist.lower() in DEB_DISTS:
+        if dist.lower() in deb_dists:
             host.check_output("apt autoremove -y percona-server-server")
         else:
             if (dist == 'amzn' and rel == '2') or (dist == 'centos' and rel == '7'):
                 host.check_output("yum autoremove -y percona-server-server")
             else:
                 host.check_output("yum remove -y percona-server-server")
-        assert not host.file(ps_pillar_dir).exists
+        assert not host.file(ta_pillar_dir_ps).exists
 
 def test_ta_package_removed(host):
     dist = host.system_info.distribution
     with host.sudo("root"):
         pkg = host.package("percona-telemetry-agent")
         if pkg.is_installed:
-            if dist.lower() in DEB_DISTS:
+            if dist.lower() in deb_dists:
                 host.check_output("apt autoremove -y percona-telemetry-agent")
             else:
                 host.check_output("yum remove -y percona-telemetry-agent")       
@@ -822,27 +805,26 @@ def test_ta_package_removed(host):
 
 def test_ta_service_removed_deb(host):
     dist = host.system_info.distribution
-    if dist.lower() not in DEB_DISTS:
+    if dist.lower() not in deb_dists:
         pytest.skip("This test only for DEB distributions")
     with host.sudo("root"):
         # host.run("systemctl daemon-reload")
         ta_serv_result = host.run("systemctl status percona-telemetry-agent").stderr
     assert "Unit percona-telemetry-agent.service could not be found." in ta_serv_result
-    assert host.file(telem_history_dir).exists
+    assert host.file(ta_history_dir).exists
 
 def test_ta_service_removed_rpm(host):
     dist = host.system_info.distribution
-    if dist.lower() in DEB_DISTS:
+    if dist.lower() in deb_dists:
         pytest.skip("This test only for RPM distributions")
     with host.sudo("root"):
         # https://perconadev.atlassian.net/browse/PKG-46
         ta_serv_result = host.run("systemctl status percona-telemetry-agent").stderr
     assert "Unit percona-telemetry-agent.service could not be found." in ta_serv_result
-    assert host.file(telem_history_dir).exists
+    assert host.file(ta_history_dir).exists
 
 def test_ta_process_not_running(host):
-    cmd = 'ps auxww| grep -v grep  | grep -c "percona-telemetry-agent"'
-    result = host.run(cmd)
+    result = host.run('ps auxww| grep -v grep  | grep -c "percona-telemetry-agent"')
     stdout = int(result.stdout)
     assert stdout == 0
 

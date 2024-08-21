@@ -1,11 +1,11 @@
 ---
-# This playbook does following:
-#   enables Percona testing repository
-#   installs latest version of PS 8.0, PT and PXB 8.0
-#   does some tests
-
-# Cosmic is still missing python
-# import_playbook: test_prep.yml
+# This playbook enables AppArmour/SElinux, installs Telemetry Agent (TA) and PS pillar packages on arm/x86_64 architectures, installs PS plugins and components,
+# sets up Group Replication, installs additional packages (list depends on architectire) like orchestrator, percona-xtrabackup, percona-toolkit, percona-orchestrator, percona-haproxy, 
+# proxysql2, percona-mysql-shell, percona-mysql-router, pmm2-client.
+# In more detail: 
+#   - enables telemetry testing/experimental repos (main telemetry repository is enabled by default by percona-release tool)
+#   - enables ps-80 testing/experimental/main repos and installs PS from there
+#   - enables pt, pdps, pdpxc, pmm2-client repos and installs additional packages
 
   - name: include tasks for test env setup
     include_tasks: ../../../../tasks/test_prep.yml
@@ -14,25 +14,11 @@
     command: /usr/bin/dnf module disable mysql -y
     when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
 
-  - name: setup epel 7 repo
-    yum: name=epel-release state=present
-    when: (ansible_os_family == "RedHat" and ansible_distribution_major_version == "7") or (ansible_distribution == "Amazon" and ansible_distribution_major_version == "2")
-
-  # - name: Copy telemetry agent binary
-  #   ansible.builtin.copy:
-  #     src: /home/eleonora.zinchenko/telemetry-agent/bin/telemetry-agent
-  #     dest: telemetry-agent
-  #     mode: '777'
-
   - name: enforce SELinux on CentOS
     selinux:
       policy: targeted
       state: enforcing
     when: ansible_os_family == "RedHat"
-
-  # - name: enforce SELinux on CentOS
-  #   command: setenforce 1
-  #   when: ansible_os_family == "RedHat" and ansible_distribution != "Amazon"
 
   - name: Reboot machine for selinux
     reboot:
@@ -67,82 +53,16 @@
     when: ansible_os_family == "RedHat"
 # semanage port -a -t mysqld_port_t -p tcp 33061
 
-#   - name: download and extract world database
-#     command: "{{ item }}"
-#     with_items:
-#     - wget --no-check-certificate -P /package-testing https://raw.githubusercontent.com/Percona-QA/percona-qa/master/sample_db/world.sql
-
-# # Disable Percona Toolkit installation till its supported in OL9 and Jammy
-# #  - name: install Percona Toolkit new deb packages
-# #    include_tasks: ../tasks/install_pt.yml
-#   - name: include playbook for removing Percona repo
-#     include_tasks: ../tasks/remove_percona_repository.yml
-
   - name: Install percona release
     include_tasks: ../../../../tasks/install_percona-release.yml
 
-#   - name: Update cache
-#     command: apt update
-#     when: ansible_os_family == "Debian"
 
-  # - name: install Telemetry Agent deb packages
-  #   apt:
-  #     name: "{{ packages }}"
-  #     update_cache: yes
-  #     state: latest
-  #   vars:
-  #     packages:
-  #     - percona-telemetry-agent
-  #   when: ansible_os_family == "Debian"
+# ## PS UPGRADE START
 
-  # - name: install Telemetry Agent rpm packages
-  #   yum:
-  #     name: "{{ packages }}"
-  #     state: latest
-  #     update_cache: yes
-  #   vars:
-  #     packages:
-  #     - percona-telemetry-agent
-  #   when: ansible_os_family == "RedHat"
+#   - name: enable the ps-80
+#     command: percona-release enable-only ps-80
 
-  # - name: disable percona-release tools experimental
-  #   command: percona-release disable tools experimental
-
-  # - name: enable the proxysql repo
-  #   command: percona-release enable proxysql
-
-  # - name: install Percona Server deb packages
-  #   apt:
-  #     name: "{{ packages }}"
-  #     update_cache: yes
-  #     state: latest
-  #   vars:
-  #     packages:
-  #     - proxysql2
-  #   when: ansible_os_family == "Debian"
-
-  # - name: install Percona Server rpm packages
-  #   yum:
-  #     name: "{{ packages }}"
-  #     state: latest
-  #     update_cache: yes
-  #   vars:
-  #     packages:
-  #     - proxysql2
-  #   when: ansible_os_family == "RedHat"
-
-# ## UPGRADE
-
-#   - name: enable the pdps-8.0.36
-#     command: percona-release enable-only pdps-8.0.36
-
-# #   - name: enable the ps-80 experimental
-# #     command: percona-release enable-only ps-80 experimental
-
-# #   - name: enable percona-release telemetry experimental
-# #     command: percona-release enable telemetry experimental
-
-#   - name: install Percona Server and backup deb packages
+#   - name: install Percona Server
 #     apt:
 #       name: "{{ packages }}"
 #       update_cache: yes
@@ -158,7 +78,7 @@
 # #      - percona-mysql-shell
 #     when: ansible_os_family == "Debian"
 
-#   - name: install Percona Server and backup rpm packages
+#   - name: install Percona Server
 #     yum:
 #       name: "{{ packages }}"
 #       state: latest
@@ -204,11 +124,16 @@
 #         line: '#somecustomtext'
 #     when: ansible_os_family == "Debian"
 
-# ## UPGRADE
+# ##  PS UPGRADE END
 
-  - name: enable the telemetry experimental
-    command: percona-release enable-only telemetry experimental
+# enable testing/experimental TA  repo for packages test
+  - name: enable the telemetry {{ repo }}
+    command: percona-release enable-only telemetry {{ repo }}
+    vars:
+      repo: "{{ lookup('env', 'TA_INSTALL_REPO') }}"
+    when: lookup('env', 'TA_INSTALL_REPO') != "main"
 
+# For experimental repo till packages are removed from pillar repos. Revert! Package should be installed together with the pillar!
   - name: install TA packages
     apt:
       name: "{{ packages }}"
@@ -217,8 +142,9 @@
     vars:
       packages:
       - percona-telemetry-agent
-    when: ansible_os_family == "Debian"
+    when: ansible_os_family == "Debian" and lookup('env', 'TA_INSTALL_REPO') == "experimental"
 
+# For experimental repo till packages are removed from pillar repos. Revert! Package should be installed together with the pillar!
   - name: install TA packages
     yum:
       name: "{{ packages }}"
@@ -227,10 +153,12 @@
     vars:
       packages:
       - percona-telemetry-agent
-    when: ansible_os_family == "RedHat"
+    when: ansible_os_family == "RedHat" and lookup('env', 'TA_INSTALL_REPO') == "experimental"
 
-  - name: enable the ps-80 testing
-    command: percona-release enable ps-80 testing
+  - name: enable the ps-80 {{ repo }} 
+    command: percona-release enable ps-80 {{ repo }} 
+    vars:
+      repo: "{{ lookup('env', 'PS_INSTALL_REPO') }}"
 
   # - name: enable prel experimental
   #   command: percona-release enable prel experimental
@@ -248,7 +176,6 @@
       - percona-server-client
       - percona-server-rocksdb
       - percona-mysql-router
-#      - percona-mysql-shell
     when: ansible_os_family == "Debian"
 #    environment:
 #      PERCONA_TELEMETRY_DISABLE: "1"
@@ -265,7 +192,6 @@
       - percona-server-client
       - percona-server-rocksdb
       - percona-mysql-router
-#      - percona-mysql-shell
     when: ansible_os_family == "RedHat"
 #    environment:
 #      PERCONA_TELEMETRY_DISABLE: "1"
@@ -273,12 +199,13 @@
 #   - name: enable percona-release original
 #     command: percona-release enable original
 
-# Temporarily for experimental only
-  - name: enable the pdps-8.0.36
-    command: percona-release enable pdps-8.0.36
+# We do not have arm percona-mysql-shell & percona-toolkit so installing them separately
+
+  - name: enable the pt repo
+    command: percona-release enable pt
     when: ansible_architecture == "x86_64"
 
-  - name: install Percona Server and backup deb packages
+  - name: install PT and mysql shell for x86_64
     apt:
       name: "{{ packages }}"
       update_cache: yes
@@ -289,7 +216,7 @@
       - percona-mysql-shell
     when: ansible_os_family == "Debian" and ansible_architecture == "x86_64"
 
-  - name: install Percona Server and backup rpm packages
+  - name: install PT and mysql shell for x86_64
     yum:
       name: "{{ packages }}"
       state: latest
@@ -299,7 +226,6 @@
       - percona-toolkit
       - percona-mysql-shell
     when: ansible_os_family == "RedHat" and ansible_architecture == "x86_64"
-
 
   - name: start mysql service
     service: name=mysql state=started
@@ -311,6 +237,7 @@
   - name: restart mysql service
     service: name=mysql state=restarted
 
+# We install AppArmor after PS packages installation because enforce is possible only when the package is in place
   - name: install AppArmor utils for deb
     apt:
       name: "{{ packages }}"
@@ -321,11 +248,11 @@
         - apparmor-utils
     when: ansible_os_family == "Debian"
 
-  - name: enforce Apprmor  on DEB
+  - name: enforce Apparmor  on DEB
     command: aa-enforce /usr/sbin/mysqld
     when: ansible_os_family == "Debian"
 
-  - name: Add log-error-verbosity option
+  - name: Add log-error-verbosity option and keyring file
     blockinfile:
       path: /etc/my.cnf
       insertafter: EOF
@@ -335,7 +262,7 @@
     when: 
         - ansible_os_family == "RedHat"
 
-  - name: Add fips_mode option
+  - name: Add log-error-verbosity option and keyring file
     blockinfile:
       path: /etc/mysql/mysql.conf.d/mysqld.cnf
       insertafter: EOF
@@ -379,11 +306,13 @@
   - name: Update the DB engine
     command: mysql -uroot -NBe "USE world3;create table r1 (id int, foo char(25)) engine=rocksdb;insert into r1 (id,foo) values (1,'test'),(2,'wow'),(3,'q');"
 
-  - name: enable the pdps-8.0 testing
-    command: percona-release enable pdps-8.0 testing
+  - name: enable the pdps-8.0 {{ repo }}
+    command: percona-release enable pdps-8.0 {{ repo }}
+    vars:
+      repo: "{{ lookup('env', 'PS_INSTALL_REPO') }}"
     when: ansible_architecture == "x86_64"
 
-  - name: install Orchestrator deb packages
+  - name: install Orchestrator and PXB deb packages
     apt:
       name: "{{ packages }}"
       update_cache: yes
@@ -396,8 +325,7 @@
       - percona-xtrabackup-80
     when: ansible_os_family == "Debian" and ansible_architecture == "x86_64"
 
-
-  - name: install Orchestrator rpm packages
+  - name: install Orchestrator and PXB rpm packages
     yum:
       name: "{{ packages }}"
       state: latest
@@ -410,12 +338,13 @@
       - percona-xtrabackup-80
     when: ansible_os_family == "RedHat" and ansible_architecture == "x86_64"
 
-
-  - name: enable the pdpxc-8.0.35 testing
-    command: percona-release enable pdpxc-8.0.35 testing
+  - name: enable the pdpxc-8.0 {{ repo }}
+    command: percona-release enable pdpxc-8.0 {{ repo }}
+    vars:
+      repo: "{{ lookup('env', 'PS_INSTALL_REPO') }}"
     when: ansible_distribution_release != "noble" and ansible_architecture == "x86_64"
 
-  - name: install percona-haproxy rpm packages
+  - name: install percona-haproxy and proxysql2 rpm packages
     yum:
       name: "{{ packages }}"
       state: latest
@@ -425,7 +354,8 @@
       - percona-haproxy
       - proxysql2
     when: ansible_os_family == "RedHat" and ansible_architecture == "x86_64"
-  - name: install percona-haproxy deb packages
+
+  - name: install percona-haproxy and proxysql2 deb packages
     apt:
       name: "{{ packages }}"
       update_cache: yes
@@ -436,10 +366,9 @@
       - proxysql2
     when: ansible_os_family == "Debian" and ansible_distribution_release != "noble" and ansible_architecture == "x86_64"
 
-  - name: enable the original repo
-    command: percona-release enable original
+  - name: enable the pmm2-client repo
+    command: percona-release enable pmm2-client
     when: ansible_architecture == "x86_64"
-
 
   - name: install PMM client rpm packages
     yum:
@@ -460,49 +389,4 @@
       packages:
       - pmm2-client
     when: ansible_os_family == "Debian" and ansible_architecture == "x86_64"
-
-  # - name: Check apparmor content
-  #   command: cat /etc/apparmor.d/usr.sbin.mysqld
-  #   register: apparmor_content
-  #   when: ansible_os_family == "Debian"
-
-  # - name: debug apparmor_content
-  #   debug:
-  #     var: apparmor_content
-  #   when: ansible_os_family == "Debian"  
-
-  # - name: Include mongo packages install
-  #   include_tasks: ../playbooks/install_monga.yml
-
-  # - name: Include Percona PG install
-  #   include_tasks: ../playbooks/install_pr_pg.yml
-
-  # - name: Include Upstream PG install
-  #   include_tasks: ../playbooks/install_up_pg.yml
-
-  # - name: Include PS 57
-  #   include_tasks: ../playbooks/install_up_pg.yml
-
-#  - block:
-#      - name: run pytest
-#        command: python3 -m pytest -v /package-testing/telemetry/tests_pillar/test_telemetry_pillar.py
-#        register: pytest_out
-#        no_log: True
-#    always:
-#      - name: debug pytest stderr
-#        debug:
-#          var: pytest_out.stderr_lines
-#
-#      - name: debug pytest stdout
-#        debug:
-#          var: pytest_out.stdout_lines
-
-  # - name: setup repl
-  #   command: "{{ item }}"
-  #   with_items:
-  #   - /usr/sbin/mysqld --no-defaults --initialize-insecure --datadir=$HOME/server_1/
-  #   - /usr/sbin/mysqld --no-defaults --datadir=$HOME/server_1/ --port=21000 --socket=/tmp/mysql_21000.sock --max-connections=1024 --log-error --general-log --log-error-verbosity=3 --report-host=127.0.0.1 --server-id=2&
-  #   - mysql -u root -e "create user 'repl'@'%' IDENTIFIED WITH mysql_native_password BY 'xyzzy';GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'repl'@'%';"
-  #   - mysql -e -S/tmp/mysql_21000.sock "stop slave; CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_USER='repl', MASTER_PASSWORD='xyzzy',MASTER_PORT=3600, MASTER_LOG_FILE='binlog.000001';start slave;"
-
 
