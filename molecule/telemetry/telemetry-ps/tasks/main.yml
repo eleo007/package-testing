@@ -203,7 +203,7 @@
 
 # enable testing/experimental TA  repo for packages test
   - name: enable the telemetry {{ repo }}
-    command: percona-release enable-only telemetry {{ repo }}
+    command: percona-release enable telemetry {{ repo }}
     vars:
       repo: "{{ lookup('env', 'TA_INSTALL_REPO') }}"
     when: lookup('env', 'TA_INSTALL_REPO') != "main" and lookup('env', 'TA_UPDATE') == "yes"
