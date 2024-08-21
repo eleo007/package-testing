@@ -211,7 +211,7 @@
 ## TA UPGRADE START
 # install telemetry-agent package from main (telemetry repo is enabled by default with percona-release)
 
-  - name: update TA packages on deb for update
+  - name: update TA packages on deb
     apt:
       name: "{{ packages }}"
       update_cache: yes
@@ -221,7 +221,7 @@
       - percona-telemetry-agent
     when: ansible_os_family == "Debian" and lookup('env', 'TA_UPDATE') == "yes"
 
-  - name: update TA packages on rhel for update
+  - name: update TA packages on rhel
     yum:
       name: "{{ packages }}"
       state: latest
