@@ -17,7 +17,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 # pak_version is with build value 1.0.1-2
 # version is TA output and is without build value 1.0.1
 
-pak_version = os.getenv("version")
+pak_version = os.getenv("VERSION")
 version = re.search(r'[0-9]+\.[0-9]+\.[0-9]+', pak_version).group(0)
 revision = os.getenv("revision")
 
