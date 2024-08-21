@@ -126,15 +126,16 @@
 
 # ##  PS UPGRADE END
 
+
 # enable testing/experimental TA  repo for packages test
   - name: enable the telemetry {{ repo }}
     command: percona-release enable-only telemetry {{ repo }}
     vars:
       repo: "{{ lookup('env', 'TA_INSTALL_REPO') }}"
-    when: lookup('env', 'TA_INSTALL_REPO') != "main"
+    when: lookup('env', 'TA_INSTALL_REPO') != "main" and lookup('env', 'TA_UPDATE') != "yes"
 
 # For experimental repo till packages are removed from pillar repos. Revert! Package should be installed together with the pillar!
-  - name: install TA packages
+  - name: install TA packages debian
     apt:
       name: "{{ packages }}"
       update_cache: yes
@@ -142,10 +143,10 @@
     vars:
       packages:
       - percona-telemetry-agent
-    when: ansible_os_family == "Debian" and lookup('env', 'TA_INSTALL_REPO') == "experimental"
+    when: ansible_os_family == "Debian" and lookup('env', 'TA_INSTALL_REPO') == "experimental" and lookup('env', 'TA_UPDATE') != "yes"
 
 # For experimental repo till packages are removed from pillar repos. Revert! Package should be installed together with the pillar!
-  - name: install TA packages
+  - name: install TA packages rhel
     yum:
       name: "{{ packages }}"
       state: latest
@@ -153,7 +154,7 @@
     vars:
       packages:
       - percona-telemetry-agent
-    when: ansible_os_family == "RedHat" and lookup('env', 'TA_INSTALL_REPO') == "experimental"
+    when: ansible_os_family == "RedHat" and lookup('env', 'TA_INSTALL_REPO') == "experimental" and lookup('env', 'TA_UPDATE') != "yes"
 
   - name: enable the ps-80 {{ repo }} 
     command: percona-release enable ps-80 {{ repo }} 
@@ -198,6 +199,38 @@
 
 #   - name: enable percona-release original
 #     command: percona-release enable original
+
+
+# enable testing/experimental TA  repo for packages test
+  - name: enable the telemetry {{ repo }}
+    command: percona-release enable-only telemetry {{ repo }}
+    vars:
+      repo: "{{ lookup('env', 'TA_INSTALL_REPO') }}"
+    when: lookup('env', 'TA_INSTALL_REPO') != "main" and lookup('env', 'TA_UPDATE') == "yes"
+
+## TA UPGRADE START
+# install telemetry-agent package from main (telemetry repo is enabled by default with percona-release)
+
+  - name: install TA packages on deb for update
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - percona-telemetry-agent
+    when: ansible_os_family == "Debian" and lookup('env', 'TA_UPDATE') == "yes"
+
+  - name: install TA packages on rhel for update
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - percona-telemetry-agent
+    when: ansible_os_family == "RedHat" and lookup('env', 'TA_UPDATE') == "yes"
+## TA UPGRADE END
 
 # We do not have arm percona-mysql-shell & percona-toolkit so installing them separately
 

@@ -626,7 +626,6 @@ def test_ps_packages_values(host):
                         # Get values of the packages installed on the server
                         # version of package
                         pkg_version_repo = host.run(f'apt-cache -q=0 policy {hist_pkg_name} | grep "\\*\\*\\*"')
-                        print(pkg_version_repo.stdout)
                         pkg_version_match = re.search(r'[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9]+)?((-|.)[0-9]+)?',pkg_version_repo.stdout)
                         pkg_version = pkg_version_match.group(0)
                         if re.search(r'[0-9]+\.[0-9]+\.[0-9]+\-[0-9]+\.[0-9]+', pkg_version):
@@ -653,7 +652,6 @@ def test_ps_packages_values(host):
                         pkg_full_version = pkg_version + '-' + pkg_release
                         pkg_version_match = re.search(r'[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9]+)?((-|.)[0-9]+)?', pkg_full_version)
                         pkg_version = pkg_version_match.group(0)
-                        # print(pkg_version)
                         # get repository info. Values are empty if package was installed from commandline
                         if pkg_repository in ['@commandline','installed'] or re.search(r'\/@*', pkg_repository):
                             repository_str = "{'name': '', 'component': ''}"
@@ -661,10 +659,7 @@ def test_ps_packages_values(host):
                             repo_name_full = pkg_repository.strip('@, -x86_64')
                             repo_name = '-'.join(repo_name_full.split('-')[0:-1])
                             repo_type = repo_name_full.split('-')[-1]
-                            # print(repo_type)
-                            # print(repo_name)
                             repository_str = "{'name': '" + repo_name + "', 'component': '"+ repo_type + "'}"
-                            # print(pkg_version, pkg_release, pkg_repository, repo_name)
                     # Assert if values in history file differ from installed on server
                     if hist_pkg_name == 'percona-server-server':
                         assert re.search(r'[0-9]+\.[0-9]+\.[0-9]+\-[0-9]+\-[0-9]+', pkg_version), hist_pkg_name
@@ -700,66 +695,10 @@ def test_disable_service(host):
         assert not ta_serv.is_enabled
 
 
-# # def test_telemetry_uuid_corrupted(host):
-# #     telemetry_uuid_content = host.file('/usr/local/percona/telemetry_uuid').content_string
-# #     pattern = r'instanceId:([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})'
-# #     match = re.search(pattern, telemetry_uuid_content)
-# #     extracted_uuid_before = match.group(1)
-# #     with host.sudo("root"):
-# #         host.run("echo instanceId:123 > /usr/local/percona/telemetry_uuid")
-# #     update_ta_options(host, check_interval="10", hist_keep_interval="604800")
-# #     pillar_dir=ta_root_dir + 'ps'
-# #     host.check_output(f"cp -p /package-testing/telemetry/ps-test-file.json {pillar_dir}/$(date +%s)-ps-test-file.json")
-# #     time.sleep(15)
-# #     log_file_content_after = host.file(ta_log_file).content_string
-# #     telemetry_uuid_content_after = host.file('/usr/local/percona/telemetry_uuid').content_string
-# #     assert "open/usr/local/percona/telemetry_uuid: permission denied" not in log_file_content_after
-# #     assert re.search(pattern, telemetry_uuid_content)
-# #     assert extracted_uuid_before not in telemetry_uuid_content_after
+####################################################
+############# ROTATION & REMOVAL TESTS #############
+####################################################
 
-# # def test_network_issue_iptables(host):
-# #     with host.sudo("root"):
-# #         #block sending with iptables
-# #         host.check_output("iptables -I OUTPUT -d check-dev.percona.com -j DROP")
-# #         update_ta_options(host, check_interval="10")
-# #         pillar_dir=ta_root_dir + 'ps'
-# #         host.run(f"rm {pillar_dir}/*")
-# #         host.check_output(f"cp -p /package-testing/telemetry/ps-test-file.json {pillar_dir}/$(date +%s)-ps-test-file.json")
-# #         time.sleep(70)
-# #         #revert
-# #         host.run("iptables -D OUTPUT -d  check-dev.percona.com -j DROP")
-# #         log_file_content = host.file(ta_log_file).content_string
-# #         assert "error during sending telemetry, will try on next iteration" in log_file_content
-# #         assert "i/o timeout" in log_file_content
-# #         assert len(host.file(pillar_dir).listdir()) == 1
-
-# #########################################
-# ############# REMOVAL TESTS #############
-# #########################################
-
-# # def test_telem_path_not_writtable(host):
-# #     with host.sudo("root"):
-# #         log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
-# #         update_ps_options(host, '20', '10')
-# #         host.check_output(f'chown root:root {ta_pillar_dir_ps}')
-# #         time.sleep(30)
-# #         log_file_content = host.file(log_file).content_string
-# #         mysql_serv = host.service("mysql")
-# #         assert "Problem during telemetry file write: Permission denied" in log_file_content
-# #         assert mysql_serv.is_running
-# #         host.check_output(f'chown mysql:percona-telemetry {ta_pillar_dir_ps}')
-
-# # def test_telem_path_absent(host):
-# #     with host.sudo("root"):
-# #         log_file=host.check_output('mysql -u root -Ns -e \'select @@log_error;\'')
-# #         update_ps_options(host, '20', '10')
-# #         cmd = f'rm -rf {ta_pillar_dir_ps}'
-# #         host.check_output(cmd)
-# #         time.sleep(30)
-# #         log_file_content = host.file(log_file).content_string
-# #         mysql_serv = host.service("mysql")
-# #         assert "Component percona_telemetry reported: 'Problem during telemetry file write: filesystem error: directory iterator cannot open directory: No such file or directory [/usr/local/percona/telemetry/ps]" in log_file_content
-# #         assert mysql_serv.is_running
 
 def test_log_rotation(host):
     with host.sudo("root"):
@@ -774,9 +713,8 @@ def test_log_rotation(host):
         log_files_string = ''.join(log_files_list)
         assert re.search(r'telemetry-agent.log-[0-9]+.gz', log_files_string)
         assert re.search(r'telemetry-agent-error.log-[0-9]+.gz', log_files_string)
-        # # remove old rotated logsm add with old date and rotate again to check that no more than 4 logs are kept
+        # # remove old rotated logs add with old date and rotate again to check that no more than 4 logs are kept
         # host.check_output(f"touch {ta_log_dir}/telemetry-agent.log-20240812.gz {ta_log_dir}/telemetry-agent.log-20240812.gz telemetry-agent.log-20240812.gz")
-        # host.check_output(f"rm -rf {ta_log_dir}/*.gz")
 
 
 def test_path_absent_after_removal(host):
