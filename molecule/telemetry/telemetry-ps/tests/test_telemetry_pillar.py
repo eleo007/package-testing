@@ -643,10 +643,10 @@ def test_ps_packages_values(host):
                     # FOR RPM PACKAGES
                         if (dist == 'amzn' and rel == '2') or (dist == 'centos' and rel == '7'):
                             get_pkg_info = host.run(f"repoquery --qf '%{{version}}|%{{release}}|%{{ui_from_repo}}' --installed {hist_pkg_name}")
-                            if hist_pkg_name == 'percona-release':
-                                print(get_pkg_info.stdout)
                         else:
                             get_pkg_info = host.run(f"yum repoquery --qf '%{{version}}|%{{release}}|%{{from_repo}}' --installed {hist_pkg_name}")
+                            if hist_pkg_name == 'percona-icu-data-files':
+                                print(get_pkg_info.stdout)
                         pkg_info = get_pkg_info.stdout.strip('\n').split('|')
                         pkg_version, pkg_release, pkg_repository = pkg_info
                         pkg_release = pkg_release.replace('.','-')
@@ -657,7 +657,7 @@ def test_ps_packages_values(host):
                         if pkg_repository in ['@commandline','installed'] or re.search(r'\/@*', pkg_repository):
                             repository_str = "{'name': '', 'component': ''}"
                         else:
-                            repo_name_full = pkg_repository.strip('@, -x86_64')
+                            repo_name_full = pkg_repository.strip('@, -x86_64, aarch')
                             repo_name = '-'.join(repo_name_full.split('-')[0:-1])
                             repo_type = repo_name_full.split('-')[-1]
                             repository_str = "{'name': '" + repo_name + "', 'component': '"+ repo_type + "'}"
