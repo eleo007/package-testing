@@ -389,7 +389,6 @@
       - percona-orchestrator-client
       - percona-orchestrator
       - percona-xtrabackup-80
-      - proxysql2
     when: ansible_os_family == "RedHat" and ansible_architecture == "x86_64"
 
   - name: enable the pdpxc-8.0 {{ repo }}
@@ -406,6 +405,7 @@
     vars:
       packages:
       - percona-haproxy
+      - proxysql2
     when: ansible_os_family == "RedHat" and ansible_architecture == "x86_64"
 
   - name: install percona-haproxy deb packages
@@ -416,6 +416,7 @@
     vars:
       packages:
       - percona-haproxy
+      - proxysql2
     when: ansible_os_family == "Debian" and ansible_distribution_release != "noble" and ansible_architecture == "x86_64"
 
   - name: enable the pmm2-client repo
