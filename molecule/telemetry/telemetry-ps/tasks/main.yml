@@ -200,17 +200,17 @@
 #   - name: enable percona-release original
 #     command: percona-release enable original
 
-  - name: Check TA version preupdate
+  - name: Check TA version preupdate deb
     shell: apt list --installed percona-telemetry-agent*
     register: ta_package_describe
     when: ansible_os_family == "Debian" and lookup('env', 'TA_UPDATE') == "yes"
 
-  - name: check ta_package_describe rpm
+  - name: check ta_package_describe deb
     debug:
       var: ta_package_describe
     when: ansible_os_family == "Debian" and lookup('env', 'TA_UPDATE') == "yes"
   
-  - name: Check TA version preupdate
+  - name: Check TA version preupdate rpm
     shell: yum list installed percona-telemetry-agent*
     register: ta_package_describe
     when: ansible_os_family == "RedHat" and lookup('env', 'TA_UPDATE') == "yes"
