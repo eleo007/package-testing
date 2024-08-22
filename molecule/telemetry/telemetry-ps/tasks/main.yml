@@ -210,7 +210,7 @@
     register: ta_package_describe
     when: ansible_os_family == "RedHat" and lookup('env', 'TA_UPDATE') == "yes"
 
-  - name: list selinux status
+  - name: check  ta_package_describe
     debug:
       var: ta_package_describe
 
