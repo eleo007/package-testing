@@ -596,7 +596,9 @@ def test_ps_mandatory_packages(host, pkg_name):
         # not all the tools have aarch support so we install not all the packages on it
         if 'aarch64' in host.system_info.arch and pkg_name in ['percona-xtrabackup', 'percona-toolkit', 'percona-orchestrator', 'percona-haproxy', \
                'proxysql2', 'percona-mysql-shell', 'percona-mysql-router', 'pmm2-client']:
-            pytest.skip("This package not supported by aarch") 
+            pytest.skip("This package not supported by aarch")
+        if 'noble' in host.system_info.codename and pkg_name in ['percona-haproxy']:
+            pytest.skip("This package is supported on noble now") 
         pillar_ref_name = host.file('/package-testing/telemetry/reference/').listdir()[0]
         hist_file = host.file(ta_history_dir + pillar_ref_name).content_string
         hist_values=json.loads(hist_file)

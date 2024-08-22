@@ -364,7 +364,7 @@
       repo: "{{ lookup('env', 'PS_INSTALL_REPO') }}"
     when: ansible_architecture == "x86_64"
 
-  - name: install Orchestrator and PXB deb packages
+  - name: install Orchestrator, proxysql2 and PXB deb packages
     apt:
       name: "{{ packages }}"
       update_cache: yes
@@ -375,9 +375,10 @@
       - percona-orchestrator-client
       - percona-orchestrator
       - percona-xtrabackup-80
+      - proxysql2
     when: ansible_os_family == "Debian" and ansible_architecture == "x86_64"
 
-  - name: install Orchestrator and PXB rpm packages
+  - name: install Orchestrator, proxysql2 and PXB rpm packages
     yum:
       name: "{{ packages }}"
       state: latest
@@ -388,6 +389,7 @@
       - percona-orchestrator-client
       - percona-orchestrator
       - percona-xtrabackup-80
+      - proxysql2
     when: ansible_os_family == "RedHat" and ansible_architecture == "x86_64"
 
   - name: enable the pdpxc-8.0 {{ repo }}
@@ -396,7 +398,7 @@
       repo: "{{ lookup('env', 'PS_INSTALL_REPO') }}"
     when: ansible_distribution_release != "noble" and ansible_architecture == "x86_64"
 
-  - name: install percona-haproxy and proxysql2 rpm packages
+  - name: install percona-haproxy rpm packages
     yum:
       name: "{{ packages }}"
       state: latest
@@ -404,10 +406,9 @@
     vars:
       packages:
       - percona-haproxy
-      - proxysql2
     when: ansible_os_family == "RedHat" and ansible_architecture == "x86_64"
 
-  - name: install percona-haproxy and proxysql2 deb packages
+  - name: install percona-haproxy deb packages
     apt:
       name: "{{ packages }}"
       update_cache: yes
@@ -415,7 +416,6 @@
     vars:
       packages:
       - percona-haproxy
-      - proxysql2
     when: ansible_os_family == "Debian" and ansible_distribution_release != "noble" and ansible_architecture == "x86_64"
 
   - name: enable the pmm2-client repo
