@@ -19,7 +19,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 
 pak_version = os.getenv("VERSION")
 version = re.search(r'[0-9]+\.[0-9]+\.[0-9]+', pak_version).group(0)
-revision = os.getenv("revision")
+revision = os.getenv("REVISION")
 
 rhel_dists = ["redhat", "centos", "rhel", "oracleserver", "ol", "amzn"]
 deb_dists = ["debian", "ubuntu"]
