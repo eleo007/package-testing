@@ -413,7 +413,6 @@ def test_ps_telem_disabled_permanent(host):
         log_file_content = host.file(log_file).content_string
         telemetry_opt_result = host.check_output(f'mysql -Ns -e "show variables like \'percona_telemetry%\';"')
         print(telemetry_opt_result)
-        print(telemetry_opt_result)
         percona_telemetry_disable_result = host.check_output(f'mysql -Ns -e  "select @@percona_telemetry_disable;"')
         assert "Component percona_telemetry reported: 'Applying Telemetry grace interval" not in log_file_content
         assert 'percona_telemetry.grace_interval' not in telemetry_opt_result
