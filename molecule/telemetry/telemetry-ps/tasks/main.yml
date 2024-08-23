@@ -355,7 +355,7 @@
 
   - name: install plugins, import world database
 #    command: /package-testing/plugins_test_80.sh ps
-    command: /package-testing/plugins_test_innovation_lts.sh
+    command: /package-testing/plugins_test_innovation_lts.sh ps
 
   # - name: install audit_log v2 plugin
   #   command: mysql -uroot -NBe "source /usr/share/mysql/audit_log_filter_linux_install.sql;"
