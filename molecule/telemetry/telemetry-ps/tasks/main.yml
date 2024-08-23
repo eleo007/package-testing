@@ -375,7 +375,6 @@
       - percona-orchestrator-client
       - percona-orchestrator
       - percona-xtrabackup-80
-      - proxysql2
     when: ansible_os_family == "Debian" and ansible_architecture == "x86_64"
 
   - name: install Orchestrator, proxysql2 and PXB rpm packages
