@@ -134,27 +134,27 @@
       repo: "{{ lookup('env', 'TA_INSTALL_REPO') }}"
     when: lookup('env', 'TA_INSTALL_REPO') != "main" and lookup('env', 'TA_UPDATE') != "yes"
 
-# For experimental repo till packages are removed from pillar repos. Revert! Package should be installed together with the pillar!
-  - name: install TA packages debian
-    apt:
-      name: "{{ packages }}"
-      update_cache: yes
-      state: latest
-    vars:
-      packages:
-      - percona-telemetry-agent
-    when: ansible_os_family == "Debian" and lookup('env', 'TA_INSTALL_REPO') == "experimental" and lookup('env', 'TA_UPDATE') != "yes"
+# # For experimental repo till packages are removed from pillar repos. Revert! Package should be installed together with the pillar!
+#   - name: install TA packages debian
+#     apt:
+#       name: "{{ packages }}"
+#       update_cache: yes
+#       state: latest
+#     vars:
+#       packages:
+#       - percona-telemetry-agent
+#     when: ansible_os_family == "Debian" and lookup('env', 'TA_INSTALL_REPO') == "experimental" and lookup('env', 'TA_UPDATE') != "yes"
 
-# For experimental repo till packages are removed from pillar repos. Revert! Package should be installed together with the pillar!
-  - name: install TA packages rhel
-    yum:
-      name: "{{ packages }}"
-      state: latest
-      update_cache: yes
-    vars:
-      packages:
-      - percona-telemetry-agent
-    when: ansible_os_family == "RedHat" and lookup('env', 'TA_INSTALL_REPO') == "experimental" and lookup('env', 'TA_UPDATE') != "yes"
+# # For experimental repo till packages are removed from pillar repos. Revert! Package should be installed together with the pillar!
+#   - name: install TA packages rhel
+#     yum:
+#       name: "{{ packages }}"
+#       state: latest
+#       update_cache: yes
+#     vars:
+#       packages:
+#       - percona-telemetry-agent
+#     when: ansible_os_family == "RedHat" and lookup('env', 'TA_INSTALL_REPO') == "experimental" and lookup('env', 'TA_UPDATE') != "yes"
 
   - name: enable the ps-84-lts {{ repo }} 
     command: percona-release enable ps-84-lts {{ repo }} 
