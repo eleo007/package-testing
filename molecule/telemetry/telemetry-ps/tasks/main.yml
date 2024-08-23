@@ -156,8 +156,8 @@
       - percona-telemetry-agent
     when: ansible_os_family == "RedHat" and lookup('env', 'TA_INSTALL_REPO') == "experimental" and lookup('env', 'TA_UPDATE') != "yes"
 
-  - name: enable the ps-80 {{ repo }} 
-    command: percona-release enable ps-80 {{ repo }} 
+  - name: enable the ps-84-lts {{ repo }} 
+    command: percona-release enable ps-84-lts {{ repo }} 
     vars:
       repo: "{{ lookup('env', 'PS_INSTALL_REPO') }}"
 
@@ -255,6 +255,10 @@
 
   - name: enable the pt repo
     command: percona-release enable pt
+    when: ansible_architecture == "x86_64"
+
+  - name: enable the pxb repo
+    command: percona-release enable pxb-84-lts
     when: ansible_architecture == "x86_64"
 
   - name: install PT and mysql shell for x86_64
@@ -374,7 +378,7 @@
       - percona-orchestrator-cli
       - percona-orchestrator-client
       - percona-orchestrator
-      - percona-xtrabackup-80
+      - percona-xtrabackup-84
     when: ansible_os_family == "Debian" and ansible_architecture == "x86_64"
 
   - name: install Orchestrator, proxysql2 and PXB rpm packages
@@ -387,7 +391,7 @@
       - percona-orchestrator-cli
       - percona-orchestrator-client
       - percona-orchestrator
-      - percona-xtrabackup-80
+      - percona-xtrabackup-84
     when: ansible_os_family == "RedHat" and ansible_architecture == "x86_64"
 
   - name: enable the pdpxc-8.0 {{ repo }}
