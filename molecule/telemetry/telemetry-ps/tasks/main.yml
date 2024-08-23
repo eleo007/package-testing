@@ -354,10 +354,11 @@
     command: /usr/bin/ps-admin --enable-rocksdb
 
   - name: install plugins, import world database
-    command: /package-testing/plugins_test_80.sh ps
+#    command: /package-testing/plugins_test_80.sh ps
+    command: /package-testing/plugins_test_innovation_lts.sh
 
-  - name: install audit_log v2 plugin
-    command: mysql -uroot -NBe "source /usr/share/mysql/audit_log_filter_linux_install.sql;"
+  # - name: install audit_log v2 plugin
+  #   command: mysql -uroot -NBe "source /usr/share/mysql/audit_log_filter_linux_install.sql;"
 
   - name: Update the DB engine
     command: mysql -uroot -NBe "USE world3;create table r1 (id int, foo char(25)) engine=rocksdb;insert into r1 (id,foo) values (1,'test'),(2,'wow'),(3,'q');"
