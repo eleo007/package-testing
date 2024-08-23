@@ -330,7 +330,8 @@ def test_ps_telem_content(host):
         assert ps_telem_dict['pillar_version'] == pillar_version_ref
         assert ps_telem_dict['active_plugins'] == active_plugins_list
         assert ps_telem_dict['active_components'] == active_components_list
-        assert 'keyring_file' in ps_telem_dict['active_plugins']
+        assert 'validate_password' in ps_telem_dict['active_plugins']
+        assert 'component_validate_password' in ps_telem_dict['active_components']
         assert int(ps_telem_dict['uptime']) > 10
         assert ps_telem_dict['databases_count'] == databases_count_ref
         assert ps_telem_dict['se_engines_in_use'] == ["InnoDB","ROCKSDB"]
