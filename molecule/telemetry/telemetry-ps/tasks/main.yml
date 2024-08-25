@@ -395,8 +395,8 @@
       - percona-xtrabackup-84
     when: ansible_os_family == "RedHat" and ansible_architecture == "x86_64"
 
-  - name: enable the pdpxc-8.0 {{ repo }}
-    command: percona-release enable pdpxc-8.0 {{ repo }}
+  - name: enable the pdpxc-8.0
+    command: percona-release enable pdpxc-8.0
     vars:
       repo: "{{ lookup('env', 'PS_INSTALL_REPO') }}"
     when: ansible_distribution_release != "noble" and ansible_architecture == "x86_64"
