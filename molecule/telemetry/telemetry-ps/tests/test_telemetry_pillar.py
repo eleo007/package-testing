@@ -240,14 +240,15 @@ def test_ta_logrotate_dependency(host):
 
 # check that the old lo0g file is not present after update and that its content is copied to the new log
 def test_ta_update(host):
-    if update == 'yes':
-        ta_started_num = host.run(f'grep -c "\"msg\":\"values from config:" {ta_log_file}').stdout
-        assert ta_started_num == '2'
-        ta_terminated_num = host.run(f'grep -c "Received signal: terminated, shutdow" {ta_log_file}').stdout
-        assert ta_terminated_num == '1'
-        assert not host.file('/var/log/percona/telemetry-agent.log').is_file
-    else:
-        pytest.skip("This check only for TA update")
+    with host.sudo("root"):
+        if update == 'yes':
+            ta_started_num = host.run(f'grep -c "values from config:" {ta_log_file}')
+            assert ta_started_num.stdout == '2', (ta_started_num.stdout, ta_started_num.stderr)
+            ta_terminated_num = host.run(f'grep -c "Received signal: terminated, shutdow" {ta_log_file}')
+            assert ta_terminated_num.stdout == '1', (ta_terminated_num.stdout, ta_terminated_num.stderr)
+            assert not host.file('/var/log/percona/telemetry-agent.log').is_file
+        else:
+            pytest.skip("This check only for TA update")
 ###############################################
 ################## MYSQL ######################
 ###############################################
