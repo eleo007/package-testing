@@ -20,6 +20,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 pak_version = os.getenv("VERSION")
 version = re.search(r'[0-9]+\.[0-9]+\.[0-9]+', pak_version).group(0)
 revision = os.getenv("REVISION")
+update = os.getenv("TA_UPDATE")
 
 rhel_dists = ["redhat", "centos", "rhel", "oracleserver", "ol", "amzn"]
 deb_dists = ["debian", "ubuntu"]
@@ -212,8 +213,8 @@ def test_ta_defaults_file(host):
 def test_ta_telem_default_values(host, ta_key, ref_value):
     with host.sudo("root"):
         log_file_params = host.file(ta_log_file).content_string.partition('\n')[0]
-        cur_values=json.loads(log_file_params)
-        telem_config=cur_values["config"]["Telemetry"]
+        cur_values = json.loads(log_file_params)
+        telem_config = cur_values["config"]["Telemetry"]
         assert len(telem_config) == 9
         assert telem_config[ta_key] == ref_value
 
@@ -226,6 +227,27 @@ def test_ta_platform_default_values(host, ta_key, ref_value):
         assert len(platform_config) == 2
         assert platform_config[ta_key] == ref_value
 
+def test_ta_logrotate_dependency(host):
+    with host.sudo("root"):
+        dist = host.system_info.distribution
+        if dist.lower() in deb_dists:
+            dependencies_list = host.run('apt-cache depends percona-telemetry-agent').stdout
+        else:
+            dependencies_list = host.run('yum deplist percona-telemetry-agent').stdout
+        print(dependencies_list)
+        assert 'logrotate' in dependencies_list
+
+
+# check that the old lo0g file is not present after update and that its content is copied to the new log
+def test_ta_update(host):
+    if update == 'yes':
+        ta_started_num = host.run(f'grep -c "\"msg\":\"values from config:" {ta_log_file}').stdout
+        assert ta_started_num == '2'
+        ta_terminated_num = host.run(f'grep -c "Received signal: terminated, shutdow" {ta_log_file}').stdout
+        assert ta_terminated_num == '1'
+        assert not host.file('/var/log/percona/telemetry-agent.log').is_file
+    else:
+        pytest.skip("This check only for TA update")
 ###############################################
 ################## MYSQL ######################
 ###############################################
