@@ -1,0 +1,308 @@
+---
+# This playbook does following:
+
+- hosts: all
+  become: true
+  become_method: sudo
+  environment:
+    PERCONA_TELEMETRY_URL: "https://check-dev.percona.com/v1/telemetry/GenericReport"
+    PIP_BREAK_SYSTEM_PACKAGES: 1
+    TA_VERSION: 'phase-0.1'
+    TA_REVISION: '9ef0264'
+    # PERCONA_TELEMETRY_CHECK_INTERVAL: 10
+
+  tasks:
+  - name: include tasks for test env setup
+    include_tasks: ../tasks/test_prep.yml
+
+  - name: enforce SELinux on CentOS
+    selinux:
+      policy: targeted
+      state: enforcing
+    when: ansible_os_family == "RedHat"
+
+  - name: get selinux status
+    command: sestatus
+    register: selinux_status
+    when: ansible_os_family == "RedHat"
+
+  - name: list selinux status
+    debug:
+      var: selinux_status
+    when: ansible_os_family == "RedHat"
+
+  - name: install python3-pip rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - python3-pip
+    when: ansible_os_family == "RedHat"
+
+  - name: install python3-pip deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - python3-pip
+    when: ansible_os_family == "Debian"
+
+  - name: install pytest
+    pip:
+      name: "{{ packages }}"
+      extra_args: --user --break-system-packages
+    vars:
+      packages:
+      - pytest-testinfra
+      - pytest
+
+
+
+  - name: Install percona release
+    include_tasks: ../tasks/install_percona-release.yml
+
+  - name: Install percona release
+    include_tasks: ../tasks/install_percona-release.yml
+
+  - name: enable percona-release telemetry experimental
+    command: percona-release enable telemetry experimental
+
+  - name: install Telemetry Agent deb packages
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+      state: latest
+    vars:
+      packages:
+      - percona-telemetry-agent
+    when: ansible_os_family == "Debian"
+
+  - name: install Telemetry Agent rpm packages
+    yum:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
+    vars:
+      packages:
+      - percona-telemetry-agent
+    when: ansible_os_family == "RedHat"
+  
+  - block:
+      - name: run pytest
+        command: python3 -m pytest -v /package-testing/WIP-telemetry/tests/test_telemetry_package.py
+        register: pytest_out
+        no_log: True
+    always:
+      - name: debug pytest stderr
+        debug:
+          var: pytest_out.stderr_lines
+
+      - name: debug pytest stdout
+        debug:
+          var: pytest_out.stdout_lines
+
+
+# Install Percona Mongo and Percona PG packages
+
+  # - name: enable the mongo repo pdmdb-7.0 experimental
+  #   command: percona-release enable pdmdb-7.0 experimental
+
+  # - name: install Mongo deb packages
+  #   apt:
+  #     name: "{{ packages }}"
+  #     update_cache: yes
+  #     state: latest
+  #   vars:
+  #     packages:
+  #     - percona-server-mongodb
+  #     - percona-backup-mongodb
+  #     - percona-server-mongodb-mongos
+  #   when: ansible_os_family == "Debian"
+
+  # - name: install Mongo rpm packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #     - percona-server-mongodb
+  #     - percona-backup-mongodb
+  #     - percona-server-mongodb-mongos
+  #   when: ansible_os_family == "RedHat"
+
+
+  # - name: enable the ppg repo ppg-16
+  #   command: percona-release enable ppg-16
+  #   when: ansible_os_family == "Debian"
+
+  # - name: setup the ppg repo ppg-16 for rhel
+  #   command: percona-release setup -y ppg-16
+  #   when: ansible_os_family == "RedHat"
+
+  # - name: install PPG deb packages
+  #   apt:
+  #     name: "{{ packages }}"
+  #     update_cache: yes
+  #     state: latest
+  #   vars:
+  #     packages:
+  #     - percona-ppg-server-16
+  #     - percona-pgbouncer
+  #     - percona-patroni
+  #     - percona-postgresql-16-pgaudit
+  #     - percona-pgaudit16-set-user
+  #     - percona-pgbadger
+  #     - percona-pgbouncer
+  #     - percona-pg-gather
+  #     - percona-pgpool2
+  #     - percona-postgresql-*-repack
+  #     - percona-pg-stat-monitor*
+  #     - percona-postgis
+  #     - percona-postgresql-*-wal2json
+  #     - percona-pgbackrest
+  #     - etcd
+  #   when: ansible_os_family == "Debian"
+
+  # - name: install PPG rpm packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #     - percona-ppg-server16
+  #     - percona-pgbouncer
+  #     - percona-pgaudit*_set_user
+  #     - percona-pgbadger
+  #     - percona-pg_gather
+  #     - percona-patroni
+  #     - percona-pgpool-II*
+  #     # - percona-postgis*
+  #     - etcd
+  #   when: ansible_os_family == "RedHat"
+
+  # - name: make changes for pgpool2
+  #   command: sudo dnf config-manager --set-enabled codeready-builder-for-rhel-9-x86_64-rpms
+  #   when: ansible_os_family == "RedHat"
+
+  # - name: install PPG rpm packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #      - percona-pgpool-II
+  #   when: ansible_os_family == "RedHat"
+
+
+  # - name: make changes for postgis
+  #   command: "{{ item }}" 
+  #   with_items:
+  #     - yum install epel-release
+  #     - dnf module enable -y llvm-toolset
+  #     - dnf config-manager --set-enabled ol8_codeready_builder
+  #   when: ansible_os_family == "RedHat"
+
+  # - name: install PPG rpm packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #   vars:
+  #     packages:
+  #     - percona-postgis33
+  #   when: ansible_os_family == "RedHat"
+
+
+# Install PG upstream packages
+
+  # - name: install PPG repository package
+  #   apt:
+  #     name: "{{ packages }}"
+  #     update_cache: yes
+  #     state: latest
+  #   vars:
+  #     packages:
+  #     - postgresql-common
+  #   when: ansible_os_family == "Debian"
+
+  # - name: install PPG apt repository
+  #   command: /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+  #   when: ansible_os_family == "Debian"
+
+  # - name: install PG repo
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #     disable_gpg_check: yes
+  #   vars:
+  #     packages:
+  #     - "https://download.postgresql.org/pub/repos/yum/reporpms/EL-{{ ansible_distribution_major_version }}-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
+  #   when: ansible_os_family == "RedHat"
+
+  # - name: disable the built-in PostgreSQL module
+  #   command: /usr/bin/dnf -qy module disable postgresql
+  #   when: ansible_os_family == "RedHat"
+
+  # - name: install PPG deb packages
+  #   apt:
+  #     name: "{{ packages }}"
+  #     update_cache: yes
+  #     state: latest
+  #   vars:
+  #     packages:
+  #     - postgresql-16
+  #     - patroni 
+  #     - postgresql-16-pgaudit
+  #     - pgbadger 
+  #     - pgbouncer
+  #     - postgresql-16-pgpool2
+  #     - postgresql-16-repack
+  #     - postgis 
+  #     - postgresql-16-wal2json
+  #     - pgbackrest
+  #   when: ansible_os_family == "Debian"
+
+  # - name: install PPG rpm packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #     skip_broken: yes
+  #   vars:
+  #     packages:
+  #     - patroni
+  #     - pgaudit_16
+  #     - pgbackrest
+  #     - pgbouncer 
+  #     - pg_repack_16 
+  #     - pgbadger 
+  #     - pgpool-II
+  #     - wal2json_16 
+  #   when: ansible_os_family == "RedHat"
+
+  # - name: make changes for postgis
+  #   command: "{{ item }}" 
+  #   with_items:
+  #     - yum install epel-release
+  #     - dnf module enable -y llvm-toolset
+  #     - dnf config-manager --set-enabled ol8_codeready_builder
+  #   when: ansible_os_family == "RedHat"
+
+  # - name: install PPG rpm packages
+  #   yum:
+  #     name: "{{ packages }}"
+  #     state: latest
+  #     update_cache: yes
+  #     skip_broken: yes
+  #   vars:
+  #     packages:
+  #     - postgis34_16 
+  #   when: ansible_os_family == "RedHat"
